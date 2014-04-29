@@ -26,7 +26,7 @@ Export a project in command line:
 Platforms
 =========
 
-Structer should run at windows/osx/linux, but only Windows 7 is tested.
+Structer should run under windows/osx/linux, but only Windows 7 is tested.
 
 
 Hotkeys

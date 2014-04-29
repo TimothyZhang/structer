@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resource class="wxDialog">
+  <object class="wxDialog" name="RefDialog">
+    <object class="wxBoxSizer">
+      <orient>wxVERTICAL</orient>
+      <object class="sizeritem">
+        <object class="wxBoxSizer">
+          <orient>wxHORIZONTAL</orient>
+          <object class="sizeritem">
+            <object class="wxStaticBoxSizer">
+              <object class="spacer">
+                <size>5,5</size>
+              </object>
+              <object class="sizeritem">
+                <object class="wxBoxSizer">
+                  <orient>wxHORIZONTAL</orient>
+                  <object class="spacer">
+                    <size>5,5</size>
+                  </object>
+                  <object class="sizeritem">
+                    <object class="wxTreeCtrl" name="tree_ctrl">
+                      <style>wxTR_HIDE_ROOT|wxTR_DEFAULT_STYLE</style>
+                      <XRCED>
+                        <assign_var>1</assign_var>
+                      </XRCED>
+                    </object>
+                    <option>1</option>
+                    <flag>wxEXPAND</flag>
+                    <minsize>150, 300</minsize>
+                  </object>
+                  <object class="spacer">
+                    <size>5,5</size>
+                  </object>
+                </object>
+                <option>1</option>
+                <flag>wxEXPAND</flag>
+              </object>
+              <object class="spacer">
+                <size>5,5</size>
+              </object>
+              <label>&amp;Browse</label>
+              <orient>wxVERTICAL</orient>
+            </object>
+            <option>3</option>
+            <flag>wxEXPAND</flag>
+            <minsize>180,300</minsize>
+          </object>
+          <object class="spacer">
+            <size>5,5</size>
+          </object>
+          <object class="sizeritem">
+            <object class="wxStaticBoxSizer">
+              <object class="spacer">
+                <size>0,5</size>
+              </object>
+              <object class="sizeritem">
+                <object class="wxTextCtrl" name="text_ctrl">
+                  <tooltip>Type id, name or pinyin here.</tooltip>
+                  <help>Type id, name or pinyin here.</help>
+                  <focused>1</focused>
+                  <style>wxTE_PROCESS_ENTER</style>
+                  <XRCED>
+                    <assign_var>1</assign_var>
+                  </XRCED>
+                </object>
+                <option>0</option>
+                <flag>wxEXPAND</flag>
+              </object>
+              <object class="spacer">
+                <size>0,5</size>
+              </object>
+              <object class="sizeritem">
+                <object class="wxGrid" name="grid">
+                  <XRCED>
+                    <assign_var>1</assign_var>
+                  </XRCED>
+                </object>
+                <option>1</option>
+                <flag>wxEXPAND</flag>
+              </object>
+              <object class="spacer">
+                <size>0,5</size>
+              </object>
+              <label>&amp;Search(By id, name or pinyin)</label>
+              <orient>wxVERTICAL</orient>
+            </object>
+            <option>3</option>
+            <flag>wxEXPAND</flag>
+          </object>
+          <object class="spacer">
+            <size>5,5</size>
+          </object>
+          <object class="sizeritem">
+            <object class="wxPanel"/>
+            <option>3</option>
+            <flag>wxEXPAND</flag>
+          </object>
+          <object class="spacer">
+            <size>5,5</size>
+          </object>
+        </object>
+        <option>1</option>
+        <flag>wxEXPAND</flag>
+      </object>
+      <object class="sizeritem">
+        <object class="wxStatusBar" name="status"/>
+        <option>0</option>
+        <flag>wxEXPAND</flag>
+      </object>
+    </object>
+    <size>800,600</size>
+    <title>Choose a reference</title>
+    <style>wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER|wxCLOSE_BOX</style>
+  </object>
+</resource>

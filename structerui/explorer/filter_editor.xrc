@@ -1,0 +1,83 @@
+<?xml version="1.0" ?>
+<resource class="wxPanel">
+  <object class="wxDialog" name="FilterEditorDialog">
+    <object class="wxBoxSizer">
+      <orient>wxVERTICAL</orient>
+      <object class="sizeritem">
+        <object class="wxPanel">
+          <object class="wxBoxSizer">
+            <orient>wxHORIZONTAL</orient>
+            <object class="spacer">
+              <size>5,5</size>
+            </object>
+            <object class="sizeritem">
+              <object class="wxBoxSizer">
+                <object class="spacer">
+                  <size>5,5</size>
+                </object>
+                <object class="sizeritem">
+                  <object class="unknown" name="text_ctrl">
+                    <XRCED>
+                      <assign_var>1</assign_var>
+                    </XRCED>
+                  </object>
+                  <option>1</option>
+                  <flag>wxALL|wxEXPAND|wxGROW</flag>
+                </object>
+                <object class="spacer">
+                  <size>5,5</size>
+                </object>
+                <object class="sizeritem">
+                  <object class="wxBoxSizer">
+                    <object class="spacer">
+                      <size>5,5</size>
+                    </object>
+                    <object class="sizeritem">
+                      <object class="wxButton" name="button_okay">
+                        <label>&amp;OK</label>
+                        <default>1</default>
+                        <XRCED>
+                          <events>EVT_BUTTON</events>
+                        </XRCED>
+                      </object>
+                    </object>
+                    <object class="spacer">
+                      <size>5,5</size>
+                    </object>
+                    <object class="sizeritem">
+                      <object class="wxButton" name="button_cancel">
+                        <label>&amp;Cancel</label>
+                        <XRCED>
+                          <events>EVT_BUTTON</events>
+                        </XRCED>
+                      </object>
+                    </object>
+                    <object class="spacer">
+                      <size>5,5</size>
+                    </object>
+                    <orient>wxHORIZONTAL</orient>
+                  </object>
+                  <flag>wxALL|wxALIGN_RIGHT</flag>
+                </object>
+                <object class="spacer">
+                  <size>5,5</size>
+                </object>
+                <orient>wxVERTICAL</orient>
+              </object>
+              <option>1</option>
+              <flag>wxALL|wxEXPAND|wxGROW</flag>
+            </object>
+            <object class="spacer">
+              <size>5,5</size>
+            </object>
+          </object>
+        </object>
+        <option>1</option>
+        <flag>wxALL|wxEXPAND|wxGROW</flag>
+        <minsize>640,480</minsize>
+      </object>
+    </object>
+    <centered>1</centered>
+    <style>wxBORDER_SIMPLE|wxDEFAULT_DIALOG_STYLE|wxCAPTION</style>
+  </object>
+</resource>

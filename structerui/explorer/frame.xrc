@@ -1,0 +1,198 @@
+<?xml version="1.0" ?>
+<resource class="wxMenuItem">
+  <object class="wxFrame" name="ExplorerFrame">
+    <object class="wxMenuBar">
+      <object class="wxMenu" name="menu_file">
+        <object class="wxMenuItem" name="menu_open">
+          <label>&amp;Open...\tCtrl+O</label>
+          <XRCED>
+            <events>EVT_MENU|EVT_UPDATE_UI</events>
+          </XRCED>
+        </object>
+        <object class="wxMenuItem" name="menu_setting">
+          <label>Setting...\tCtrl+P</label>
+          <XRCED>
+            <events>EVT_MENU|EVT_UPDATE_UI</events>
+          </XRCED>
+        </object>
+        <object class="wxMenuItem" name="menu_repair">
+          <label>&amp;Repair\tF4</label>
+          <XRCED>
+            <events>EVT_MENU|EVT_UPDATE_UI</events>
+          </XRCED>
+        </object>
+        <object class="wxMenuItem" name="menu_export">
+          <label>&amp;Export\tF8</label>
+          <XRCED>
+            <events>EVT_MENU|EVT_UPDATE_UI</events>
+          </XRCED>
+        </object>
+        <object class="separator"/>
+        <object class="wxMenuItem" name="menu_exit">
+          <label>E&amp;xit\tCtrl+Q</label>
+          <XRCED>
+            <events>EVT_MENU</events>
+          </XRCED>
+        </object>
+        <label>&amp;File</label>
+      </object>
+      <object class="wxMenu" name="menu_edit">
+        <label>&amp;Edit</label>
+        <object class="wxMenuItem" name="menu_undo">
+          <label>&amp;Undo\tCtrl+Z</label>
+          <XRCED>
+            <events>EVT_MENU|EVT_UPDATE_UI</events>
+          </XRCED>
+        </object>
+        <object class="wxMenuItem" name="menu_redo">
+          <label>&amp;Redo\tCtrl+Y</label>
+          <XRCED>
+            <events>EVT_MENU|EVT_UPDATE_UI</events>
+          </XRCED>
+        </object>
+        <object class="separator"/>
+        <object class="wxMenuItem" name="menu_copy">
+          <label>&amp;Copy\tCtrl+C</label>
+          <XRCED>
+            <events>EVT_MENU|EVT_UPDATE_UI</events>
+          </XRCED>
+        </object>
+        <object class="wxMenuItem" name="menu_cut">
+          <label>Cut\tCtrl+X</label>
+          <XRCED>
+            <events>EVT_MENU|EVT_UPDATE_UI</events>
+          </XRCED>
+        </object>
+        <object class="wxMenuItem" name="menu_paste">
+          <label>&amp;Paste\tCtrl+V</label>
+          <XRCED>
+            <events>EVT_MENU|EVT_UPDATE_UI</events>
+          </XRCED>
+        </object>
+        <object class="wxMenuItem" name="menu_delete">
+          <label>Delete\tDelete</label>
+          <XRCED>
+            <events>EVT_MENU|EVT_UPDATE_UI</events>
+          </XRCED>
+        </object>
+        <object class="separator"/>
+        <object class="wxMenuItem" name="menu_select_all">
+          <label>Select &amp;All\tCtrl+A</label>
+          <XRCED>
+            <events>EVT_MENU</events>
+          </XRCED>
+        </object>
+        <object class="wxMenuItem" name="menu_inverse_select">
+          <label>&amp;Inverse Select</label>
+          <XRCED>
+            <events>EVT_MENU</events>
+          </XRCED>
+        </object>
+      </object>
+      <object class="wxMenu" name="menu_windows">
+        <object class="wxMenuItem" name="menu_close_all">
+          <label>Close All</label>
+          <XRCED>
+            <events>EVT_MENU|EVT_UPDATE_UI</events>
+            <assign_var>1</assign_var>
+          </XRCED>
+        </object>
+        <object class="separator"/>
+        <label>&amp;Windows</label>
+      </object>
+      <object class="wxMenu" name="menu_help">
+        <object class="wxMenuItem" name="menu_help_content">
+          <label>Contents...</label>
+          <XRCED>
+            <events>EVT_MENU</events>
+          </XRCED>
+        </object>
+        <object class="wxMenuItem" name="menu_about">
+          <label>About...</label>
+          <XRCED>
+            <events>EVT_MENU</events>
+          </XRCED>
+        </object>
+        <label>&amp;Help</label>
+      </object>
+    </object>
+    <object class="wxToolBar" name="tool_bar">
+      <object class="tool" name="tool_open">
+        <bitmap stock_id="wxART_FILE_OPEN"/>
+        <XRCED>
+          <events>EVT_TOOL|EVT_UPDATE_UI</events>
+          <assign_var>1</assign_var>
+        </XRCED>
+      </object>
+      <object class="tool" name="tool_setting">
+        <bitmap stock_id="wxART_HELP_SETTINGS"/>
+        <XRCED>
+          <events>EVT_TOOL|EVT_UPDATE_UI</events>
+          <assign_var>1</assign_var>
+        </XRCED>
+      </object>
+      <object class="tool" name="tool_repair">
+        <bitmap stock_id="wxART_MISSING_IMAGE"/>
+        <XRCED>
+          <events>EVT_TOOL|EVT_UPDATE_UI</events>
+          <assign_var>1</assign_var>
+        </XRCED>
+      </object>
+      <object class="tool" name="tool_export">
+        <bitmap stock_id="wxART_MISSING_IMAGE"/>
+        <XRCED>
+          <events>EVT_TOOL|EVT_UPDATE_UI</events>
+          <assign_var>1</assign_var>
+        </XRCED>
+      </object>
+      <object class="separator"/>
+      <object class="wxStaticText">
+        <label>Create: </label>
+      </object>
+      <object class="tool" name="tool_create_folder">
+        <bitmap stock_id="wxART_MISSING_IMAGE"/>
+        <XRCED>
+          <events>EVT_TOOL|EVT_UPDATE_UI</events>
+          <assign_var>1</assign_var>
+        </XRCED>
+      </object>
+      <object class="tool" name="tool_create_filter">
+        <bitmap stock_id="wxART_MISSING_IMAGE"/>
+        <XRCED>
+          <events>EVT_TOOL|EVT_UPDATE_UI</events>
+          <assign_var>1</assign_var>
+        </XRCED>
+      </object>
+      <bitmapsize>32,32</bitmapsize>
+      <style>wxTB_FLAT</style>
+      <XRCED>
+        <assign_var>1</assign_var>
+      </XRCED>
+    </object>
+    <object class="wxStatusBar" name="status_bar">
+      <XRCED>
+        <assign_var>1</assign_var>
+      </XRCED>
+    </object>
+    <size>1024,768</size>
+    <title>Structer</title>
+    <centered>1</centered>
+    <style>wxDEFAULT_FRAME_STYLE</style>
+    <XRCED>
+      <events>EVT_CLOSE</events>
+    </XRCED>
+    <object class="wxBoxSizer">
+      <orient>wxVERTICAL</orient>
+      <object class="sizeritem">
+        <object class="wxPanel" name="main_panel">
+          <size>1024,600</size>
+          <XRCED>
+            <assign_var>1</assign_var>
+          </XRCED>
+        </object>
+        <option>1</option>
+        <flag>wxEXPAND</flag>
+      </object>
+    </object>
+  </object>
+</resource>

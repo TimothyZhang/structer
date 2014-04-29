@@ -1,0 +1,16 @@
+{"name":
+"Recent",
+"parent":
+"3ce4e956724f4b30bb545ee083b6fc40",
+"tags":
+[],
+"data":
+"\"\"\"\nWrite a python function with name \"choose\", which accepts three parameters:\n    obj: the Object instance, all objects in current project will be tested.\n        obj.clazz\n        obj['attribute']\n    file: the File instance\n        file.modify_time: time in seconds\n        file.create_time: time in seconds\n        file.tags: a set of tags of the object\n    project: the Project instance        \n\"\"\"\ndef choose(obj, file, project):\n    # all monsters whose level is 10\n    #if obj.clazz.name == 'Monster' and obj['level'] == 10:\n    #    return True\n      \n    # all objects modified in recent 24 hours, any type\n    #import time\n    if time.time() - file.modify_time < 3600 * 24:\n        return True\n\n    # all objects with tag: X'mas\n    #if \"X'mas\" in file.tags:\n    #    return True\n\n    return False\n",
+"filetype":
+"filter",
+"create_time":
+1398760366.01,
+"modify_time":
+1398760366.01,
+"type":
+"File"}

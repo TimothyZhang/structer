@@ -1,0 +1,50 @@
+{"name":
+"",
+"parent":
+"a930f2129c414fecafcbb5e38d967e45",
+"tags":
+[],
+"data":
+{"data":
+{"name":
+{"xx":
+"Fire Ball",
+"en":
+"Fire Ball",
+"cn":
+"\u706b\u7403"},
+"description":
+{"xx":
+"deal 30-35 fire damage to an enemy",
+"en":
+"deal 30-35 fire damage to an enemy",
+"cn":
+"\u5bf9\u4e00\u4e2a\u654c\u4eba\u9020\u621030-35\u70b9\u706b\u7cfb\u4f24\u5bb3"},
+"cd":
+10,
+"effects":
+[["dmg",
+{"max":
+35,
+"min":
+30,
+"element":
+"fire"}]],
+"target":
+"enemy",
+"target_number":
+1,
+"id":
+6,
+"mana_cost":
+30},
+"clazz":
+"Skill"},
+"filetype":
+"object",
+"create_time":
+1398761576.801,
+"modify_time":
+1398761576.801,
+"type":
+"File"}

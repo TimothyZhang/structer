@@ -1,0 +1,34 @@
+CLOSE_DIALOG = 'Esc', 'Ctrl+Q'
+CLOSE_EDITOR_FRAME = 'Esc', 'Ctrl+Q'
+SAVE = 'Ctrl+S'
+SHOW_EXPLORER = '`'
+
+# grid
+COPY = 'Ctrl+C'
+PASTE = 'Ctrl+V'
+UNDO = 'Ctrl+Z'
+REDO = 'Ctrl+Y'
+
+# list
+LIST_APPEND_HEAD = 'Ctrl+,'
+LIST_APPEND_TAIL = 'Ctrl+.'
+LIST_INSERT = 'Ctrl+I', 'Ctrl+Insert'
+LIST_DELETE = 'Ctrl+D', 'Ctrl+Delete'
+LIST_SELECT_ROWS = 'Ctrl+R'
+LIST_SELECT_COLS = 'Ctrl+L'
+LIST_CUT  = 'Ctrl+X'
+LIST_INSERT_COPIED = 'Ctrl+Alt+I'
+LIST_APPEND_COPIED_HEAD = 'Ctrl+Alt+,'
+LIST_APPEND_COPIED_TAIL = 'Ctrl+Alt+.'
+
+# cell
+INSERT_FRONT = ','
+INSERT_TAIL  = '.'
+CELL_BEGIN_EDIT = ' '
+INCREASE = 'I'
+DECREASE = 'D'
+GOTO_REF = 'Ctrl+G'
+#DELETE = 'Delete'  # set to default
+
+EXPLORER_OPEN = 'Enter'
+EXPLORER_UP_LEVEL = 'Alt+Up'

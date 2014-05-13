@@ -571,9 +571,26 @@ class GridBase(grid.Grid):
             return None, None
         
         text = do.GetText()
-        print '>>>', text
-        attr_type_names = ['Str']
-        datas = [[line] for line in text.strip().split('\n')]
+        datas = [line.split('\t') for line in text.split('\n') if line]
+        if not datas:
+            return None, None
+        attr_type_names = ['Str'] * len(datas[0])
+        
+        # guess types
+        for i in xrange(len(datas[0])):
+            is_int = True
+            for row in datas:
+                try:
+                    int(row[i])
+                except Exception, e:
+                    is_int = False
+                    break
+
+            if is_int:
+                attr_type_names[i] = 'Int'
+                for row in datas:
+                    row[i] = int(row[i])
+
         return attr_type_names, datas        
     
     def _copy(self):

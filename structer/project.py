@@ -62,7 +62,7 @@ class Project(object):
         '''
         self.path = util.normpath(os.path.abspath(root))
         self.is_type_editor = is_type_editor        
-        self._auto_create_clazz_folder = True
+        self._auto_create_clazz_folder = False
         
         # Must be the first
         self.event_manager = EventManager()        

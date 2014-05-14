@@ -54,7 +54,7 @@ class ExplorerFrame(xrcExplorerFrame):
         self._create_obj_tool_ids = [] 
              
         super(ExplorerFrame, self).__init__(parent)
-        
+
         # icon
         icon = wx.EmptyIcon()
         icon_name = 'icons/setting.png' if (project and project.is_type_editor) else 'icons/table.png'
@@ -74,6 +74,8 @@ class ExplorerFrame(xrcExplorerFrame):
                 
         # XRCed can't assign variable for wxMenu correctly        
         self.menu_windows = self.menu_close_all.GetMenu()
+        self.menu_new = self.menu_new_dummy.GetMenu()
+        self.menu_new.Remove(self.menu_new.FindItemByPosition(0).GetId())
         
         self.SetMinSize((640, 480))        
         self._create_tree()
@@ -215,7 +217,12 @@ class ExplorerFrame(xrcExplorerFrame):
         icon = get_icon('table.png', FRAME_ICON_SIZE, project)
         if icon:
             self.SetIcon( icon )
-        
+
+    def update_menu_new(self):
+        while self.menu_new.GetMenuItemCount():
+            self.menu_new.Remove(self.menu_new.FindItemByPosition(0).GetId())
+        self._list.node_tool.add_create_menu(self.menu_new, [self._list.fs_parent])
+
     def _bind_tool_create(self, clazz, id_):    
         def func(evt):
             self._list.node_tool.do_create_object(self._list.fs_parent, clazz)
@@ -528,3 +535,6 @@ class ExplorerFrame(xrcExplorerFrame):
     
     def _can_repair(self):
         return bool(self.project)
+    
+    def _can_create(self):
+        return bool(self.project and self._list and self._list.node_tool.can_create([self._list.fs_parent]))

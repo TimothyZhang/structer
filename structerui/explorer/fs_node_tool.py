@@ -303,22 +303,26 @@ class FSNodeTool(object):
         if self.can_create(nodes):
             # submenu "create"
             submenu = wx.Menu()
-            item = submenu.Append(wx.NewId(), u'&Folder')                
-            self._bind_menu(menu, self._on_create_folder, item.GetId(), nodes)
-            
-            item = submenu.Append(wx.NewId(), u'&Filter')                
-            self._bind_menu(menu, self._on_create_filter, item.GetId(), nodes)
-            
-            if self.is_project_editable():  # Can not create object if project not editable
-                submenu.AppendSeparator()            
-                # Clazzes
-                for clazz in self.project.type_manager.get_clazzes():                    
-                    item = submenu.Append(wx.NewId(), clazz.name)
-                    self._bind_menu(menu, self._on_create_object, item.GetId(), nodes, clazz)
-                    
+            self.add_create_menu(submenu, nodes)
             menu.AppendSubMenu(submenu, "&Create")
                                                                     
         return menu
+    
+    def add_create_menu(self, submenu, nodes):
+        item = submenu.Append(wx.NewId(), u'&Folder')
+        self._bind_menu(submenu, self._on_create_folder, item.GetId(), nodes)
+
+        item = submenu.Append(wx.NewId(), u'&Filter')
+        self._bind_menu(submenu, self._on_create_filter, item.GetId(), nodes)
+        
+        if self.is_project_editable():  # Can not create object if project not editable
+            submenu.AppendSeparator()
+            # Clazzes
+            clazzes = self.project.type_manager.get_clazzes()
+            clazzes.sort(key=lambda x:x.name)
+            for clazz in clazzes:
+                item = submenu.Append(wx.NewId(), clazz.name)
+                self._bind_menu(submenu, self._on_create_object, item.GetId(), nodes, clazz)
     
     def _add_menu_edits(self, menu, nodes):
         n = 0

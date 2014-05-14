@@ -243,8 +243,8 @@ class ObjectManager(object):
     def _parse_filter(self, filter_):
         '''Parses filter string
         
-        A filter string is consist of a keyword and an expression, sperated by a ';', ';' and expression can be omitted.
-        keyword is a string without space. Can be empty, but must exists.
+        A filter string is consist of a keyword and an expression, sperated by a ' ',  the expression can be omitted.
+        keyword is a string without space. Can be empty.
         expression should be a valid python expression, which can passed be eval() directly. all attricutes of objects
         can be referenced by the expression as globals()        
         
@@ -259,7 +259,7 @@ class ObjectManager(object):
         Returns:
             A tuple, (keyword, expression)
         '''
-        tmp = map(unicode.strip, filter_.split(u';', 1))
+        tmp = map(unicode.strip, filter_.split(u' ', 1))
         tmp[0] = tmp[0].lower()
         if len(tmp)==1:
             return tmp[0], None
@@ -284,7 +284,8 @@ class ObjectManager(object):
         
         if expr:
             try:
-                r = eval(expr, obj.raw_data, {})
+                # print 'filter expr', expr, obj.raw_data
+                r = eval(expr, {}, obj.raw_data)
                 return bool(r)
             except:
                 return False

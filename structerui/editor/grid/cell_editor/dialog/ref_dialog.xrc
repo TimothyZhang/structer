@@ -6,50 +6,19 @@
       <object class="sizeritem">
         <object class="wxBoxSizer">
           <orient>wxHORIZONTAL</orient>
-          <object class="sizeritem">
-            <object class="wxStaticBoxSizer">
-              <object class="spacer">
-                <size>5,5</size>
-              </object>
-              <object class="sizeritem">
-                <object class="wxBoxSizer">
-                  <orient>wxHORIZONTAL</orient>
-                  <object class="spacer">
-                    <size>5,5</size>
-                  </object>
-                  <object class="sizeritem">
-                    <object class="wxTreeCtrl" name="tree_ctrl">
-                      <style>wxTR_HIDE_ROOT|wxTR_DEFAULT_STYLE</style>
-                      <XRCED>
-                        <assign_var>1</assign_var>
-                      </XRCED>
-                    </object>
-                    <option>1</option>
-                    <flag>wxEXPAND</flag>
-                    <minsize>150, 300</minsize>
-                  </object>
-                  <object class="spacer">
-                    <size>5,5</size>
-                  </object>
-                </object>
-                <option>1</option>
-                <flag>wxEXPAND</flag>
-              </object>
-              <object class="spacer">
-                <size>5,5</size>
-              </object>
-              <label>&amp;Browse</label>
-              <orient>wxVERTICAL</orient>
-            </object>
-            <option>3</option>
-            <flag>wxEXPAND</flag>
-            <minsize>180,300</minsize>
-          </object>
           <object class="spacer">
             <size>5,5</size>
           </object>
           <object class="sizeritem">
             <object class="wxStaticBoxSizer">
+              <object class="spacer">
+                <size>0,5</size>
+              </object>
+              <object class="sizeritem">
+                <object class="wxStaticText">
+                  <label>eg: &quot;abc level&gt;10 and hp&lt;100&quot;</label>
+                </object>
+              </object>
               <object class="spacer">
                 <size>0,5</size>
               </object>
@@ -77,25 +46,19 @@
                 </object>
                 <option>1</option>
                 <flag>wxEXPAND</flag>
+                <minsize>640,480</minsize>
               </object>
               <object class="spacer">
                 <size>0,5</size>
               </object>
-              <label>&amp;Search(By id, name or pinyin)</label>
+              <label>&amp;Search(By id, name or pinyin, and expression)</label>
               <orient>wxVERTICAL</orient>
             </object>
-            <option>3</option>
+            <option>1</option>
             <flag>wxEXPAND</flag>
+            <minsize>800,600</minsize>
           </object>
-          <object class="spacer">
-            <size>5,5</size>
-          </object>
-          <object class="sizeritem">
-            <object class="wxPanel"/>
-            <option>3</option>
-            <flag>wxEXPAND</flag>
-          </object>
-          <object class="spacer">
+          <object class="spacer" name="status">
             <size>5,5</size>
           </object>
         </object>

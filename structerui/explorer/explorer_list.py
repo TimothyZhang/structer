@@ -141,6 +141,8 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
         self._fs_parent = fs_node
         self.refresh()
 
+        self.explorer.update_menu_new()
+
     def refresh(self):
         if self._fs_parent is None:
             self.SetItemCount(0)

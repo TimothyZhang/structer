@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <resource class="wxMenuItem">
   <object class="wxFrame" name="ExplorerFrame">
-    <object class="wxMenuBar">
+    <object class="wxMenuBar" name="menu_object">
       <object class="wxMenu" name="menu_file">
         <object class="wxMenuItem" name="menu_open">
           <label>&amp;Open...\tCtrl+O</label>
@@ -34,10 +34,24 @@
             <events>EVT_MENU</events>
           </XRCED>
         </object>
-        <label>&amp;File</label>
+        <label>&amp;Project</label>
       </object>
-      <object class="wxMenu" name="menu_edit">
+      <object class="wxMenu">
         <label>&amp;Edit</label>
+        <object class="wxMenu" name="menu_new">
+          <object class="wxMenuItem" name="menu_new_dummy">
+            <label>Dummy</label>
+            <XRCED>
+              <assign_var>1</assign_var>
+            </XRCED>
+          </object>
+          <label>&amp;New\tCtrl+N</label>
+          <help>create new object...</help>
+          <XRCED>
+            <events>EVT_UPDATE_UI</events>
+          </XRCED>
+        </object>
+        <object class="separator"/>
         <object class="wxMenuItem" name="menu_undo">
           <label>&amp;Undo\tCtrl+Z</label>
           <XRCED>
@@ -83,7 +97,7 @@
           </XRCED>
         </object>
         <object class="wxMenuItem" name="menu_inverse_select">
-          <label>&amp;Inverse Select</label>
+          <label>&amp;Inverse Select\tCtrl+Shift+I</label>
           <XRCED>
             <events>EVT_MENU</events>
           </XRCED>
@@ -119,6 +133,7 @@
     <object class="wxToolBar" name="tool_bar">
       <object class="tool" name="tool_open">
         <bitmap stock_id="wxART_FILE_OPEN"/>
+        <tooltip>open project...</tooltip>
         <XRCED>
           <events>EVT_TOOL|EVT_UPDATE_UI</events>
           <assign_var>1</assign_var>
@@ -126,6 +141,7 @@
       </object>
       <object class="tool" name="tool_setting">
         <bitmap stock_id="wxART_HELP_SETTINGS"/>
+        <tooltip>open setting project...</tooltip>
         <XRCED>
           <events>EVT_TOOL|EVT_UPDATE_UI</events>
           <assign_var>1</assign_var>
@@ -133,6 +149,7 @@
       </object>
       <object class="tool" name="tool_repair">
         <bitmap stock_id="wxART_MISSING_IMAGE"/>
+        <tooltip>open repair dialog</tooltip>
         <XRCED>
           <events>EVT_TOOL|EVT_UPDATE_UI</events>
           <assign_var>1</assign_var>
@@ -140,6 +157,7 @@
       </object>
       <object class="tool" name="tool_export">
         <bitmap stock_id="wxART_MISSING_IMAGE"/>
+        <tooltip>export project...</tooltip>
         <XRCED>
           <events>EVT_TOOL|EVT_UPDATE_UI</events>
           <assign_var>1</assign_var>
@@ -151,6 +169,7 @@
       </object>
       <object class="tool" name="tool_create_folder">
         <bitmap stock_id="wxART_MISSING_IMAGE"/>
+        <tooltip>create a folder</tooltip>
         <XRCED>
           <events>EVT_TOOL|EVT_UPDATE_UI</events>
           <assign_var>1</assign_var>
@@ -158,6 +177,7 @@
       </object>
       <object class="tool" name="tool_create_filter">
         <bitmap stock_id="wxART_MISSING_IMAGE"/>
+        <tooltip>create a filter</tooltip>
         <XRCED>
           <events>EVT_TOOL|EVT_UPDATE_UI</events>
           <assign_var>1</assign_var>

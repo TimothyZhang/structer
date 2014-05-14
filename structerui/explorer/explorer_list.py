@@ -140,22 +140,32 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
         
         self._fs_parent = fs_node
         self.refresh()
-        
-        if self.GetItemCount() > 0:
-            self.Select(0, True)        
-    
+
     def refresh(self):
         if self._fs_parent is None:
             self.SetItemCount(0)
             self.Refresh()
             return        
         
+        selected_nodes = self.get_selected_nodes()
+
         #print 'item count:', len(self._fs_nodes) 
         self._fs_nodes = copy.copy( self.node_tool.get_children(self._fs_parent) )
+        self._fs_nodes.sort(key=lambda x:self.node_tool.get_name(x).lower())
+
         self.SetItemCount(len(self._fs_nodes))
         #self.sort()
         self.Refresh()       
         
+        self.clear_selection()
+        if selected_nodes:
+            for n in selected_nodes:
+                index = self.get_index_by_node(n)
+                if index != -1:
+                    self.Select(index, True)
+        elif self.GetItemCount() > 0:
+            self.single_select(0)
+
     def get_selected_nodes(self):
         nodes = []
         
@@ -176,11 +186,7 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
     def single_select(self, index):
         self.Focus(index)        
         
-        for i in xrange( self.GetItemCount() ):
-            list_item_state = self.GetItemState(i, wx.LIST_STATE_SELECTED)            
-            if (list_item_state & wx.LIST_STATE_SELECTED) != 0:
-                self.Select(i, False)
-                
+        self.clear_selection()
         self.Select(index, True)
         
     def single_select_node(self, fs_node):
@@ -199,6 +205,12 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
                 self.Select(i, False)
             else:
                 self.Select(i, True)
+
+    def clear_selection(self):
+        for i in xrange(self.GetItemCount()):
+            list_item_state = self.GetItemState(i, wx.LIST_STATE_SELECTED)
+            if (list_item_state & wx.LIST_STATE_SELECTED) != 0:
+                self.Select(i, False)
         
     ################################################################################
     # ListCtrl "virtualness"
@@ -346,7 +358,8 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
         
         i = self.get_index_by_node(fs_node)
         if i!=-1:
-            self.RefreshItem(i)
+            self.refresh()
+            # self.RefreshItem(i)
             
     def _on_fs_move(self, evt):       
         fs_node = evt.fs_node

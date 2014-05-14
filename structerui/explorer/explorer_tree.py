@@ -151,10 +151,29 @@ class ExplorerTree(wx.TreeCtrl, wx.DropTarget):
     def _add_child(self, parent_tree_item_id, child_fs_node):
         '''Adds a fs_node to a tree item'''
         try:
-            child_tree_item_id = self.AppendItem(parent_tree_item_id, 
-                                                 text = self.node_tool.get_name(child_fs_node),
-                                                 image = self.get_image_id_by_node(child_fs_node),
-                                                 data  = wx.TreeItemData(child_fs_node))
+            label = self.node_tool.get_name(child_fs_node)
+            lower_label = label.lower()
+            
+            child_tree_item_id, cookie = self.GetFirstChild(parent_tree_item_id)
+            index = 0
+            while child_tree_item_id.IsOk():
+                child_label = self.GetItemText(child_tree_item_id)
+                if lower_label < child_label.lower():
+                    break
+                index += 1
+                child_tree_item_id, cookie = self.GetNextChild(parent_tree_item_id, cookie)
+            
+            if index < self.GetChildrenCount(parent_tree_item_id):
+                child_tree_item_id = self.InsertItemBefore(parent_tree_item_id,
+                                                           index,
+                                                           text=label,
+                                                           image=self.get_image_id_by_node(child_fs_node),
+                                                           data=wx.TreeItemData(child_fs_node))
+            else:
+                child_tree_item_id = self.AppendItem(parent_tree_item_id, 
+                                                     text=label,
+                                                     image=self.get_image_id_by_node(child_fs_node),
+                                                     data=wx.TreeItemData(child_fs_node))
             
             self._fs_node_to_tree_item_id[child_fs_node] = child_tree_item_id        
             
@@ -162,8 +181,9 @@ class ExplorerTree(wx.TreeCtrl, wx.DropTarget):
                 self.SetItemHasChildren(child_tree_item_id, True)
     
             return child_tree_item_id
-        except:
+        except Exception, e:
             log.error('failed to add child: %s', child_fs_node.uuid)
+            print e
             raise
         
     def get_image_id_by_name(self, name):

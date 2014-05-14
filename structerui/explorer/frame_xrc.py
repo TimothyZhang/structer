@@ -276,17 +276,17 @@ class xrcExplorerFrame(wx.Frame):
         info = wx.AboutDialogInfo()
         info.Name = "Structer"
         info.Version = "0.1.0"
-        info.Copyright = "(C) 2014 FingerDance, Ltd"
+        info.Copyright = "Copyright 2014 Timothy Zhang(zt@live.cn)."
         info.Description = wordwrap(
-            "bla bla bla"
-            "bla bla bla ...",
-            350, wx.ClientDC(self))
+            'Structer is a "Structured Data Editor" base on wxPython.\n' +
+            'Structer is originally developed for editing game data, while it also can be used for other purposes.',
+            450, wx.ClientDC(self))
         
-        info.WebSite = ("http://en.wikipedia.org/wiki/Hello_world", "Hello World home page")
-        info.Developers = [ "Timothy Zhang",
-                            "Yutao Yang"]
+        info.WebSite = ("https://github.com/TimothyZhang/structer", "Github Repository")
+        info.Developers = [ "Timothy Zhang(zt@live.cn)",
+                            "Yutao Yang(zhatudou@gmail.com)"]
         
-        licenseText = 'bla bla bla'
+        licenseText = 'Structer is distributed under the GPL v3.  See LICENSE'
         info.License = wordwrap(licenseText, 500, wx.ClientDC(self))
 
         # Then we call wx.AboutBox giving it that info object

@@ -69,7 +69,7 @@ def __init_resources():
               </object>
               <object class="sizeritem">
                 <object class="wxStaticText">
-                  <label>eg: &quot;abc level&gt;10 and hp&lt;100&quot;</label>
+                  <label>eg: &quot;123 level&gt;10 and hp&lt;100&quot;, shows all objects whose name or id contains &quot;123&quot; and level&gt;10 and hp&lt;100.\nuse up/down arrow keys to navigate, and enter key to select.</label>
                 </object>
               </object>
               <object class="spacer">

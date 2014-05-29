@@ -40,10 +40,13 @@ For more hotkeys available please read doc/hotkey.txt.
 TODO
 ====
 
+- add tutorial and user guide
 - add unittest
 - support travis/coverage
-- add user guide
 - customized exporters
+- search in explorer
+- batch edit list of list?
+- curve editing?
 
 
 Version History

@@ -303,26 +303,27 @@ class FSNodeTool(object):
         if self.can_create(nodes):
             # submenu "create"
             submenu = wx.Menu()
-            self.add_create_menu(submenu, nodes)
-            menu.AppendSubMenu(submenu, "&Create")
+            self.add_create_menu(submenu, nodes, menu)
+            menu.AppendSubMenu(submenu, "&New")
                                                                     
         return menu
     
-    def add_create_menu(self, submenu, nodes):
-        item = submenu.Append(wx.NewId(), u'&Folder')
-        self._bind_menu(submenu, self._on_create_folder, item.GetId(), nodes)
+    def add_create_menu(self, menu, nodes, event_menu):
+        '''todo: the name "menu" and "event_menu" should be more clarified'''
+        item = menu.Append(wx.NewId(), u'&Folder')
+        self._bind_menu(event_menu, self._on_create_folder, item.GetId(), nodes)
 
-        item = submenu.Append(wx.NewId(), u'&Filter')
-        self._bind_menu(submenu, self._on_create_filter, item.GetId(), nodes)
+        item = menu.Append(wx.NewId(), u'&Filter')
+        self._bind_menu(event_menu, self._on_create_filter, item.GetId(), nodes)
         
         if self.is_project_editable():  # Can not create object if project not editable
-            submenu.AppendSeparator()
+            menu.AppendSeparator()
             # Clazzes
             clazzes = self.project.type_manager.get_clazzes()
             clazzes.sort(key=lambda x:x.name)
             for clazz in clazzes:
-                item = submenu.Append(wx.NewId(), clazz.name)
-                self._bind_menu(submenu, self._on_create_object, item.GetId(), nodes, clazz)
+                item = menu.Append(wx.NewId(), clazz.name)
+                self._bind_menu(event_menu, self._on_create_object, item.GetId(), nodes, clazz)
     
     def _add_menu_edits(self, menu, nodes):
         n = 0
@@ -707,13 +708,18 @@ class FSNodeTool(object):
                 log.alert('internal error in fs_node_tool._on_delete')
                 return
             
-            ret = wx.MessageBox("Permanetly delete %s files?" % len(nodes), style=wx.YES_NO|wx.NO_DEFAULT|wx.ICON_QUESTION)
+            ret = wx.MessageBox("Permanetly delete %s?" % self.get_readable_node_names(nodes), style=wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
             #print ret, wx.YES, wx.NO, wx.ID_YES, wx.ID_NO
             if ret == wx.NO:
                 return
             
             delete = fsm.destroy
         else:
+            ret = wx.MessageBox("Move %s to recycle bin?" % self.get_readable_node_names(nodes), style=wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
+            if ret == wx.NO:
+                return
+
+
             delete = fsm.delete
                 
         for node in nodes:
@@ -721,6 +727,12 @@ class FSNodeTool(object):
                 delete(node.uuid)
             except Exception, e:
                 log.alert(e, 'Failed to delete: %s', node)
+
+    def get_readable_node_names(self, nodes):        
+        names = ', '.join('"%s"' % self.get_name(node) for node in nodes[:3])
+        if len(nodes) > 3:
+            names += '...(%s files)' % len(nodes)
+        return names
                 
     def can_undo(self, nodes):
         return False
@@ -752,6 +764,7 @@ class FSNodeTool(object):
         self._repeat_strategy('restore', nodes, self.project.fs_manager.undelete)        
     
     def do_edit(self, objects):
+
         self.project.explorer.show_editor(objects)
     
     def do_add_tag(self, nodes, tag):

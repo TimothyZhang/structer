@@ -23,8 +23,8 @@ import wx.grid as grid
 from structerui import hotkey
 from ref_dialog_xrc import xrcRefDialog
 
-class RefSearchResultTable(grid.PyGridTableBase):  
-    _COL_LABELS = ['ID', 'Name', 'UUID']  
+class RefSearchResultTable(grid.PyGridTableBase):
+    _COL_LABELS = ['Class', 'ID', 'Name', 'UUID']
     def __init__(self, editor_context):
         grid.PyGridTableBase.__init__(self)
         self._ctx = editor_context
@@ -38,7 +38,7 @@ class RefSearchResultTable(grid.PyGridTableBase):
     
     def GetNumberCols(self):
         # id, name, uuid
-        return 3
+        return 4
     
     def GetColLabelValue(self, col):
         return self._COL_LABELS[col]
@@ -50,10 +50,19 @@ class RefSearchResultTable(grid.PyGridTableBase):
     def GetValue(self, row, col):
         obj = self._objects[row]
         if col == 0:
-            return obj.id
+            return obj.clazz.name
         if col == 1:
-            return obj.name
+            return obj.id
         if col == 2:
+            en = obj.name
+
+            name = obj.get_attr_value('name')
+            if type(name) is dict:
+                cn = name.get('cn')
+                if cn and cn != en:
+                    en = '%s(%s)' % (en, cn)
+            return en
+        if col == 3:
             return obj.uuid        
     
     def set_objects(self, objects):
@@ -180,9 +189,10 @@ class RefDialog(xrcRefDialog):
         
     def OnGridSize(self, evt):
         w, _ = self.grid.GetSizeTuple()
-        self.grid.SetColSize(0, w/4)
-        self.grid.SetColSize(1, w/4)
-        self.grid.SetColSize(2, w/2-1) 
+        self.grid.SetColSize(0, w * 0.2)
+        self.grid.SetColSize(1, w * 0.2)
+        self.grid.SetColSize(2, w * 0.4)
+        self.grid.SetColSize(3, w * 0.2)
         evt.Skip()
         
     def _search(self, keyword):

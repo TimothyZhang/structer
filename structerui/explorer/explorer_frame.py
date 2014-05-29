@@ -221,7 +221,8 @@ class ExplorerFrame(xrcExplorerFrame):
     def update_menu_new(self):
         while self.menu_new.GetMenuItemCount():
             self.menu_new.Remove(self.menu_new.FindItemByPosition(0).GetId())
-        self._list.node_tool.add_create_menu(self.menu_new, [self._list.fs_parent])
+
+        self._list.node_tool.add_create_menu(self.menu_new, [self._list.fs_parent], self.menu_new)
 
     def _bind_tool_create(self, clazz, id_):    
         def func(evt):
@@ -257,6 +258,10 @@ class ExplorerFrame(xrcExplorerFrame):
         if type(objects) is not list:
             objects = [org]
             
+        # order by id, by default
+        if objects and objects[0].struct.has_attr('id'):
+            objects.sort(key=lambda x:x.id)
+
         while 1:
             # Is there any editor frames already editing (some of) objects
             editors = self._find_editors(objects, True)            
@@ -533,8 +538,5 @@ class ExplorerFrame(xrcExplorerFrame):
         dlg.ShowModal()
         dlg.Destroy()
     
-    def _can_repair(self):
-        return bool(self.project)
-    
-    def _can_create(self):
-        return bool(self.project and self._list and self._list.node_tool.can_create([self._list.fs_parent]))
+    def _search(self):
+        pass

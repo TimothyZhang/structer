@@ -37,6 +37,7 @@ class xrcExplorerFrame(wx.Frame):
 
         # Define variables for the controls, bind event handlers
         self.menu_new_dummy = self.GetMenuBar().FindItemById(xrc.XRCID("menu_new_dummy"))
+        self.menu_search = self.GetMenuBar().FindItemById(xrc.XRCID("menu_search"))
         self.menu_close_all = self.GetMenuBar().FindItemById(xrc.XRCID("menu_close_all"))
         self.tool_bar = xrc.XRCCTRL(self, "tool_bar")
         self.tool_open = self.GetToolBar().FindById(xrc.XRCID("tool_open"))
@@ -57,7 +58,6 @@ class xrcExplorerFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnMenu_menu_export, id=xrc.XRCID('menu_export'))
         self.Bind(wx.EVT_UPDATE_UI, self.OnUpdate_ui_menu_export, id=xrc.XRCID('menu_export'))
         self.Bind(wx.EVT_MENU, self.OnMenu_menu_exit, id=xrc.XRCID('menu_exit'))
-        self.Bind(wx.EVT_UPDATE_UI, self.OnUpdate_ui_menu_new, id=xrc.XRCID('menu_new'))
         self.Bind(wx.EVT_MENU, self.OnMenu_menu_undo, id=xrc.XRCID('menu_undo'))
         self.Bind(wx.EVT_UPDATE_UI, self.OnUpdate_ui_menu_undo, id=xrc.XRCID('menu_undo'))
         self.Bind(wx.EVT_MENU, self.OnMenu_menu_redo, id=xrc.XRCID('menu_redo'))
@@ -72,6 +72,9 @@ class xrcExplorerFrame(wx.Frame):
         self.Bind(wx.EVT_UPDATE_UI, self.OnUpdate_ui_menu_delete, id=xrc.XRCID('menu_delete'))
         self.Bind(wx.EVT_MENU, self.OnMenu_menu_select_all, id=xrc.XRCID('menu_select_all'))
         self.Bind(wx.EVT_MENU, self.OnMenu_menu_inverse_select, id=xrc.XRCID('menu_inverse_select'))
+        self.Bind(wx.EVT_UPDATE_UI, self.OnUpdate_ui_menu_new, id=xrc.XRCID('menu_new'))
+        self.Bind(wx.EVT_MENU, self.OnMenu_menu_search, self.menu_search)
+        self.Bind(wx.EVT_UPDATE_UI, self.OnUpdate_ui_menu_search, self.menu_search)
         self.Bind(wx.EVT_MENU, self.OnMenu_menu_close_all, self.menu_close_all)
         self.Bind(wx.EVT_UPDATE_UI, self.OnUpdate_ui_menu_close_all, self.menu_close_all)
         self.Bind(wx.EVT_MENU, self.OnMenu_menu_help_content, id=xrc.XRCID('menu_help_content'))
@@ -126,7 +129,7 @@ class xrcExplorerFrame(wx.Frame):
 #!XRCED:begin-block:xrcExplorerFrame.OnUpdate_ui_menu_repair
     def OnUpdate_ui_menu_repair(self, evt):
         # Replace with event handler code
-        evt.Enable( self._can_repair() )
+        evt.Enable(bool(self.project))
 #!XRCED:end-block:xrcExplorerFrame.OnUpdate_ui_menu_repair        
 
 #!XRCED:begin-block:xrcExplorerFrame.OnMenu_menu_export
@@ -147,12 +150,6 @@ class xrcExplorerFrame(wx.Frame):
         # Replace with event handler code        
         self.Close()
 #!XRCED:end-block:xrcExplorerFrame.OnMenu_menu_exit        
-
-#!XRCED:begin-block:xrcExplorerFrame.OnUpdate_ui_menu_new
-    def OnUpdate_ui_menu_new(self, evt):
-        # Replace with event handler code
-        evt.Enable(self._can_create())
-#!XRCED:end-block:xrcExplorerFrame.OnUpdate_ui_menu_new        
 
 #!XRCED:begin-block:xrcExplorerFrame.OnMenu_menu_undo
     def OnMenu_menu_undo(self, evt):
@@ -240,6 +237,25 @@ class xrcExplorerFrame(wx.Frame):
         self._list.inverse_select()
 #!XRCED:end-block:xrcExplorerFrame.OnMenu_menu_inverse_select        
 
+#!XRCED:begin-block:xrcExplorerFrame.OnUpdate_ui_menu_new
+    def OnUpdate_ui_menu_new(self, evt):
+        # Replace with event handler code
+        can = bool(self.project and self._list and self._list.node_tool.can_create([self._list.fs_parent]))
+        evt.Enable(can)
+#!XRCED:end-block:xrcExplorerFrame.OnUpdate_ui_menu_new        
+
+#!XRCED:begin-block:xrcExplorerFrame.OnMenu_menu_search
+    def OnMenu_menu_search(self, evt):
+        # Replace with event handler code
+        evt.Enable(bool(self.project))
+#!XRCED:end-block:xrcExplorerFrame.OnMenu_menu_search        
+
+#!XRCED:begin-block:xrcExplorerFrame.OnUpdate_ui_menu_search
+    def OnUpdate_ui_menu_search(self, evt):
+        # Replace with event handler code
+        self._search()
+#!XRCED:end-block:xrcExplorerFrame.OnUpdate_ui_menu_search        
+
 #!XRCED:begin-block:xrcExplorerFrame.OnMenu_menu_close_all
     def OnMenu_menu_close_all(self, evt):
         # Replace with event handler code
@@ -314,7 +330,7 @@ class xrcExplorerFrame(wx.Frame):
 #!XRCED:begin-block:xrcExplorerFrame.OnUpdate_ui_tool_repair
     def OnUpdate_ui_tool_repair(self, evt):
         # Replace with event handler code
-        evt.Enable( self._can_repair() )
+        evt.Enable(bool(self.project))
 #!XRCED:end-block:xrcExplorerFrame.OnUpdate_ui_tool_repair        
 
 #!XRCED:begin-block:xrcExplorerFrame.OnTool_tool_export
@@ -419,22 +435,7 @@ def __init_resources():
         </object>
         <label>&amp;Project</label>
       </object>
-      <object class="wxMenu">
-        <label>&amp;Edit</label>
-        <object class="wxMenu" name="menu_new">
-          <object class="wxMenuItem" name="menu_new_dummy">
-            <label>Dummy</label>
-            <XRCED>
-              <assign_var>1</assign_var>
-            </XRCED>
-          </object>
-          <label>&amp;New\tCtrl+N</label>
-          <help>create new object...</help>
-          <XRCED>
-            <events>EVT_UPDATE_UI</events>
-          </XRCED>
-        </object>
-        <object class="separator"/>
+      <object class="wxMenu" name="menu_edit">
         <object class="wxMenuItem" name="menu_undo">
           <label>&amp;Undo\tCtrl+Z</label>
           <XRCED>
@@ -483,6 +484,30 @@ def __init_resources():
           <label>&amp;Inverse Select\tCtrl+Shift+I</label>
           <XRCED>
             <events>EVT_MENU</events>
+          </XRCED>
+        </object>
+        <label>&amp;Edit</label>
+      </object>
+      <object class="wxMenu" name="menu_object">
+        <label>&amp;Object</label>
+        <object class="wxMenu" name="menu_new">
+          <object class="wxMenuItem" name="menu_new_dummy">
+            <label>Dummy</label>
+            <XRCED>
+              <assign_var>1</assign_var>
+            </XRCED>
+          </object>
+          <label>&amp;New\tCtrl+N</label>
+          <help>create new object...</help>
+          <XRCED>
+            <events>EVT_UPDATE_UI</events>
+          </XRCED>
+        </object>
+        <object class="wxMenuItem" name="menu_search">
+          <label>&amp;Search</label>
+          <XRCED>
+            <events>EVT_MENU|EVT_UPDATE_UI</events>
+            <assign_var>1</assign_var>
           </XRCED>
         </object>
       </object>

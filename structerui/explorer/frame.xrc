@@ -36,22 +36,7 @@
         </object>
         <label>&amp;Project</label>
       </object>
-      <object class="wxMenu">
-        <label>&amp;Edit</label>
-        <object class="wxMenu" name="menu_new">
-          <object class="wxMenuItem" name="menu_new_dummy">
-            <label>Dummy</label>
-            <XRCED>
-              <assign_var>1</assign_var>
-            </XRCED>
-          </object>
-          <label>&amp;New\tCtrl+N</label>
-          <help>create new object...</help>
-          <XRCED>
-            <events>EVT_UPDATE_UI</events>
-          </XRCED>
-        </object>
-        <object class="separator"/>
+      <object class="wxMenu" name="menu_edit">
         <object class="wxMenuItem" name="menu_undo">
           <label>&amp;Undo\tCtrl+Z</label>
           <XRCED>
@@ -100,6 +85,30 @@
           <label>&amp;Inverse Select\tCtrl+Shift+I</label>
           <XRCED>
             <events>EVT_MENU</events>
+          </XRCED>
+        </object>
+        <label>&amp;Edit</label>
+      </object>
+      <object class="wxMenu" name="menu_object">
+        <label>&amp;Object</label>
+        <object class="wxMenu" name="menu_new">
+          <object class="wxMenuItem" name="menu_new_dummy">
+            <label>Dummy</label>
+            <XRCED>
+              <assign_var>1</assign_var>
+            </XRCED>
+          </object>
+          <label>&amp;New\tCtrl+N</label>
+          <help>create new object...</help>
+          <XRCED>
+            <events>EVT_UPDATE_UI</events>
+          </XRCED>
+        </object>
+        <object class="wxMenuItem" name="menu_search">
+          <label>&amp;Search</label>
+          <XRCED>
+            <events>EVT_MENU|EVT_UPDATE_UI</events>
+            <assign_var>1</assign_var>
           </XRCED>
         </object>
       </object>

@@ -112,7 +112,8 @@ class ObjectManager(object):
             
             object_ = self._recycled_objects.get( fs_node.uuid )
             object_.verify()
-            self._manage_object( object_ )
+            # self._manage_object( object_ )
+            self.add_object(object_)
     
     def _create_object(self, fs_node, verify=True):
         clazz_name = fs_util.get_object_clazz_name(fs_node)

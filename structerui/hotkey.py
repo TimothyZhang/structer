@@ -46,7 +46,8 @@ _keycode_map = {wx.WXK_NUMPAD0: '0',
                 wx.WXK_TAB:     'Tab',
                 wx.WXK_BACK:    'Back',
                 wx.WXK_RETURN:  'Enter',
-                wx.WXK_NUMPAD_ENTER: 'Enter'
+                wx.WXK_NUMPAD_ENTER: 'Enter',
+                wx.WXK_F2:       'F2',
 }
 
 def get_key_name(keycode):    
@@ -111,5 +112,9 @@ DECREASE = 'D'
 GOTO_REF = 'Ctrl+G'
 DELETE = 'Delete'  # set to default
 
-EXPLORER_OPEN = 'Enter'
+# explorer
+EXPLORER_OPEN = 'Enter', 'Alt+Down'
 EXPLORER_UP_LEVEL = 'Alt+Up'
+EXPLORER_HISTORY_PREV = "Alt+Left", "Back"
+EXPLORER_HISTORY_NEXT = "Alt+Right"
+EXPLORER_RENAME = 'F2'

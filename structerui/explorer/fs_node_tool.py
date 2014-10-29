@@ -106,16 +106,22 @@ class FSNodeTool(object):
             obj = om.get_recycled_object(node.uuid)
         return obj
     
+    def get_id(self, node):
+        if fs_util.is_object(node):
+            obj = self._get_object_by_node(node)
+            if obj:
+                return obj.id
+
     def get_name(self, node):
-        if fs_util.is_object(node):                
+        if fs_util.is_object(node):
             obj = self._get_object_by_node(node)
             if obj:
                 return obj.name
-            
+
             return 'Unknown'
-        
+
         return node.name
-    
+
     def get_type(self, node):
         if node.is_folder():
             return 'Folder'
@@ -258,13 +264,20 @@ class FSNodeTool(object):
         # get data
         return self.parse_clipboard_data(do)        
         
+    def can_rename(self, fs_node):
+        if not self.is_container(fs_node):
+            return False
+        if self.project.fs_manager.is_recycled(fs_node):
+            return False
+        return True
+
     def rename(self, fs_node, new_name):
         '''Rename a fs_node to new_name
         
         Returns:
             True if sucessed, or False if failed
         '''
-        if self.is_container( fs_node ):
+        if self.can_rename(fs_node):
             try:
                 self.project.fs_manager.rename(fs_node.uuid, new_name)
             except Exception, e:
@@ -401,6 +414,10 @@ class FSNodeTool(object):
         # Get nodes which are objects
         obj_nodes = filter(fs_util.is_object, nodes)
         
+        if not obj_nodes and len(nodes)==1:
+            if self.is_container(nodes[0]):  # all nodes in this filter or folder
+                obj_nodes = filter(fs_util.is_object, self.project.fs_manager.walk(nodes[0], False))
+        
         menus = 0
         if obj_nodes:
             # Get Objects
@@ -426,26 +443,28 @@ class FSNodeTool(object):
                 item = menu.Append(wx.NewId(), label)
                 self._bind_menu(menu, self.do_edit, item.GetId(), objects)
             else:  # More than 1 clazz, use a sub menu
+                clazz_count = counts.items()
+                clazz_count.sort(key=lambda x:x[0].name.lower())
                 
                 if counts.values().count(1):  # At lease 1 clazz has only 1 object
                     submenu = wx.Menu()
-                    for clazz, count in counts.iteritems():                        
+                    for clazz, count in clazz_count:
                         if count == 1:
                             item = submenu.Append(wx.NewId(), u'%s' % clazz.name )
-                            objects = [obj for obj in objects if obj.clazz==clazz]
-                            assert len(objects)==1
-                            self._bind_menu(menu, self.do_edit, item.GetId(), objects[0])
+                            objects_ = [obj for obj in objects if obj.clazz == clazz]
+                            assert len(objects_) == 1
+                            self._bind_menu(menu, self.do_edit, item.GetId(), objects_[0])
                     menu.AppendSubMenu(submenu, u"&Edit")
                 
                 submenu = wx.Menu()
-                for clazz, count in counts.iteritems():                    
+                for clazz, count in clazz_count:
                     item = submenu.Append(wx.NewId(), u'%s(%s)' % (clazz.name, count) )
                     self._bind_menu(menu, self.do_edit, item.GetId(), [obj for obj in objects if obj.clazz==clazz])
-                menu.AppendSubMenu(submenu, u"&Edit")
+                menu.AppendSubMenu(submenu, u"&Batch Edit")
             
             menus = 1
         
-        # filter
+        # filter & folder
         if len(nodes)==1:
             node = nodes[0]
             if self.is_container(node):
@@ -643,7 +662,8 @@ class FSNodeTool(object):
         fs_nodes = [fsm.get_node_by_uuid(uuid) for uuid in uuids]
         
         if target in fs_nodes:
-            log.debug('paste cancelled because target is in source data')
+            # log.debug('paste cancelled because target is in source data')
+            log.alert('paste failed because target is in source data')
             return
         
         if action == 'copy':

@@ -1,0 +1,100 @@
+<?xml version="1.0" ?>
+<resource class="tool">
+  <object class="wxToolBar" name="ListToolbar">
+    <object class="wxStaticText" name="sort_label">
+      <label>  Sort  </label>
+    </object>
+    <object class="tool" name="sort_by_name">
+      <bitmap stock_id="wxART_HELP_SETTINGS"/>
+      <radio>1</radio>
+      <tooltip>Sort by name</tooltip>
+      <longhelp>Sort by name</longhelp>
+      <label>Sort by name</label>
+      <XRCED>
+        <events>EVT_TOOL|EVT_UPDATE_UI</events>
+        <assign_var>1</assign_var>
+      </XRCED>
+    </object>
+    <object class="tool" name="sort_by_id">
+      <bitmap stock_id="wxART_INFORMATION"/>
+      <radio>1</radio>
+      <tooltip>Sort by id</tooltip>
+      <longhelp>Sort by id</longhelp>
+      <label>Sort by id</label>
+      <XRCED>
+        <events>EVT_TOOL|EVT_UPDATE_UI</events>
+        <assign_var>1</assign_var>
+      </XRCED>
+    </object>
+    <object class="tool" name="sort_by_time">
+      <bitmap stock_id="wxART_MISSING_IMAGE"/>
+      <radio>1</radio>
+      <tooltip>Sort by time</tooltip>
+      <longhelp>Sort by time</longhelp>
+      <label>Sort by time</label>
+      <XRCED>
+        <events>EVT_TOOL|EVT_UPDATE_UI</events>
+        <assign_var>1</assign_var>
+      </XRCED>
+    </object>
+    <object class="tool" name="sort_by_type">
+      <bitmap stock_id="wxART_MISSING_IMAGE"/>
+      <radio>1</radio>
+      <tooltip>Sort by type</tooltip>
+      <longhelp>Sort by type</longhelp>
+      <label>Type</label>
+      <XRCED>
+        <events>EVT_TOOL|EVT_UPDATE_UI</events>
+        <assign_var>1</assign_var>
+      </XRCED>
+    </object>
+    <object class="separator"/>
+    <object class="tool" name="sort_acsending">
+      <bitmap stock_id="wxART_GO_UP"/>
+      <radio>1</radio>
+      <tooltip>Ascending</tooltip>
+      <longhelp>Ascending</longhelp>
+      <label>Ascending</label>
+      <XRCED>
+        <events>EVT_TOOL|EVT_UPDATE_UI</events>
+        <assign_var>1</assign_var>
+      </XRCED>
+    </object>
+    <object class="tool" name="sort_descending">
+      <bitmap stock_id="wxART_GO_DOWN"/>
+      <radio>1</radio>
+      <tooltip>Descending</tooltip>
+      <longhelp>Descending</longhelp>
+      <label>Descending</label>
+      <XRCED>
+        <events>EVT_TOOL|EVT_UPDATE_UI</events>
+        <assign_var>1</assign_var>
+      </XRCED>
+    </object>
+    <object class="separator"/>
+    <object class="tool" name="list_list">
+      <bitmap stock_id="wxART_LIST_VIEW"/>
+      <radio>1</radio>
+      <tooltip>List view</tooltip>
+      <longhelp>List view</longhelp>
+      <label>List view</label>
+      <XRCED>
+        <events>EVT_TOOL|EVT_UPDATE_UI</events>
+        <assign_var>1</assign_var>
+      </XRCED>
+    </object>
+    <object class="tool" name="list_icon">
+      <bitmap stock_id="wxART_FOLDER"/>
+      <radio>1</radio>
+      <tooltip>Icon view</tooltip>
+      <longhelp>Icon view</longhelp>
+      <label>Icon view</label>
+      <XRCED>
+        <events>EVT_TOOL|EVT_UPDATE_UI</events>
+        <assign_var>1</assign_var>
+      </XRCED>
+    </object>
+    <bitmapsize>32,32</bitmapsize>
+    <style>wxTB_FLAT</style>
+  </object>
+</resource>

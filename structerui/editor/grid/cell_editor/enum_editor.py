@@ -53,25 +53,29 @@ class GridCellEnumEditor(GridCellBaseEditor):
         # should be an enum
         #self._grid = grid
         at = grid.GetTable().get_attr_type(row, col)
-        val = grid.GetTable().GetValue(row, col)    
-                        
+        label = grid.GetTable().GetValue(row, col)
+
         #print at,type(at),at.name
         labels = at.labels
         self._ctrl.SetItems(labels)
         
-        if val not in at.names:
+        if label not in labels:
             val = at.get_default(grid.GetTable().editor_context.project)
-        
+            label = at.enum.label_of(val)
+
         # select original value
-        label = at.enum.label_of(val)            
         self._ctrl.SetStringSelection(label)
+        self._oldLabel = label
         
         self._ctrl.Popup()
         
-    def get_selected_value(self, row, col, grid):
-        index = self._ctrl.GetSelection()
+    def get_selected_label(self, row, col, grid):
+        # index = self._ctrl.GetSelection()
+        sel = self._ctrl.GetStringSelection()
         at = grid.GetTable().get_attr_type(row, col)
-        return at.get_name_by_index(index)
+
+        # empty if cancelled
+        return sel
         
     def EndEdit(self, row, col, grid, oldVal):
         """
@@ -81,9 +85,16 @@ class GridCellEnumEditor(GridCellBaseEditor):
         it has not changed then simply return None, otherwise return
         the value in its string form.
         *Must Override*
-        """        
-        val = self.get_selected_value(row, col, grid)    
-        at = grid.GetTable().get_attr_type(row, col)                                
+        """
+        at = grid.GetTable().get_attr_type(row, col)
+        label = self.get_selected_label(row, col, grid)
+        if not label:  # cancelled
+            return None
+
+        val = at.enum.name_of_label(label)
+        print oldVal, val, label
+        oldVal = at.enum.name_of_label(oldVal)
+        # print '...', val, oldVal
         if val and at.compare(val, oldVal) != 0:
             return val
         else:
@@ -97,8 +108,14 @@ class GridCellEnumEditor(GridCellBaseEditor):
         a non-None value.
         *Must Override*
         """        
-        val = self.get_selected_value(row, col, grid)
-        grid.GetTable().SetValue(row, col, val )                        
+        at = grid.GetTable().get_attr_type(row, col)
+        label = self.get_selected_label(row, col, grid)
+        if label:
+            val = at.enum.name_of_label(label)
+            grid.GetTable().SetValue(row, col, val)
+        else:  # cancelled
+            pass
+
         self.Reset()
 
     def Reset(self):

@@ -35,7 +35,8 @@ class Enum(object):
         self.__name2values = {}
         self.__value2names = {}
         self.__name2labels = {}
-        
+        self.__label2names = {}
+
         for item in items:
             self.add_item(item)
             
@@ -52,6 +53,7 @@ class Enum(object):
         self.__name2values[n] = v
         self.__value2names[v] = n
         self.__name2labels[n] = l
+        self.__label2names[l] = n
     
     @property
     def convert_to_int(self):
@@ -82,13 +84,21 @@ class Enum(object):
         return value in self.__value2names
     
     def name_of(self, value):
-        return self.__value2names[value]
+        if self.convert_to_int:
+            return self.__value2names[value]
+        return value
     
     def label_of(self, name):
         l = self.__name2labels.get(name)
         if not l:
             l = u'Invalid: %s'%name
         return l
+    
+    def name_of_label(self, label):
+        n = self.__label2names.get(label)
+        if not n:
+            n = ''
+        return n
     
     def get_name_by_index(self, index):
         return self.__names[index]

@@ -41,13 +41,17 @@ TODO
 ====
 
 - add tutorial and user guide
-- add unittest
-- support travis/coverage
-- customized exporters
 - search in explorer
-- batch edit list of list?
+- search ref/refby
+- sort list
+- tag support
+- each object can be marked as export/don't export(or with label)
+- confirm when trying to delete a reference object
+- batch edit list of list/union?
 - curve editing?
-
+- support travis/coverage?
+- add unittest
+- customized exporters
 
 Version History
 ===============
@@ -59,7 +63,7 @@ Version History
 License
 =======
 
-Structer is distributed under the GPL v3.  See LICENSE
+Structer is distributed under the GPL v3.  See LICENSE for more details.
 
 Images used by Structer are downloaded from internet. If any of them is prohibited to use, please 
 contact me at (zt@live.cn).

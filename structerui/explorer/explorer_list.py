@@ -33,16 +33,20 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
         self._explorer = explorer
         self._node_tool = FSNodeTool(explorer, self)
         self._name_to_image_id = {}
-        
+
         self._fs_parent = None      # Folder or Filter
         self._fs_nodes = []
-        # None, 'name', 'type'
-        self._sort_by = None
+        self._history = []          # navigation history
+        self._history_index = -1;
+        # 'id', 'name', 'time'
+        self._sort_by = 'name'
+        self._ascending = True
         
         if util.is_mac():
             style = wx.LC_REPORT | wx.BORDER_NONE | wx.LC_EDIT_LABELS | wx.LC_VIRTUAL
         else: 
             style = wx.LC_ICON | wx.BORDER_NONE | wx.LC_EDIT_LABELS | wx.LC_VIRTUAL
+
         #| wx.LC_SORT_ASCENDING#| wx.LC_NO_HEADER#| wx.LC_VRULES#| wx.LC_HRULES#| wx.LC_SINGLE_SEL
         wx.ListCtrl.__init__(self, parent, -1, style=style)
         self._init_image_list()        
@@ -109,6 +113,9 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
     def fs_parent(self):
         return self._fs_parent
     
+    def has_item(self):
+        return self.GetItemCount() > 0
+
     def get_image_id_by_name(self, name):
         i = self._name_to_image_id.get(name, -1)
         if i == -1:
@@ -130,30 +137,83 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
         
         self._init_image_list()
     
-    def set_parent(self, fs_node):
+    def set_parent(self, fs_node, history=0):
         '''Sets the parent node, whose children will be added to current list
         
         Args:
             fs_node: Folder, or a filter
+            history: 0:new entry, -1:prev 1:next
         '''
         assert self.node_tool.is_container(fs_node)
         
-        self._fs_parent = fs_node
+        self._fs_parent = fs_node        
         self.refresh()
 
         self.explorer.update_menu_new()
+        
+        # history
+        if history == 0:
+            if len(self._history) == 0 or self._history[self._history_index] != fs_node:
+                self._history = self._history[:self._history_index + 1]
+                self._history.append(fs_node)
+                self._history_index += 1
+        else:
+            self._history_index += history
+            assert 0 <= self._history_index < len(self._history)
+
+        # print self._history
+        # print self._history_index
+
+    def history_prev(self):
+        if self._history_index > 0:
+            self.set_parent(self._history[self._history_index - 1], -1)
+            return True
+
+    def history_next(self):
+        if self._history_index < len(self._history) - 1:
+            self.set_parent(self._history[self._history_index + 1], 1)
+            return True
+
+    def _node_cmp(self, x, y):
+        r = 0
+        if self._sort_by == 'name':
+            a = self.node_tool.get_name(x).lower()
+            b = self.node_tool.get_name(y).lower()
+            r = cmp(a, b)
+        elif self._sort_by == 'id':
+            a = self.node_tool.get_id(x)
+            b = self.node_tool.get_id(y)
+            r = cmp(a, b)
+            if r == 0:
+                a = self.node_tool.get_name(x).lower()
+                b = self.node_tool.get_name(y).lower()
+                r = cmp(a, b)
+        elif self._sort_by == 'time':
+            r = cmp(x.modify_time, y.modify_time)
+        elif self._sort_by == 'type':
+            a = self.node_tool.get_type(x)
+            b = self.node_tool.get_type(y)
+            r = cmp(a, b)
+
+        if not self._ascending:
+            r = -r
+        return r
 
     def refresh(self):
+        print '>>>refresh'
         if self._fs_parent is None:
             self.SetItemCount(0)
             self.Refresh()
             return        
         
         selected_nodes = self.get_selected_nodes()
+        focused_item = self.GetFocusedItem()
+        focused_node = self._fs_nodes[focused_item] if focused_item != -1 else None
 
         #print 'item count:', len(self._fs_nodes) 
         self._fs_nodes = copy.copy( self.node_tool.get_children(self._fs_parent) )
-        self._fs_nodes.sort(key=lambda x:self.node_tool.get_name(x).lower())
+
+        self._fs_nodes.sort(self._node_cmp)
 
         self.SetItemCount(len(self._fs_nodes))
         #self.sort()
@@ -167,6 +227,10 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
                     self.Select(index, True)
         elif self.GetItemCount() > 0:
             self.single_select(0)
+            
+        if focused_node and self.GetItemCount() > 0:
+            index = self.get_index_by_node(focused_node)
+            self.Focus(index)
 
     def get_selected_nodes(self):
         nodes = []
@@ -176,7 +240,13 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
             if (list_item_state & wx.LIST_STATE_SELECTED) != 0:
                 nodes.append( self._fs_nodes[i] )
         
-        return nodes     
+        return nodes
+    
+    def get_focused_node(self):
+        idx = self.GetFocusedItem()
+        if idx == -1:
+            return
+        return self._fs_nodes[idx]
     
     def get_index_by_node(self, fs_node):
         try:
@@ -213,6 +283,17 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
             list_item_state = self.GetItemState(i, wx.LIST_STATE_SELECTED)
             if (list_item_state & wx.LIST_STATE_SELECTED) != 0:
                 self.Select(i, False)
+                
+    def sort_by(self, key=None, ascending=None):
+        if key is None:
+            key = self._sort_by
+        if ascending is None:
+            ascending = self._ascending
+
+        if self._sort_by != key or self._ascending != ascending:
+            self._sort_by = key
+            self._ascending = ascending
+            self.refresh()
         
     ################################################################################
     # ListCtrl "virtualness"
@@ -247,10 +328,7 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
         index = evt.GetIndex()        
         fs_node = self._fs_nodes[index]
         
-        if self.project.fs_manager.is_recycled(fs_node):        
-            evt.Veto()
-            return
-        if fs_util.is_object(fs_node):
+        if not self.node_tool.can_rename(fs_node):            
             evt.Veto()
             return
         
@@ -313,7 +391,14 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
                 fs_nodes = fs_nodes[0]
             if self.node_tool.can_open(fs_nodes):
                 self.node_tool.open(fs_nodes)
-                        
+                return
+        
+        if hotkey.check(hotkey.EXPLORER_RENAME, keystr):
+            fs_node = self.get_focused_node()            
+            if self.node_tool.can_rename(fs_node):
+                self.EditLabel(self.GetFocusedItem())
+                return
+
         evt.Skip()
     
     def _on_left_dclick(self, evt):        

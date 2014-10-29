@@ -28,6 +28,7 @@ from structerui.util import get_bitmap, get_icon, get_clazz_bitmap, get_app_data
 from structerui.util import ICON_FOLDER, ICON_FILTER, FRAME_ICON_SIZE
 
 from frame_xrc import xrcExplorerFrame
+from list_toolbar_xrc import xrcListToolbar
 from explorer_tree import ExplorerTree
 from explorer_list import ExplorerList
 
@@ -108,8 +109,17 @@ class ExplorerFrame(xrcExplorerFrame):
                                  style = wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER, name="ListPanel" )
         
         self._list = ExplorerList(self._list_panel, self)
-                
+
+        tb = xrcListToolbar(self._list_panel)
+        tb.list = self._list
+        tbsize = tb.GetToolBitmapSize()
+        tb.SetToolNormalBitmap(tb.sort_by_type.GetId(), get_bitmap('icons/class.png', tbsize, self.project))
+        tb.SetToolNormalBitmap(tb.sort_by_time.GetId(), get_bitmap('icons/time.png', tbsize, self.project))
+        tb.SetToolNormalBitmap(tb.sort_by_name.GetId(), get_bitmap('icons/name.png', tbsize, self.project))
+        tb.SetToolNormalBitmap(tb.list_icon.GetId(), get_bitmap('icons/icon_view.png', tbsize, self.project))
+
         sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(tb, 0, wx.EXPAND)
         sizer.Add(self._list, 1, wx.EXPAND)
         self._list_panel.SetSizer(sizer)
         
@@ -167,6 +177,16 @@ class ExplorerFrame(xrcExplorerFrame):
                 self._list.single_select_node(fs_node)
                 return
         
+        if hotkey.check(hotkey.EXPLORER_HISTORY_PREV, keystr):
+            print 'prev'
+            if self.list.history_prev():
+                return
+
+        if hotkey.check(hotkey.EXPLORER_HISTORY_NEXT, keystr):
+            print 'next'
+            if self.list.history_next():
+                return
+
         evt.Skip()
 
     @property
@@ -204,9 +224,11 @@ class ExplorerFrame(xrcExplorerFrame):
             self.tool_bar.DeleteTool(tid)
             
         tbsize = self.tool_bar.GetToolBitmapSize()
-        size = (tbsize.width, tbsize.height) 
-        for clazz in project.type_manager.get_clazzes():                    
-            tool = self.tool_bar.AddTool(wx.NewId(), get_clazz_bitmap(clazz, size, project))
+        size = (tbsize.width, tbsize.height)
+        clazzes = project.type_manager.get_clazzes()
+        clazzes.sort(key=lambda x:x.name)
+        for clazz in clazzes:
+            tool = self.tool_bar.AddTool(wx.NewId(), get_clazz_bitmap(clazz, size, project), shortHelpString=clazz.name)
             self._bind_tool_create(clazz, tool.GetId())
             self._create_obj_tool_ids.append( tool.GetId() )
         self.tool_bar.Realize()            
@@ -232,7 +254,7 @@ class ExplorerFrame(xrcExplorerFrame):
     
     def _on_updateui_evt_create(self, evt):        
         #self.on_update_ui(evt, "create")            
-        evt.Enable( bool(self.project and self._list.node_tool.can_create_object( [self._list.fs_parent] )) )
+        evt.Enable(bool(self.project and self._list.fs_parent and self._list.node_tool.can_create_object([self._list.fs_parent])))
     
     def set_status_msg(self, msg):
         self.status_bar.SetStatusText(msg)

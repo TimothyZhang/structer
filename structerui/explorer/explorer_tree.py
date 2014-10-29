@@ -30,7 +30,7 @@ import wx
 from structer.fs_manager import FSEvent
 from structer import fs_util
 
-from structerui import log
+from structerui import log, hotkey
 
 from fs_node_tool import FSNodeTool
 
@@ -44,6 +44,7 @@ class ExplorerTree(wx.TreeCtrl, wx.DropTarget):
         # {FileNode: wxTreeItemId}
         self._fs_node_to_tree_item_id = {}
         self._name_to_image_id = {}
+        self._skip_open = False
         
         # tree ctrl
         style = wx.TR_DEFAULT_STYLE | wx.TR_EDIT_LABELS | wx.TR_SINGLE
@@ -76,7 +77,9 @@ class ExplorerTree(wx.TreeCtrl, wx.DropTarget):
         # double clicked
         self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self._on_active)
         # DnD
-        self.Bind(wx.EVT_TREE_BEGIN_DRAG, self._on_begin_drag)        
+        self.Bind(wx.EVT_TREE_BEGIN_DRAG, self._on_begin_drag)
+
+        self.Bind(wx.EVT_CHAR_HOOK, self._on_char_hook)
                 
     @property
     def project(self):
@@ -124,8 +127,11 @@ class ExplorerTree(wx.TreeCtrl, wx.DropTarget):
         '''
         tree_item_id = self._get_tree_item_id_by_fs_node(fs_node)
         assert tree_item_id
-                
-        self.SelectItem(tree_item_id)            
+
+        if not self.IsSelected(tree_item_id):
+            self._skip_open = True
+            self.SelectItem(tree_item_id)
+            self._skip_open = False
     
     def _add_children(self, tree_item_id):
         '''Adds all children of a tree item
@@ -154,6 +160,7 @@ class ExplorerTree(wx.TreeCtrl, wx.DropTarget):
             label = self.node_tool.get_name(child_fs_node)
             lower_label = label.lower()
             
+            # find a pos to insert(sort by label)
             child_tree_item_id, cookie = self.GetFirstChild(parent_tree_item_id)
             index = 0
             while child_tree_item_id.IsOk():
@@ -219,10 +226,15 @@ class ExplorerTree(wx.TreeCtrl, wx.DropTarget):
         return node
     
     def get_selected_nodes(self):
+        fs_node = self.get_focused_node()
+        if fs_node:
+            return [fs_node]        
+        return []
+    
+    def get_focused_node(self):
         tree_item_id = self.GetSelection()
         if tree_item_id.IsOk():
-            return [self._get_fs_node_by_tree_item_id(tree_item_id)]
-        return []        
+            return self._get_fs_node_by_tree_item_id(tree_item_id)
 
     ################################################################                            
     # Tree Event Handlers 
@@ -239,8 +251,14 @@ class ExplorerTree(wx.TreeCtrl, wx.DropTarget):
             del self._menu_fs_node
     
     def _on_begin_label_edit(self,evt):
-  
-        pass
+        tree_item_id = evt.GetItem()
+        if tree_item_id.IsOk():
+            fs_node = self._get_fs_node_by_tree_item_id(tree_item_id)
+            if self.node_tool.can_rename(fs_node):
+                evt.Skip()
+                return
+
+        evt.Veto()
     
     def _on_end_label_edit(self,evt):
         new_name = evt.GetLabel()        
@@ -254,14 +272,16 @@ class ExplorerTree(wx.TreeCtrl, wx.DropTarget):
         if not self.node_tool.rename(fs_node, new_name):
             evt.Veto()
             return
-        
+
+        self.SelectItem(tree_item_id)
         evt.Skip()
         
     def _sel_changed(self, evt):
         tree_item_id = evt.GetItem()
         fs_node = self._get_fs_node_by_tree_item_id(tree_item_id)
-        
-        self.node_tool.open(fs_node)
+
+        if not self._skip_open:
+            self.node_tool.open(fs_node)
         #self.explorer.set_path( fs_node )
         
     def _on_active(self,evt):
@@ -277,6 +297,19 @@ class ExplorerTree(wx.TreeCtrl, wx.DropTarget):
         tree_item_id = evt.GetItem()
         fs_node = self._get_fs_node_by_tree_item_id(tree_item_id)
         self.node_tool.begin_drag([fs_node], self)
+        
+    def _on_char_hook(self, evt):
+        keystr = hotkey.build_keystr(evt)
+        
+        if hotkey.check(hotkey.EXPLORER_RENAME, keystr):
+            tree_item_id = self.GetSelection()
+            if tree_item_id.IsOk():
+                fs_node = self.get_focused_node()
+                if self.node_tool.can_rename(fs_node):
+                    self.EditLabel(tree_item_id)
+                return
+        
+        evt.Skip()
     
     ################################################################                            
     # FSEvent Handlers 
@@ -300,10 +333,14 @@ class ExplorerTree(wx.TreeCtrl, wx.DropTarget):
             return
         
         # update label
-        if fs_node.is_folder():            
-            self.SetItemText(tree_item_id, fs_node.name)
-        elif fs_util.is_filter(fs_node):
-            self.SetItemText(tree_item_id, fs_node.name)        
+        if fs_node.is_folder() or fs_util.is_filter(fs_node):
+            old = self.GetItemText(tree_item_id)
+            if old != fs_node.name:
+                self.Delete(tree_item_id)
+
+                parent_tree_item_id = self._get_tree_item_id_by_fs_node(fs_node.parent)
+                if parent_tree_item_id:
+                    self._add_child(parent_tree_item_id, fs_node)
     
     def _on_fs_move(self, evt):
         fs_node = evt.fs_node

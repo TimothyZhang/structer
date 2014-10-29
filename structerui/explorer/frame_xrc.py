@@ -154,27 +154,29 @@ class xrcExplorerFrame(wx.Frame):
 #!XRCED:begin-block:xrcExplorerFrame.OnMenu_menu_undo
     def OnMenu_menu_undo(self, evt):
         # Replace with event handler code
-        print "OnMenu_menu_undo()"
+        # self.on_menu(evt, 'undo')
         pass
 #!XRCED:end-block:xrcExplorerFrame.OnMenu_menu_undo        
 
 #!XRCED:begin-block:xrcExplorerFrame.OnUpdate_ui_menu_undo
     def OnUpdate_ui_menu_undo(self, evt):
         # Replace with event handler code
-        print "OnUpdate_ui_menu_undo()"
-        self.on_update_ui(evt, 'undo')
+        # self.on_update_ui(evt, 'undo')
+        pass
 #!XRCED:end-block:xrcExplorerFrame.OnUpdate_ui_menu_undo        
 
 #!XRCED:begin-block:xrcExplorerFrame.OnMenu_menu_redo
     def OnMenu_menu_redo(self, evt):
         # Replace with event handler code
-        print "OnMenu_menu_redo()"
+        # print "OnMenu_menu_redo()"
+        pass
 #!XRCED:end-block:xrcExplorerFrame.OnMenu_menu_redo        
 
 #!XRCED:begin-block:xrcExplorerFrame.OnUpdate_ui_menu_redo
     def OnUpdate_ui_menu_redo(self, evt):
         # Replace with event handler code
-        self.on_update_ui(evt, 'redo')
+        # self.on_update_ui(evt, 'redo')
+        pass
 #!XRCED:end-block:xrcExplorerFrame.OnUpdate_ui_menu_redo        
 
 #!XRCED:begin-block:xrcExplorerFrame.OnMenu_menu_copy
@@ -204,13 +206,16 @@ class xrcExplorerFrame(wx.Frame):
 #!XRCED:begin-block:xrcExplorerFrame.OnMenu_menu_paste
     def OnMenu_menu_paste(self, evt):
         # Replace with event handler code
-        self.on_menu(evt, 'paste')
+        # self.on_menu(evt, 'paste')
+        self.list.node_tool.do_paste([self.list.fs_parent])
 #!XRCED:end-block:xrcExplorerFrame.OnMenu_menu_paste        
 
 #!XRCED:begin-block:xrcExplorerFrame.OnUpdate_ui_menu_paste
     def OnUpdate_ui_menu_paste(self, evt):
         # Replace with event handler code
-        self.on_update_ui(evt, 'paste')
+        can_paste = self.list.node_tool.can_paste([self.list.fs_parent])
+        # self.on_update_ui(evt, 'paste')
+        evt.Enable(can_paste)
 #!XRCED:end-block:xrcExplorerFrame.OnUpdate_ui_menu_paste        
 
 #!XRCED:begin-block:xrcExplorerFrame.OnMenu_menu_delete

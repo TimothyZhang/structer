@@ -72,8 +72,9 @@ class StructListGrid(ListGrid):
         
     def insert(self, pos=-1, rows=1, add_undo=False):
         if self.is_editing_objects() and add_undo:
-            if wx.NO==wx.MessageBox("%s %s will be created, continue?"%(rows, self.editor_context.clazz.name), style=wx.YES_NO|wx.ICON_WARNING):
-                return
+            # if wx.NO == wx.MessageBox("%s %s(s) will be created, continue?" % (rows, self.editor_context.clazz.name), style=wx.YES_NO | wx.ICON_WARNING):
+            #    return
+            pass
             
         ListGrid.insert(self, pos, rows, add_undo)
     
@@ -81,7 +82,7 @@ class StructListGrid(ListGrid):
         if self.is_editing_objects():
             attr_type_names, datas = self._get_clipboard()
             if attr_type_names and datas:
-                if wx.NO==wx.MessageBox("%s %s will be created, continue?"%(len(datas), self.editor_context.clazz.name), style=wx.YES_NO|wx.ICON_WARNING):
+                if wx.NO == wx.MessageBox("%s %s(s) will be created, continue?" % (len(datas), self.editor_context.clazz.name), style=wx.YES_NO | wx.ICON_WARNING):
                     return  
         
         ListGrid.insert_copied(self, pos)

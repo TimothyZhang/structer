@@ -30,5 +30,7 @@ DECREASE = 'D'
 GOTO_REF = 'Ctrl+G'
 #DELETE = 'Delete'  # set to default
 
+# explorer
 EXPLORER_OPEN = 'Enter'
 EXPLORER_UP_LEVEL = 'Alt+Up'
+EXPLORER_BACK = 'Backspace'

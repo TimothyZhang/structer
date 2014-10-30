@@ -56,6 +56,7 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
         
         self._init_drop_target()
         self.SetDropTarget(self)
+        
     
     def _init_list_columns(self):
         self.InsertColumn(0, u"Name")
@@ -65,12 +66,14 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
         self.SetColumnWidth(1, 100)
         self.SetColumnWidth(2, 200)
         
+        
     def _init_list_item_attrs(self):
         self.attr_normal = wx.ListItemAttr()
         
         self.attr_error = wx.ListItemAttr()
         self.attr_error.SetBackgroundColour( wx.Colour(0xFF, 0x88, 0x88, 0xFF) )
         #self.attr_error.SetTextColour( wx.Colour(0xFF, 0x88, 0x88, 0xFF) )
+    
     
     def _init_image_list(self):
         image_list, mapping = self.node_tool.create_image_list()

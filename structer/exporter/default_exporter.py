@@ -21,17 +21,30 @@ import json
 
 class Exporter(object):
     def get_name(self):
-        u'''Returns the name of current exporter'''
-        return 'No name'
+        u'''
+        @return string:
+            name of current exporter
+        '''
+        
+        return '[%s]' % self.__class__.__name__
     
     def get_exported_wildcard(self):
-        u'''Returns the wildcard of exported file, or None if export to a folder
+        u'''
+        Gets wildcard string of exported file type.        
+            eg:  "Zip archive (*.zip)|*.zip"
         
-        eg:  "Zip archive (*.zip)|*.zip" 
+        @return string:
+            wildcard of exported file, or None if export to a folder        
         '''
         return None
 
     def export(self, project, writefunc):
+        u'''
+        Exports a structer project.
+        
+        @param project: Project
+            the project to be exported 
+        '''
         raise
     
 
@@ -53,7 +66,7 @@ class DefaultExporter(Exporter):
             for obj in project.object_manager.get_objects(clazz):
                 clazz_all.append( obj.export() )
                 
-            data = json.dumps(clazz_all)
+            data = json.dumps(clazz_all, sort_keys=True)
             writefunc('%s.json' % clazz.name, data)
         
         consts = []

@@ -22,7 +22,7 @@ All dialogs are created with (parent, editor_context)
 """
 
 from editor_dialog import EditorDialog
-from ref_dialog import RefDialog
+from ref_dialog import RefEditorDialog, RefDialog
 from file_dialog import FileDialog
 from folder_dialog import FolderDialog
 

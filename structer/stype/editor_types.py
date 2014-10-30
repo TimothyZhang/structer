@@ -275,7 +275,7 @@ clazz_setting = _Clazz(CLAZZ_NAME_SETTING, [
 clazz_setting.icon = "icons/setting.png"
 # 1 and only 1 setting object
 clazz_setting.max_number = 1 
-clazz_setting.min_number = 1
+clazz_setting.min_number = 0
 
 ################################################################################
 # PredefinedType

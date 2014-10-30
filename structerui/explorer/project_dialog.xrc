@@ -62,7 +62,7 @@
             <object class="wxListBox" name="list_box">
               <size>400,200</size>
               <content>
-                <item></item>
+                <item/>
               </content>
               <focused>1</focused>
               <XRCED>
@@ -103,7 +103,7 @@
               <orient>wxVERTICAL</orient>
               <object class="sizeritem">
                 <object class="wxButton" name="button_open">
-                  <label>&amp;Open</label>
+                  <label>&amp;Open/Create</label>
                   <default>1</default>
                   <XRCED>
                     <events>EVT_BUTTON|EVT_UPDATE_UI</events>

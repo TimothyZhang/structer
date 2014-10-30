@@ -25,9 +25,9 @@ from ref_dialog_xrc import xrcRefDialog
 
 class RefSearchResultTable(grid.PyGridTableBase):
     _COL_LABELS = ['Class', 'ID', 'Name', 'UUID']
-    def __init__(self, editor_context):
+    def __init__(self): #, editor_context):
         grid.PyGridTableBase.__init__(self)
-        self._ctx = editor_context
+        #self._ctx = editor_context
         self._objects = []
         
         self._cell_attr = ca = grid.GridCellAttr()
@@ -99,18 +99,17 @@ class RefSearchResultTable(grid.PyGridTableBase):
     
 
 class RefDialog(xrcRefDialog):     
-    def __init__(self, parent, editor_context):
-        self.editor_context = editor_context
-        self.attr_type = editor_context.attr_type
-        self.project = editor_context.project
+    def __init__(self, parent, project, iter_maker, on_selected):                
+        self.project = project
+        self.iter_maker = iter_maker
+        self.on_selected = on_selected
         
-        xrcRefDialog.__init__(self, parent)
-        
+        xrcRefDialog.__init__(self, parent)        
         self._post_create()
 
     def _post_create(self): 
         self.grid.HideRowLabels()
-        self.grid.SetTable(RefSearchResultTable(self.editor_context))
+        self.grid.SetTable(RefSearchResultTable())
         self.grid.SetSelectionMode(grid.Grid.wxGridSelectRows)
         
         #self.grid.AcceptsFocus = lambda x: False
@@ -134,25 +133,19 @@ class RefDialog(xrcRefDialog):
     def _select_search_result(self, row):
         obj = self.grid.GetTable().get_object( row )
         print obj
-        if obj:
-            value = obj.uuid
-        else:
-            value = u''
-            
-        self.editor_context.attr_data = value
-        self.Close()
-        
-    def get_attr_data(self):
-        return self.editor_context.attr_data
+        if self.on_selected:
+            self.on_selected(obj)        
+        self.Close()    
     
     def OnGridFocus(self, evt):        
         #evt.Veto()
         prev = evt.GetWindow()
                 
-        if prev == self.text_ctrl:
-            next_ = self.tree_ctrl
-        else:
-            next_ = self.text_ctrl
+        #if prev == self.text_ctrl:
+            #next_ = self.tree_ctrl
+        #else:
+            #next_ = self.text_ctrl
+        next_ = self.text_ctrl
         
         wx.CallLater(0.0001, next_.SetFocus)
             
@@ -195,7 +188,28 @@ class RefDialog(xrcRefDialog):
         self.grid.SetColSize(3, w * 0.2)
         evt.Skip()
         
-    def _search(self, keyword):
-        objects = self.project.object_manager.get_objects(self.attr_type.clazz_name, filter_=keyword)        
-        self.grid.GetTable().set_objects(objects)                     
+    def _search(self, keyword):        
+        objects = self.project.object_manager.filter_objects(self.iter_maker(), filter_=keyword)        
+        self.grid.GetTable().set_objects(list(objects))                     
             
+
+class RefEditorDialog(RefDialog):
+    def __init__(self, parent, editor_context):
+        self.editor_context = editor_context
+        def iter_maker():
+            clazz_name = editor_context.attr_type.clazz_name
+            return self.editor_context.project.object_manager.iter_objects(clazz_name)
+        
+        RefDialog.__init__(self, parent, editor_context.project, iter_maker, self.on_select)    
+    
+    def on_select(self, obj):        
+        print obj
+        if obj:
+            value = obj.uuid
+        else:
+            value = u''
+            
+        self.editor_context.attr_data = value                
+        
+    def get_attr_data(self):
+        return self.editor_context.attr_data

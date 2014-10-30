@@ -4,7 +4,7 @@
     <object class="wxMenuBar" name="menu_object">
       <object class="wxMenu" name="menu_file">
         <object class="wxMenuItem" name="menu_open">
-          <label>&amp;Open...\tCtrl+O</label>
+          <label>&amp;Open/Create...\tCtrl+O</label>
           <XRCED>
             <events>EVT_MENU|EVT_UPDATE_UI</events>
           </XRCED>
@@ -105,12 +105,21 @@
           </XRCED>
         </object>
         <object class="wxMenuItem" name="menu_search">
-          <label>&amp;Search</label>
+          <label>&amp;Search\tCtrl-F</label>
           <XRCED>
             <events>EVT_MENU|EVT_UPDATE_UI</events>
             <assign_var>1</assign_var>
           </XRCED>
         </object>
+      </object>
+      <object class="wxMenu" name="menu_plugins">
+        <object class="wxMenuItem" name="menu_plugin_dummy">
+          <label>Dummy</label>
+          <XRCED>
+            <assign_var>1</assign_var>
+          </XRCED>
+        </object>
+        <label>&amp;Plugins</label>
       </object>
       <object class="wxMenu" name="menu_windows">
         <object class="wxMenuItem" name="menu_close_all">

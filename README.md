@@ -41,7 +41,6 @@ TODO
 ====
 
 - add tutorial and user guide
-- search in explorer
 - search ref/refby
 - sort list
 - tag support
@@ -52,6 +51,7 @@ TODO
 - support travis/coverage?
 - add unittest
 - customized exporters
+
 
 Version History
 ===============
@@ -66,10 +66,11 @@ License
 Structer is distributed under the GPL v3.  See LICENSE for more details.
 
 Images used by Structer are downloaded from internet. If any of them is prohibited to use, please 
-contact me at (zt@live.cn).
+contact me at (zt at live dot cn).
 
 
 Contributing
 ============
 
-Please feel free to send pull requests to us.
+Please feel free to send pull requests.
+

@@ -38,6 +38,7 @@ class xrcExplorerFrame(wx.Frame):
         # Define variables for the controls, bind event handlers
         self.menu_new_dummy = self.GetMenuBar().FindItemById(xrc.XRCID("menu_new_dummy"))
         self.menu_search = self.GetMenuBar().FindItemById(xrc.XRCID("menu_search"))
+        self.menu_plugin_dummy = self.GetMenuBar().FindItemById(xrc.XRCID("menu_plugin_dummy"))
         self.menu_close_all = self.GetMenuBar().FindItemById(xrc.XRCID("menu_close_all"))
         self.tool_bar = xrc.XRCCTRL(self, "tool_bar")
         self.tool_open = self.GetToolBar().FindById(xrc.XRCID("tool_open"))
@@ -252,13 +253,13 @@ class xrcExplorerFrame(wx.Frame):
 #!XRCED:begin-block:xrcExplorerFrame.OnMenu_menu_search
     def OnMenu_menu_search(self, evt):
         # Replace with event handler code
-        evt.Enable(bool(self.project))
+        self._search()        
 #!XRCED:end-block:xrcExplorerFrame.OnMenu_menu_search        
 
 #!XRCED:begin-block:xrcExplorerFrame.OnUpdate_ui_menu_search
     def OnUpdate_ui_menu_search(self, evt):
         # Replace with event handler code
-        self._search()
+        evt.Enable(bool(self.project))
 #!XRCED:end-block:xrcExplorerFrame.OnUpdate_ui_menu_search        
 
 #!XRCED:begin-block:xrcExplorerFrame.OnMenu_menu_close_all
@@ -408,7 +409,7 @@ def __init_resources():
     <object class="wxMenuBar" name="menu_object">
       <object class="wxMenu" name="menu_file">
         <object class="wxMenuItem" name="menu_open">
-          <label>&amp;Open...\tCtrl+O</label>
+          <label>&amp;Open/Create...\tCtrl+O</label>
           <XRCED>
             <events>EVT_MENU|EVT_UPDATE_UI</events>
           </XRCED>
@@ -509,12 +510,21 @@ def __init_resources():
           </XRCED>
         </object>
         <object class="wxMenuItem" name="menu_search">
-          <label>&amp;Search</label>
+          <label>&amp;Search\tCtrl-F</label>
           <XRCED>
             <events>EVT_MENU|EVT_UPDATE_UI</events>
             <assign_var>1</assign_var>
           </XRCED>
         </object>
+      </object>
+      <object class="wxMenu" name="menu_plugins">
+        <object class="wxMenuItem" name="menu_plugin_dummy">
+          <label>Dummy</label>
+          <XRCED>
+            <assign_var>1</assign_var>
+          </XRCED>
+        </object>
+        <label>&amp;Plugins</label>
       </object>
       <object class="wxMenu" name="menu_windows">
         <object class="wxMenuItem" name="menu_close_all">

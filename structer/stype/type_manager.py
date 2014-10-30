@@ -52,6 +52,9 @@ class TypeManager(object):
     def get_clazz_by_name(self, name):
         return self._clazzes.get(name)
     
+    def get_struct_by_name(self, name):
+        return self._parsed_structs.get(name)
+    
     def load_editor_types(self):        
         for _, v in vars(editor_types).iteritems():
             if isinstance(v, Clazz):

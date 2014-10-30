@@ -62,7 +62,7 @@ class Project(object):
         '''
         self.path = util.normpath(os.path.abspath(root))
         self.is_type_editor = is_type_editor        
-        self._auto_create_clazz_folder = False
+        self._auto_create_clazz_folder = True
         
         # Must be the first
         self.event_manager = EventManager()        
@@ -71,7 +71,7 @@ class Project(object):
         # should after fs_manager
         self.object_manager = ObjectManager(self)
         # should after object_manager
-        self.ref_manager = RefManager()
+        self.ref_manager = RefManager()        
         
         #self._langauges = ('en', )
         self._default_language = 'en'
@@ -118,8 +118,8 @@ class Project(object):
                 self.tags = set(setting_obj.get_attr_value('tags',[]) )
                 self.tags.add('export')
                 self._auto_create_clazz_folder = setting_obj.get_attr_value('auto_create_clazz_folder')
-            else:
-                log.error('invalid number of Setting objects: %s', len(setting_objs))
+            elif len(setting_objs)>1:
+                log.error('too many Setting objects: %s', len(setting_objs))
             
         is_new = self.fs_manager.load()            
                 
@@ -134,16 +134,18 @@ class Project(object):
             for clazz in self.type_manager.get_clazzes():
                 if not self.fs_manager.root.get_sub_folder_by_name(clazz.name):                    
                     self.fs_manager.create_folder(self.fs_manager.root, clazz.name)
-        
+                
         return is_new
         
     def has_error(self, print_=False):
         '''todo: this method is slow!'''
         if self._has_error:
+            print 'project error'
             return True
         
         if not self.is_type_editor:
-            if self.get_editor_project().has_error():
+            if self.get_editor_project().has_error(print_):
+                print 'editor project error'
                 return True
         
         for obj in self.object_manager.iter_all_objects():

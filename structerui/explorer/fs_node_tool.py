@@ -294,13 +294,15 @@ class FSNodeTool(object):
     def get_menu(self, nodes):
         menu = wx.Menu()    
         fsm = self.project.fs_manager
-        
+               
         if self.can_restore(nodes):
             item = menu.Append(wx.NewId(), u'&Restore')
             self._bind_menu(menu, self.do_restore, item.GetId(), nodes)
             return menu
         
-        
+        if self._add_menu_search(menu, nodes):
+            menu.AppendSeparator()
+                
         # batch edit
         if self._add_menu_open(menu, nodes):
             menu.AppendSeparator()
@@ -405,6 +407,14 @@ class FSNodeTool(object):
             menu.AppendSubMenu(submenu, u"&Remove tag")            
         return bool(tags or tagged)
         
+    def _add_menu_search(self, menu, nodes):
+        u'''Returns True if any menu added, otherwise returns False'''
+        
+        if self.can_search(nodes):            
+            item = menu.Append(wx.NewId(), u'&Search')        
+            self._bind_menu(menu, self.do_search, item.GetId(), nodes[0])        
+            return True
+    
     def _add_menu_open(self, menu, nodes):
         u'''Returns True if any menu added, False if no menu added'''
         
@@ -572,8 +582,9 @@ class FSNodeTool(object):
         if fs_util.is_filter(node):
             filter_str = node.data
             l = {}
+            g = {time}
             try:            
-                exec(filter_str, {}, l)
+                exec(filter_str, g, l)
             except:
                 log.error('invalid filter str in %s: %s', node.uuid, filter_str)
                 return []
@@ -781,10 +792,30 @@ class FSNodeTool(object):
                     
     def do_restore(self, nodes):
         assert self.can_restore(nodes)        
-        self._repeat_strategy('restore', nodes, self.project.fs_manager.undelete)        
+        self._repeat_strategy('restore', nodes, self.project.fs_manager.undelete)
+        
+    def can_search(self, nodes):
+        return len(nodes)==1 and self.is_container(nodes[0])
+    
+    def do_search(self, node):        
+        def iter_maker():
+            for node_ in self.project.fs_manager.walk(node, False):
+                if fs_util.is_object(node_):
+                    yield self.project.get_object_by_fsfile(node_)            
+        
+        #self.project.object_manager.filter_objects(iter)
+        def on_selected(obj):
+            print 'search result:', obj,id, obj.name
+            #self.explorer.show_editor(obj)
+            node_ = self.project.fs_manager.get_node_by_uuid(obj.uuid)
+            self.explorer.set_path(node_)            
+        
+        from structerui.editor.grid.cell_editor.dialog import RefDialog
+        dlg = RefDialog(None, self.project, iter_maker, on_selected)
+        dlg.Show()       
+            
     
     def do_edit(self, objects):
-
         self.project.explorer.show_editor(objects)
     
     def do_add_tag(self, nodes, tag):

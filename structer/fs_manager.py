@@ -530,7 +530,7 @@ class FileSystemManager(object):
         if not os.path.exists(dir):
             os.makedirs(dir)
         
-        open(rp, 'wb').write( json.dumps(data, separators=(',\n', ':\n')) )
+        open(rp, 'wb').write( json.dumps(data, separators=(',\n', ':\n'), sort_keys=True) )
     
     def _get_real_path(self, uuid):
         '''Returns the location of an uuid on native file system'''        

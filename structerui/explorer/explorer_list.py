@@ -70,7 +70,7 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
         
         self.attr_error = wx.ListItemAttr()
         self.attr_error.SetBackgroundColour( wx.Colour(0xFF, 0x88, 0x88, 0xFF) )
-        self.attr_error.SetTextColour( wx.Colour(0xFF, 0x88, 0x88, 0xFF) )
+        #self.attr_error.SetTextColour( wx.Colour(0xFF, 0x88, 0x88, 0xFF) )
     
     def _init_image_list(self):
         image_list, mapping = self.node_tool.create_image_list()
@@ -311,7 +311,7 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
     def OnGetItemImage(self, item):
         fs_node = self._fs_nodes[item]
         return self.get_image_id_by_node(fs_node)
-
+        
     def OnGetItemAttr(self, item):    
         fs_node = self._fs_nodes[item]
         if fs_util.is_object(fs_node):

@@ -78,6 +78,9 @@ class ExplorerFrame(xrcExplorerFrame):
         self.menu_new = self.menu_new_dummy.GetMenu()
         self.menu_new.Remove(self.menu_new.FindItemByPosition(0).GetId())
         
+        self.menu_plugins = self.menu_plugin_dummy.GetMenu()
+        self.menu_plugins.Remove(self.menu_plugins.FindItemByPosition(0).GetId())
+        
         self.SetMinSize((640, 480))        
         self._create_tree()
         self._create_list()
@@ -158,10 +161,10 @@ class ExplorerFrame(xrcExplorerFrame):
                          CloseButton(False).
                          Name("ResourceTree"))
         self._aui_manager.AddPane(self._list_panel, aui.AuiPaneInfo().CenterPane().Name("FileList"))
-#        self._aui_manager.AddPane(self._log,
-#                         wx.aui.AuiPaneInfo().
-#                         Bottom().BestSize((-1, 60)).
-#                         MinSize((-1, 60)).-----------
+#         self._aui_manager.AddPane(self._log,
+#                          aui.AuiPaneInfo().
+#                          Bottom().BestSize((-1, 60)).
+#                          MinSize((-1, 60)).Name("Log").Caption("Log") )
         #self._aui_cfgs[DEFAULT_PERSPECTIVE] = self._aui_manager.SavePerspective()
         self._aui_manager.Update()
         #self._aui_manager.SetFlags(self._aui_manager.GetFlags() ^ aui.AUI_MGR_TRANSPARENT_DRAG)
@@ -239,6 +242,32 @@ class ExplorerFrame(xrcExplorerFrame):
         icon = get_icon('table.png', FRAME_ICON_SIZE, project)
         if icon:
             self.SetIcon( icon )
+            
+        self.init_plugins()
+    
+    def init_plugins(self):
+        # Remove current plugins
+        while 1:
+            try:
+                item = self.menu_plugins.FindItemByPosition(0)                
+                self.menu_plugins.Remove(item.GetId())
+            except:
+                break
+            
+        from structerui.plugin_manager import PluginManager
+        pm = PluginManager()      
+        pm.load_plugins()      
+        
+        # add all        
+        for plugin in pm.iter_plugins():            
+            mi = wx.MenuItem(self.menu_plugins, wx.NewId(), plugin.label)
+            def get_callback(plugin_):
+                def callback(evt):
+                    plugin_.execute(self.project)
+                return callback
+            self.menu_plugins.Bind(wx.EVT_MENU, get_callback(plugin), mi)
+            self.menu_plugins.AppendItem( mi )
+        
 
     def update_menu_new(self):
         while self.menu_new.GetMenuItemCount():
@@ -265,8 +294,19 @@ class ExplorerFrame(xrcExplorerFrame):
         Args:
             fs_node: Folder, or a filter
         '''
-        self._tree.set_path(fs_node)
-        self._list.set_parent(fs_node)    
+        if self.list.node_tool.is_container(fs_node):
+            fs_folder = fs_node
+            fs_file = None
+        else:
+            fs_folder = fs_node.parent
+            fs_file = fs_node
+        
+        self._tree.set_path(fs_folder)
+        self._list.set_parent(fs_folder)
+        
+        if file:
+            self._list.single_select_node(fs_file)
+            self._list.SetFocus()
     
     def show_editor(self, objects):
         '''create and show a new editor
@@ -381,11 +421,14 @@ class ExplorerFrame(xrcExplorerFrame):
             recent_projects = open(recent_file).read().split('\n')
         except:
             recent_projects = []
+                
+        SAMPLE_DIR = 'samples'
+        sample_projects = [os.path.join(SAMPLE_DIR, f) for f in os.listdir(SAMPLE_DIR)]
 
         # prompt 
         from project_dialog_xrc import xrcProjectDialog
         dlg = xrcProjectDialog(self)
-        dlg.set_recent_paths(recent_projects)
+        dlg.set_recent_paths(recent_projects + sample_projects)
         if wx.ID_OK == dlg.ShowModal():            
             path = dlg.get_path()    
             
@@ -394,7 +437,8 @@ class ExplorerFrame(xrcExplorerFrame):
                 dlg = wx.MessageDialog(self, 'Folder not exists, create now?',
                                'Warning',                               
                                wx.YES_NO | wx.ICON_QUESTION)
-                if dlg.ShowModal() == wx.NO:
+                                
+                if dlg.ShowModal() == wx.ID_NO:
                     return
                 
                 try:
@@ -561,4 +605,6 @@ class ExplorerFrame(xrcExplorerFrame):
         dlg.Destroy()
     
     def _search(self):
-        pass
+        nodes = self.tree.get_selected_nodes()
+        if nodes:
+            self.tree.node_tool.do_search(nodes[0])        

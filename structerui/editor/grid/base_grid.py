@@ -32,7 +32,7 @@ from structer.stype.attr_types import *
 
 from structerui import hotkey
 from cell_editor import * 
-from cell_editor.dialog import RefDialog, EditorDialog, FileDialog, FolderDialog
+from cell_editor.dialog import RefEditorDialog, EditorDialog, FileDialog, FolderDialog
 
 CLIPBOARD_DATA_FORMAT = "__structer_grid_cells_f9014n203823dk1j2hdlacxcb__"
 
@@ -269,7 +269,7 @@ class GridBase(grid.Grid):
         self.RegisterDataType(MY_GRID_DATA_TYPE_STRUCT, str_renderer(), GridCellDialogEditor())
         self.RegisterDataType(MY_GRID_DATA_TYPE_ENUM,   grid.GridCellStringRenderer(), GridCellEnumEditor())
         self.RegisterDataType(MY_GRID_DATA_TYPE_LIST_ENUM_UNIQUE, str_renderer(), GridCellUniqueEnumListEditor())
-        self.RegisterDataType(MY_GRID_DATA_TYPE_REF,    grid.GridCellStringRenderer(), GridCellDialogEditor(RefDialog))
+        self.RegisterDataType(MY_GRID_DATA_TYPE_REF,    grid.GridCellStringRenderer(), GridCellDialogEditor(RefEditorDialog))
         self.RegisterDataType(MY_GRID_DATA_TYPE_FILE,   grid.GridCellStringRenderer(), GridCellDialogEditor(FileDialog))
         self.RegisterDataType(MY_GRID_DATA_TYPE_FOLDER, grid.GridCellStringRenderer(), GridCellDialogEditor(FolderDialog))
         

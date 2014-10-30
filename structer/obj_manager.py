@@ -208,10 +208,10 @@ class ObjectManager(object):
         
         if type(filter_) is unicode:
             filter_ = self._parse_filter(filter_)
-            for obj in objects:
-                if self._filter(obj, filter_):
-                    yield obj        
-            return
+#             for obj in objects:
+#                 if self._filter(obj, filter_):
+#                     yield obj        
+#             return
         
         if type(filter_) is types.FunctionType:
             errors = 0
@@ -230,7 +230,8 @@ class ObjectManager(object):
                 log.error('%s errors while filtering', errors)
             return
         
-        raise Exception('invaild filter: %s(type:%s)' % (filter_, type(filter_))) 
+        raise Exception('invaild filter: %s(type:%s)' % (filter_, type(filter_)))
+
     
     def iter_all_objects(self, filter_=None):
         def iter_all():
@@ -240,61 +241,90 @@ class ObjectManager(object):
 #         all_clazzes = (t.itervalues() for t in self._obj_map.itervalues())
 #         itertools.chain(*all_clazzes)        
         return self._iter_objects(iter_all(), filter_)
+    
+    def iter_objects_with_clazzes(self, clazz_names, filter_=None):
+        def iter_all():
+            for clazz in self._obj_map.itervalues():
+                if clazz.name in clazz_names:
+                    for obj in clazz.itervalues():
+                        yield obj
+        
+        return self._iter_objects(iter_all(), filter_)
+
+
+    def filter_objects(self, objects, filter_=None):
+        return self._iter_objects(objects, filter_)
+    
         
     def _parse_filter(self, filter_):
         '''Parses filter string
         
-        A filter string is consist of a keyword and an expression, sperated by a ' ',  the expression can be omitted.
-        keyword is a string without space. Can be empty.
-        expression should be a valid python expression, which can passed be eval() directly. all attricutes of objects
+        A filter string is consist of a keyword and on or more expressions, separated by ';'s
+        keyword is a string without ';'. Can be empty.
+        expressions should be a valid python expressions, which can passed be eval() directly. all attributes of objects
         can be referenced by the expression as globals()        
         
         eg:
             123                                # search by keyword "123"
             123; level>10 and power<100        # serache by keyword "123", restricted with expected level and power
-            ; level<5                          # all objects whose level<5
+            ; level<5; power<10                # all objects whose level<5 and power < 10
         
         Args:
-            filter_: filter string.
+            @param filter_: string            
         
-        Returns:
-            A tuple, (keyword, expression)
-        '''
-        tmp = map(unicode.strip, filter_.split(u' ', 1))
-        tmp[0] = tmp[0].lower()
-        if len(tmp)==1:
-            return tmp[0], None
-        
-        return tuple(tmp)
-    
-    def _filter(self, obj, filter_):
-        '''Check whether the object satisfies the filter
-        
-        Args:
-            obj: the object to be check
-            filter_: A tuple: (keyword, expression)
-
-        Returns:
-            True if the objects satisfies the filter, otherwise False
+        @return function        
+            A filter function, (obj, fs_node, project) -> bool            
         '''        
-        keyword, expr = filter_
+        tmp = map(unicode.strip, filter_.split(u';'))
+        keyword = tmp[0].lower()
+        exprs = tmp[1:]
         
-        if keyword:
-            if not self._filter_keyword(obj, keyword):
-                return False
-        
-        if expr:
-            try:
-                # print 'filter expr', expr, obj.raw_data
-                r = eval(expr, {}, obj.raw_data)
-                return bool(r)
-            except:
-                return False
-        
-        return True
+        def check(obj, fs_node, project):
+            # by keyword
+            if keyword:
+                if not self._test_object_with_keyword(obj, keyword):
+                    return False
+            
+            # by expression
+            if exprs:
+                for expr in exprs:
+                    try:
+                        if not eval(expr, {}, obj.raw_data):
+                            return False
+                    except:
+                        # todo: should we return False or just ignore?
+                        return False
+            return True
+        return check
+    
+#     def _filter(self, obj, filter_):
+#         '''Check whether the object satisfies the filter
+#         
+#         Args:
+#             obj: the object to be check
+#             filter_: A tuple: (keyword, expression)
+# 
+#         Returns:
+#             True if the objects satisfies the filter, otherwise False
+#         '''        
+#         keyword, expr = filter_
+#         
+#         if keyword:
+#             if not self._test_object_with_keyword(obj, keyword):
+#                 return False
+#         
+#         if expr:
+#             try:
+#                 # print 'filter expr', expr, obj.raw_data
+#                 r = eval(expr, {}, VariableWrapper(obj.raw_data))
+#                 return bool(r)
+#             except:
+#                 return False
+#         
+#         return True
 
-    def _filter_keyword(self, obj, keyword):
-        '''Check whether the given objects's name or id matches keyword
+    def _test_object_with_keyword(self, obj, keyword):
+        '''Check whether the given objects's name or id or uuid matches keyword
         
         If object name is a dict, each value will be checked. 
         
@@ -310,21 +340,24 @@ class ObjectManager(object):
             name = obj.get_attr_value('name')
             if type(name) is dict:
                 for lang, n in name.iteritems():
-                    if self._test_keyword(n.lower(), keyword, lang):
+                    if self._test_str_with_keyword(n.lower(), keyword, lang):
                         return True                    
             else:
-                if self._test_keyword(name.lower(), keyword, None):
+                if self._test_str_with_keyword(name.lower(), keyword, None):
                     return True
                         
         # id
         if obj.id:
             if keyword in unicode(obj.id):
                 return True
-        
+        #if obj.uuid:
+            #if keyword in unicode(obj.uuid):
+                #return True
+            
         # keyword search failed            
         return False
     
-    def _test_keyword(self, str_, keyword, lang):
+    def _test_str_with_keyword(self, str_, keyword, lang):
         '''Check whether str_ matches keyword
         
         We say it match if:

@@ -34,8 +34,8 @@ class EditorDialog(wx.Dialog):
         
         self.SetTitle( self.get_title() )    
         self.Bind(wx.EVT_CHAR_HOOK, self.OnCharHook)
-        
-        adjust_topwindow_size(self, ep.get_preferred_size())        
+
+        adjust_topwindow_size(self, ep.get_preferred_size())
     
     def get_title(self):
         title = self.editor_context.get_title()

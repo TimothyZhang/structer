@@ -24,6 +24,7 @@ from structerui import hotkey
 from base_grid import GridBase, TableBase, GridAction
 from cell_editor.dialog.editor_dialog import EditorDialog
 from structerui.editor.ull_mapper import UnionListListMapper
+from structerui.editor.undo import OpenULLDialogAction, CloseULLDialogAction
 
 
 class ListTable(TableBase):
@@ -42,6 +43,8 @@ class ListTable(TableBase):
         return self.attr_type.element_type
     
     def get_attr_value(self, row, col):
+        if not 0<=row<len(self.attr_data):
+            k = 1
         return self.attr_data[row]
     
     def GetNumberRows(self):        
@@ -157,9 +160,17 @@ class ListGrid(GridBase):
 
         ctx = self.editor_context.create_sub_context(ull_mapper.get_sl_type(), ull_mapper.get_sl_data())
 
+        def on_close(evt):
+            _ = evt
+            ctx.undo_manager.add(CloseULLDialogAction())
+            evt.Skip()
+
         while 1:
             ull_dlg = EditorDialog(self, ctx)
+            ctx.undo_manager.add(OpenULLDialogAction())
+            ull_dlg.Bind(wx.EVT_CLOSE, on_close)
             ull_dlg.ShowModal()
+            # ctx.undo_manager.add(CloseULLDialogAction())
 
             if not ctx.is_modified():
                 return
@@ -168,10 +179,12 @@ class ListGrid(GridBase):
             # todo: should let use known where the problem is
             if ull_data is None:
                 wx.MessageBox("INCOMPLETE!")
+
+                # hack undo manager
                 continue
             break
 
-        self.editor_context.attr_data = ull_data
+        self.editor_context.attr_data[:] = ull_data
 
         # close current dialog
         p = self

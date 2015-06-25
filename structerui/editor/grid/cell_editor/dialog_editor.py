@@ -141,27 +141,27 @@ class GridCellDialogEditor(GridCellBaseEditor):
         
             ### undo manager        
             from structerui.editor.undo import OpenDialogAction
-            ctx.undo_manager.add( OpenDialogAction(row, col) )
-            
+            ctx.undo_manager.add(OpenDialogAction(row, col))
+
             dlg.Show()
-            
-        else:                    
+
+        else:
             # wx.FileDialog can ONLY work with ShowModal(), and also EVT_CLOSE is not working on it.
             # So we have not choice but blocking the entire application with ShowModal(), and then
-            # fetch it's value manually 
+            # fetch it's value manually
             if wx.ID_OK == dlg.ShowModal():
                 ctx.attr_data = dlg.get_attr_data()               
             dlg.Destroy()
-                         
+
             # end edit, right after Dialog closes
             grid.DisableCellEditControl()
-        
+
     def OnDialogClose(self, evt):        
         dlg = evt.GetEventObject()
         assert dlg
         
         ### undo manager
-        if type(dlg) is EditorDialog:  
+        if type(dlg) is EditorDialog:
             from structerui.editor.undo import CloseDialogAction
             self._dlg_ctx.undo_manager.add( CloseDialogAction(self._row, self._col) )
             

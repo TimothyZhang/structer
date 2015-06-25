@@ -56,6 +56,7 @@ class StructListTable(ListTable):
         attr = self.struct.get_attr_by_index(col)        
         return attr.name    
 
+
 class StructListGrid(ListGrid):
     def __init__(self, parent, editor_context):
         ListGrid.__init__(self, parent, editor_context, StructListTable(editor_context))        

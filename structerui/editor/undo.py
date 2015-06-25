@@ -55,6 +55,11 @@ class UndoManager(object):
             elif type(action) is OpenDialogAction and type(last) is CloseDialogAction and \
                 action.row == last.row and action.col == last.col:
                 self._history.pop()
+            elif type(action) is CloseULLDialogAction and type(last) is OpenULLDialogAction:
+                self._history.pop()
+            # close then open
+            elif type(action) is OpenULLDialogAction and type(last) is CloseULLDialogAction:
+                self._history.pop()
             else:
                 self._history.append(action)
         else:            
@@ -71,10 +76,12 @@ class UndoManager(object):
         self._reset()
         
     def undo(self, grid):
+        print 'UndoManager.undo'
         if self._index < 0:
             return
                 
         act = self._history[self._index]
+        print '   ', act
         self._index -= 1
         
         self._lock = True     
@@ -88,12 +95,13 @@ class UndoManager(object):
         self._lock = False
     
     def redo(self, grid):
+        print 'UndoManager.redo'
         if self._index >= len(self._history)-1:
             return
                 
         self._index += 1
         act = self._history[self._index]
-        
+        print '   ', act
         self._lock = True
         try:
             act.redo(grid)
@@ -166,7 +174,7 @@ class OpenDialogAction(Action):
             p = p.GetParent()
         
         p.Close()
-        grid.GoToCell( self.row, self.col )
+        # grid.GoToCell( self.row, self.col )
         
     def redo(self, grid):
         grid.GoToCell( self.row, self.col )
@@ -178,7 +186,27 @@ class CloseDialogAction(OpenDialogAction):
         OpenDialogAction.redo(self, grid)
     
     def redo(self, grid):
-        OpenDialogAction.undo(self, grid)    
+        OpenDialogAction.undo(self, grid)
+
+
+class OpenULLDialogAction(Action):
+    def undo(self, grid):
+        p = grid
+        while p.GetParent() and not p.IsTopLevel():
+            p = p.GetParent()
+
+        p.Close()
+
+    def redo(self, grid):
+        grid.show_ull_editor()
+
+
+class CloseULLDialogAction(OpenULLDialogAction):
+    def undo(self, grid):
+        OpenULLDialogAction.redo(self, grid)
+
+    def redo(self, grid):
+        OpenULLDialogAction.undo(self, grid)
 
 
 class ListInsertAction(Action):

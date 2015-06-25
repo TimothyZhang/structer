@@ -213,7 +213,7 @@ class ExplorerFrame(xrcExplorerFrame):
         project.explorer = self
         
         self._project = project
-        self.SetTitle("Structer - %s" % project.name)
+        self.SetTitle("%s - [%s]" % (project.name, project.path))
                     
         if not project.is_type_editor and project.get_editor_project().has_error():
             wx.MessageBox("Invalid types, please fix!")
@@ -229,7 +229,7 @@ class ExplorerFrame(xrcExplorerFrame):
         tbsize = self.tool_bar.GetToolBitmapSize()
         size = (tbsize.width, tbsize.height)
         clazzes = project.type_manager.get_clazzes()
-        clazzes.sort(key=lambda x:x.name)
+        clazzes.sort(key=lambda x: x.name)
         for clazz in clazzes:
             tool = self.tool_bar.AddTool(wx.NewId(), get_clazz_bitmap(clazz, size, project), shortHelpString=clazz.name)
             self._bind_tool_create(clazz, tool.GetId())

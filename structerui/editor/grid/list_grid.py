@@ -16,16 +16,15 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
-import json
-
 import wx
 import wx.grid as grid
 
-from structer.stype.attr_types import *
-from structerui import hotkey
 
-from base_grid import GridBase, TableBase, CLIPBOARD_DATA_FORMAT
+from structerui import hotkey
+from base_grid import GridBase, TableBase, GridAction
+from cell_editor.dialog.editor_dialog import EditorDialog
+from structerui.editor.ull_mapper import UnionListListMapper
+
 
 class ListTable(TableBase):
     def __init__(self, ctx):
@@ -59,7 +58,7 @@ class ListTable(TableBase):
         self.attr_data[row] = value
         
     def GetColLabelValue(self, col):
-        #todo: what to show?        
+        # todo: what to show?
         return self.attr_type.element_type.name
     
     def _create_default(self):
@@ -111,50 +110,84 @@ class ListTable(TableBase):
             pos = self.GetRowsCount() - 1
         self.GetView().SetGridCursor(pos, cc)
 
+
 class ListGrid(GridBase):
     def __init__(self, parent, editor_context, table = None):
+        """
+        :param parent:
+        :param structerui.editor.context.EditorContext editor_context:
+        :param table:
+        :return:
+        """
         if table is None:
             table = ListTable(editor_context)
+
         GridBase.__init__(self, parent, table)
         
-        # hot keys
-        self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
-    
-    def OnKeyDown(self, evt):
-        keystr = hotkey.build_keystr(evt)
-        
-        if self._ctx.read_only:
-            evt.Skip()
+    def get_actions(self):
+        """
+        :return:
+        :rtype: list[GridAction]
+        """
+        actions = [GridAction(hotkey.LIST_INSERT_HEAD, self.insert_head, "Insert Head", "icons/insert_head.png"),
+                   GridAction(hotkey.LIST_APPEND_TAIL, self._append, "Append Row", "icons/append_row.png"),
+                   GridAction(hotkey.LIST_INSERT, self.insert, "Insert Row", "icons/insert_row.png"),
+                   GridAction(hotkey.LIST_DELETE, self.delete, "Delete Row", "icons/delete_row.png"),
+
+                   GridAction(hotkey.LIST_SELECT_ROWS, self._select_rows, "Select Rows", "icons/select_rows.png"),
+                   GridAction(hotkey.LIST_SELECT_COLS, self._select_cols, "Select Columns", "icons/select_cols.png"),
+                   GridAction(hotkey.LIST_CUT, self._cut, "Cut Rows", "icons/cut_rows.png"),
+                   GridAction(hotkey.LIST_INSERT_COPIED, self.insert_copied, "Insert Rows", "icons/insert_rows.png"),
+                   GridAction(hotkey.LIST_APPEND_COPIED_TAIL, self.append_copied, "Append Rows",
+                              "icons/append_rows.png")
+                   ]
+
+        # ull mapper
+        if UnionListListMapper.check_ull_type(self.editor_context.attr_type):
+            actions.append(GridAction(hotkey.LIST_ULL_EDITOR, self.show_ull_editor, "Super ULL Editor",
+                                      "icons/ull_editor.png"))
+        return GridBase.get_actions(self) + actions
+
+    def show_ull_editor(self):
+        ull_mapper = UnionListListMapper.create(self.editor_context.project,
+                                                self.editor_context.attr_type,
+                                                self.editor_context.attr_data)
+        if not ull_mapper:
             return
-        
-        if hotkey.check(hotkey.LIST_APPEND_HEAD, keystr):
-            #self.InsertRows(0, 1)
-            self.insert(0, 1, add_undo=True)
-        elif hotkey.check(hotkey.LIST_APPEND_TAIL, keystr):         
-            self._append(add_undo=True)
+
+        ctx = self.editor_context.create_sub_context(ull_mapper.get_sl_type(), ull_mapper.get_sl_data())
+
+        while 1:
+            ull_dlg = EditorDialog(self, ctx)
+            ull_dlg.ShowModal()
+
+            if not ctx.is_modified():
+                return
+
+            ull_data = ull_mapper.convert_sl_data_to_ull_data(ctx.attr_data)
+            # todo: should let use known where the problem is
+            if ull_data is None:
+                wx.MessageBox("INCOMPLETE!")
+                continue
+            break
+
+        self.editor_context.attr_data = ull_data
+
+        # close current dialog
+        p = self
+        while p.GetParent() and not p.IsTopLevel():
+            p = p.GetParent()
+
+        if not isinstance(p, EditorDialog):
             return
-        elif hotkey.check(hotkey.LIST_INSERT, keystr):  
-            self.insert(add_undo=True)   
-            return
-        elif hotkey.check(hotkey.LIST_DELETE, keystr):
-            self.delete()
-            return
-        elif hotkey.check(hotkey.LIST_SELECT_ROWS, keystr):
-            self._select_rows()
-            return
-        elif hotkey.check(hotkey.LIST_CUT, keystr):
-            self._cut()
-            return
-        elif hotkey.check(hotkey.LIST_INSERT_COPIED, keystr):
-            self.insert_copied()
-            return
-        elif hotkey.check(hotkey.LIST_APPEND_COPIED_HEAD, keystr):
-            self.insert_copied( 0 )
-            return
-        elif hotkey.check(hotkey.LIST_APPEND_COPIED_TAIL, keystr):
-            self.insert_copied( self.GetNumberRows() )
-            return
-        evt.Skip()    
+
+        p.Close()
+
+    def insert_head(self):
+        self.insert(0, 1, add_undo=True)
+
+    def append_copied(self):
+        self.insert_copied(self.GetNumberRows())
     
     def insert(self, pos=-1, rows=1, add_undo=False):
         '''

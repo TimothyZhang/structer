@@ -31,7 +31,7 @@ ICON_FILTER =  'icons/filter.png'
 #ICON_TRASH_EMPTY = 'icons/trash_empty64.png'
 #ICON_TRASH_FULL = 'icons/trash_full64.png'
 
-FRAME_ICON_SIZE = (16,16)
+FRAME_ICON_SIZE = (16, 16)
 
 class __WXID(object):
     def __init__(self):        

@@ -123,4 +123,4 @@ class UnionTable(StructTable):
 class UnionGrid(StructGrid):
     def __init__(self, parent, editor_context):
         StructGrid.__init__(self, parent, editor_context, UnionTable(editor_context))
-                
+

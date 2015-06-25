@@ -21,6 +21,7 @@ import wx
 
 from structerui import hotkey
 
+
 class EditorDialog(wx.Dialog):
     def __init__(self, parent, editor_context):                
         wx.Dialog.__init__(self, parent, style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)        
@@ -46,7 +47,7 @@ class EditorDialog(wx.Dialog):
         keystr = hotkey.build_keystr(evt)
         
         if hotkey.check(hotkey.CLOSE_DIALOG, keystr):
-            if not self.editor_panel.grid.IsCellEditControlEnabled ():
+            if not self.editor_panel.grid.IsCellEditControlEnabled():
                 self.Close()
                 return
         
@@ -55,4 +56,3 @@ class EditorDialog(wx.Dialog):
             return
                 
         evt.Skip()
-    

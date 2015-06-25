@@ -17,11 +17,11 @@
 
 
 
-'''
+"""
 Clipboard:
     use a custom data object: CLIPBOARD_DATA_FORMAT
     clip data is a json dumped string, json format is [ [AttrType.name, ...], [[col1, col2, ...], ] ]
-'''
+"""
 import json, copy
 
 import wx
@@ -59,8 +59,8 @@ GRID_CELL_ATTR_ERROR_READONLY = GRID_CELL_ATTR_ERROR.Clone()
 GRID_CELL_ATTR_ERROR_READONLY.SetReadOnly()
 
 # warning
-#GRID_CELL_ATTR_WARNING = grid.GridCellAttr()
-#GRID_CELL_ATTR_WARNING.SetBackgroundColour( (0xDD, 0xDD, 0x44) )
+# GRID_CELL_ATTR_WARNING = grid.GridCellAttr()
+# GRID_CELL_ATTR_WARNING.SetBackgroundColour( (0xDD, 0xDD, 0x44) )
 
 # readonly
 GRID_CELL_ATTR_STATIC_READONLY = grid.GridCellAttr()
@@ -239,7 +239,7 @@ class GridBase(grid.Grid):
         
         # intercept key events from CellEditors
         self.Bind(wx.EVT_CHAR_HOOK, self.__OnCharHook)
-        self.Bind(wx.EVT_KEY_DOWN, self.__OnKeyDown)
+        # self.Bind(wx.EVT_KEY_DOWN, self.__OnKeyDown)
         self.Bind(grid.EVT_GRID_SELECT_CELL, self.__OnCellSelected)                
         self.Bind(grid.EVT_GRID_CELL_CHANGED, self.__OnCellChanged)
         
@@ -464,53 +464,42 @@ class GridBase(grid.Grid):
             self.show_tip(row, col)
         
         self.refresh_block((row,col,row,col))
-        evt.Skip()        
-    
-    def __OnKeyDown(self, evt):        
-        keystr = hotkey.build_keystr(evt)
-        #print 'OnKeyDown', keystr
-        
-        if hotkey.check(hotkey.GOTO_REF, keystr):
-            row, col = self.GetGridCursorRow(), self.GetGridCursorCol()
-            at = self.GetTable().get_attr_type(row, col)
-            if type(at) is ATRef:
-                uuid = self.GetTable().get_attr_value(row, col)
-                if uuid:
-                    obj = self.editor_context.project.get_object(uuid, at.clazz_name)
-                    if obj:
-                        self.editor_context.project.explorer.show_editor(obj)
-       
-        # read only !
-        if self._ctx.read_only:
-            evt.Skip()
-            return
-        
-        if hotkey.check(hotkey.COPY, keystr):
-            self._copy()
-            return
-        
-        if hotkey.check(hotkey.PASTE, keystr):
-            self._paste()
-            return
-        
-        if hotkey.check(hotkey.LIST_SELECT_COLS, keystr):
-            self._select_cols()
-            return
-        
-        # undo/redo
-        if hotkey.check(hotkey.UNDO, keystr):
-            self.editor_context.undo_manager.undo(self)
-            return        
-        if hotkey.check(hotkey.REDO, keystr):
-            self.editor_context.undo_manager.redo(self)
-            return
-        
-        
-        if hotkey.check(hotkey.DELETE, keystr):
-            self.reset_to_default()
-            return
-        
         evt.Skip()
+
+    def goto_ref(self):
+        row, col = self.GetGridCursorRow(), self.GetGridCursorCol()
+        at = self.GetTable().get_attr_type(row, col)
+        if type(at) is ATRef:
+            uuid = self.GetTable().get_attr_value(row, col)
+            if uuid:
+                obj = self.editor_context.project.get_object(uuid, at.clazz_name)
+                if obj:
+                    self.editor_context.project.explorer.show_editor(obj)
+
+    def get_actions(self):
+        """
+        :return:
+        :rtype: list[GridAction]
+        """
+        return [GridAction(hotkey.GOTO_REF, self.goto_ref, "Goto", "icons/goto.png"),
+                GridAction(hotkey.COPY, self._copy, "Copy", "icons/copy.png"),
+                GridAction(hotkey.PASTE, self._paste, "Paste", "icons/paste.png", self.is_editable),
+                GridAction(hotkey.UNDO, self.undo, "Undo", "icons/undo.png"),
+                GridAction(hotkey.REDO, self.redo, "Redo", "icons/redo.png"),
+                GridAction(hotkey.RESET, self.reset_to_default, "Reset", "icons/reset.png", self.is_editable),
+                ]
+
+    def undo(self):
+        self.editor_context.undo_manager.undo(self)
+
+    def redo(self):
+        self.editor_context.undo_manager.redo(self)
+
+    def is_editable(self):
+        return not self.is_read_only()
+
+    def is_read_only(self):
+        return self._ctx.read_only
     
     def _select_cols(self):
         # selection block 
@@ -817,4 +806,22 @@ class CellTipWindow(wx.PopupWindow):
         self.Close()
         self.Destroy()            
         evt.Skip()
-        
+
+
+class GridAction(object):
+    def __init__(self, hot_key_tr, callback, label, icon=None, check_enable=None):
+        """
+
+        :param str hot_key_tr:
+        :param function callback:
+        :param str label: label for tool/menu
+        :param str icon: path for menu/toolbar icon
+        :param function check_enable: EVT_UPDATE_UI
+        :return:
+        """
+        self.hot_key_tr = hot_key_tr
+        self.callback = callback
+        self.label = label
+        self.icon = icon
+        self.check_enable = check_enable
+

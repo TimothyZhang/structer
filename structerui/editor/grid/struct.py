@@ -102,6 +102,14 @@ class StructGrid(GridBase):
         #self.Bind(grid.EVT_GRID_CELL_BEGIN_DRAG, self.OnDrag)
         
         self.SetGridCursor(0, 2)
+
+    def get_actions(self):
+        """
+        :return:
+        :rtype: list[GridAction]
+        """
+        actions = [GridAction(hotkey.LIST_SELECT_COLS, self._select_cols, "Select Columns", "icons/select_cols.png")]
+        return GridBase.get_actions(self) + actions
         
     def OnRangeSelect(self, evt):        
         block = self._get_selection_block()

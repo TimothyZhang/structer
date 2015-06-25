@@ -1,4 +1,6 @@
-import wx, os
+import wx
+import os
+
 
 class Plugin(object):
     name = 'Plugin'
@@ -18,6 +20,9 @@ class PluginManager(object):
         self._plugins[plugin.name] = plugin
         
         plugin = CheckI18NPlugin()
+        self._plugins[plugin.name] = plugin
+
+        plugin = CheckI18NWithChinesePlugin()
         self._plugins[plugin.name] = plugin
         
         plugin = ExportI18NPlugin()
@@ -104,28 +109,29 @@ class ExportI18NPlugin(Plugin):
 class CheckI18NPlugin(Plugin):
     name = 'i18n_checker'
     label = "&Check I18N"
-    
+    need_chinese = False
+
     def execute(self, project):
+        # {lang: {clazz_name: {en: i18n}}}
         misses = {}  # {'lang': [en,...]}
         
-        def check(data):
+        def check(data, clazz_name):
             if type(data) is dict:
                 if 'en' not in data:
                     for v in data.itervalues():
-                        check(v)
+                        check(v, clazz_name)
                 elif data['en']:
                     for lang, val in data.iteritems():
                         if not val:
-                            misses.setdefault(lang, set()).add(data['en'])
+                            misses.setdefault(lang, {}).setdefault(clazz_name, {})[data['en']] = data
             elif type(data) is list:
                 for v in data:
-                    check(v)
+                    check(v, clazz_name)
         
         for obj in project.object_manager.iter_all_objects():
-            check(obj.raw_data)
+            check(obj.raw_data, obj.clazz.name)
             
         self._dump(misses, project)
-        
         
     def choose_dir(self, project):
         dlg = wx.DirDialog(None, "Choose a directory:",
@@ -146,12 +152,32 @@ class CheckI18NPlugin(Plugin):
         if not path:
             return
         
-        for lang, vals in misses.iteritems():
+        for lang, lang_data in misses.iteritems():
+            lines = []
+            for clazz_name, clazz_data in lang_data.iteritems():
+                lines.append('# %s' % clazz_name)
+
+                clazz_data = clazz_data.items()
+                clazz_data.sort(key=lambda x: x[0])
+                for en, i18n in clazz_data:
+                    if self.need_chinese:
+                        lines.append('%s=%s' % (en, i18n.get('cn')))
+                    else:
+                        lines.append(en)
+                lines.append('')
+
             fn = 'missed_i18n_%s.txt' % lang
             fp = os.path.join(path, fn)
-            open(fp, 'w').write( '\n'.join(vals).encode('utf-8'))
+            open(fp, 'w').write('\n'.join(lines).encode('utf-8'))
         wx.MessageBox("Exported to %s" % project.path)
-                
+
+
+class CheckI18NWithChinesePlugin(CheckI18NPlugin):
+    name = 'i18n_checker_cn'
+    label = "&Check I18N(Include Chinese)"
+    need_chinese = True
+
+
 class ImportI18NPlugin(Plugin):
     name = 'i18n_importer'
     label = "&Import I18N"            

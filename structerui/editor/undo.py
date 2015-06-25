@@ -103,14 +103,16 @@ class UndoManager(object):
             self._reset()
             
         self._lock = False
-    
+
+
 class Action(object):    
     def undo(self, grid):
         pass
     
     def redo(self, grid):
         pass
-        
+
+
 class MutateAction(Action):
     def __init__(self, row, col, old, new):
         self.row = row
@@ -132,6 +134,7 @@ class MutateAction(Action):
     def redo(self, grid):
         self._set_value(grid, self.old, self.new)
 
+
 class BatchMutateAction(Action):
     def __init__(self, row, col, old, new):
         assert len(old) == len(new)
@@ -150,7 +153,8 @@ class BatchMutateAction(Action):
     
     def redo(self, grid):
         grid.batch_mutate( self.block, self.new )
-    
+
+
 class OpenDialogAction(Action):
     def __init__(self, row, col):
         self.row = row
@@ -167,14 +171,16 @@ class OpenDialogAction(Action):
     def redo(self, grid):
         grid.GoToCell( self.row, self.col )
         grid.EnableCellEditControl()
-        
+
+
 class CloseDialogAction(OpenDialogAction):
     def undo(self, grid):
         OpenDialogAction.redo(self, grid)
     
     def redo(self, grid):
         OpenDialogAction.undo(self, grid)    
-     
+
+
 class ListInsertAction(Action):
     def __init__(self, pos, attr_type_names, data):
         self.pos = pos
@@ -187,10 +193,11 @@ class ListInsertAction(Action):
     def redo(self, grid):        
         grid.insert_datas(self.attr_type_names, self.data, self.pos)
 
+
 class ListDeleteAction(ListInsertAction):
     def undo(self, grid):
         ListInsertAction.redo(self, grid)
         
     def redo(self, grid):
         ListInsertAction.undo(self, grid)
-        
+

@@ -101,7 +101,7 @@ class StructListGrid(ListGrid):
                 pos = top
                 rows = bottom - top + 1
                 
-            if wx.NO==wx.MessageBox("%s %s will be deleted, and can NOT undo!!!\nContinue?"%(rows, self.editor_context.clazz.name), style=wx.YES_NO|wx.ICON_WARNING):
+            if wx.NO == wx.MessageBox("%s %s will be deleted, and can NOT undo!!!\nContinue?"%(rows, self.editor_context.clazz.name), style=wx.YES_NO|wx.ICON_WARNING):
                 return
         
         ListGrid.delete(self, pos, rows)

@@ -16,21 +16,21 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
 import copy
-#from structer.stype.clazz import Object
+# from structer.stype.clazz import Object
 from structer.stype.attr_types import ATList
 from structerui import log
 
 from undo import UndoManager
 
+
 class EditorContext(object):
-    '''Holds all the informations need by an editor.
+    """Holds all the informations need by an editor.
     
     Attributes:
         attr_type: instance of AttrType
         attr_data: value to be edited
-    '''
+    """
     def __init__(self, project, attr_type, attr_data, undo_manager, read_only=False):
         self._project = project
         self._attr_type = attr_type
@@ -39,7 +39,7 @@ class EditorContext(object):
         
         self._undo_manager = undo_manager
         self._read_only = read_only
-    
+
     @property
     def undo_manager(self):
         return self._undo_manager
@@ -66,21 +66,22 @@ class EditorContext(object):
     
     def is_modified(self):
         return self._attr_type.compare(self._old_data, self._attr_data) != 0
-        #return self._undo_manager.is_modified()
+        # return self._undo_manager.is_modified()
     
     def get_title(self):
         return self._attr_type.name
     
     def create_sub_context(self, attr_type, attr_data):
         return EditorContext(self._project, attr_type, attr_data, self.undo_manager, self.read_only)
-        
-#todo: rename to RootEditorContext?
+
+
+# todo: rename to RootEditorContext?
 class FrameEditorContext(EditorContext):
     def __init__(self, project, objects, readonly=False):
-        '''
+        """
         Args:
             objects: can be one object, or a list of objects
-        '''        
+        """
         
         if type(objects) is list:
             self._objects = dict([(obj.uuid, obj) for obj in objects])

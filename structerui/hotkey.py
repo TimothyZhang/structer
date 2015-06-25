@@ -16,7 +16,6 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
 import string
 
 import wx
@@ -47,8 +46,8 @@ _keycode_map = {wx.WXK_NUMPAD0: '0',
                 wx.WXK_BACK:    'Back',
                 wx.WXK_RETURN:  'Enter',
                 wx.WXK_NUMPAD_ENTER: 'Enter',
-                wx.WXK_F2:       'F2',
-}
+                wx.WXK_F2:       'F2'}
+
 
 def get_key_name(keycode):    
     ch = _keycode_map.get(keycode)
@@ -59,6 +58,7 @@ def get_key_name(keycode):
         return chr(keycode).upper()
     
     return 'Unknown'
+
 
 def build_keystr(evt):
     s = []
@@ -73,7 +73,8 @@ def build_keystr(evt):
     s.append(get_key_name(key))
     
     return '+'.join(s)
-            
+
+
 def check(keydef, keystr):    
     if type(keydef) is tuple:
         return keystr in keydef
@@ -92,25 +93,27 @@ UNDO = 'Ctrl+Z'
 REDO = 'Ctrl+Y'
 
 # list
-LIST_APPEND_HEAD = 'Ctrl+,'
+LIST_INSERT_HEAD = 'Ctrl+,'
 LIST_APPEND_TAIL = 'Ctrl+.'
 LIST_INSERT = 'Ctrl+I', 'Ctrl+Insert'
 LIST_DELETE = 'Ctrl+D', 'Ctrl+Delete'
 LIST_SELECT_ROWS = 'Ctrl+R'
 LIST_SELECT_COLS = 'Ctrl+L'
-LIST_CUT  = 'Ctrl+X'
+LIST_CUT = 'Ctrl+X'
 LIST_INSERT_COPIED = 'Ctrl+Alt+I'
 LIST_APPEND_COPIED_HEAD = 'Ctrl+Alt+,'
 LIST_APPEND_COPIED_TAIL = 'Ctrl+Alt+.'
 
+LIST_ULL_EDITOR = 'Ctrl+K'
+
 # cell
 INSERT_FRONT = ','
-INSERT_TAIL  = '.'
+INSERT_TAIL = '.'
 CELL_BEGIN_EDIT = ' '
 INCREASE = 'I'
 DECREASE = 'D'
 GOTO_REF = 'Ctrl+G'
-DELETE = 'Delete'  # set to default
+RESET = 'Delete'  # set to default
 
 # explorer
 EXPLORER_OPEN = 'Enter', 'Alt+Down'

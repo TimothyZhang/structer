@@ -178,7 +178,7 @@ class TableBase(grid.PyGridTableBase):
         at = self.get_attr_type(row, col)
         if not at:
             print 'at is None', row, col, kind
-            return ''
+            return self._get_cell_attr("error_readonly")
         
         val = self.get_attr_value(row, col)
         #print 'GetAttr', row, col, kind
@@ -191,11 +191,13 @@ class TableBase(grid.PyGridTableBase):
         else:
             attr_name = "default"
         
-        if self._ctx.read_only:
-            editor = self.GetView().GetDefaultEditorForType ( self.GetTypeName(row, col) )
+        if self._ctx.read_only or (val is None and self._ctx.freeze_none):
+            editor = self.GetView().GetDefaultEditorForType(self.GetTypeName(row, col))
             if isinstance(editor, GridCellDialogEditor) and editor.dialog_class is EditorDialog:
                 pass
-            else: 
+            else:
+                if val is None and self._ctx.freeze_none:
+                    attr_name = "static"
                 attr_name += "_readonly"
                     
         return self._get_cell_attr(attr_name)

@@ -522,7 +522,8 @@ class FileSystemManager(object):
         self._nodes.pop(node.uuid)
         self._new_event(FSEvent.DELETE, node)
        
-    def _save(self, node):        
+    def _save(self, node):
+        node.touch()
         data = node.dump()
                 
         rp = self._get_real_path(node.uuid)
@@ -576,7 +577,10 @@ class FSNode(object):
         self.create_time = data.get('create_time', time.time())
         self.name = data.get('name', '')
         
-        self._load(data)    
+        self._load(data)
+
+    def touch(self):
+        self.modify_time = time.time()
     
     def dump(self):
         '''dump node to native file

@@ -20,6 +20,7 @@
 import wx
 import wx.grid as grid
 
+
 class GridCellBaseEditor(grid.PyGridCellEditor):
     def __init__(self):        
         grid.PyGridCellEditor.__init__(self)

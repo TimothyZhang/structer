@@ -16,7 +16,5 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
 from structerui.main import main
-
 main()

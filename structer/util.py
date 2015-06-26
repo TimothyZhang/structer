@@ -80,7 +80,24 @@ def get_relative_path(path, relaltive_to):
     r += sep.join(p[i:])
     return r
 
-if __name__=='__main__':
+
+def is_sub_sequence(a, b):
+    """
+    Determines whether a is a subsequence of b. (NOTE: not sub list!)
+    :param list | tuple a:
+    :param list | tuple b:
+    :return: True if a is subsequence of b, otherwise False
+    :rtype: bool
+    """
+    i = j = 0
+    while i < len(a) and j < len(b):
+        if a[i] == b[j]:
+            i += 1
+        j += 1
+    return i >= len(a)
+
+
+if __name__ == '__main__':
     print get_relative_path('/a/b/c', '/a')
     print get_relative_path('/a', '/a/b/c')
     print get_relative_path('/a/', '/a/b/c')

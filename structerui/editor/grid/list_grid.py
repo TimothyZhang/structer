@@ -43,8 +43,6 @@ class ListTable(TableBase):
         return self.attr_type.element_type
     
     def get_attr_value(self, row, col):
-        if not 0<=row<len(self.attr_data):
-            k = 1
         return self.attr_data[row]
     
     def GetNumberRows(self):        
@@ -159,6 +157,7 @@ class ListGrid(GridBase):
             return
 
         ctx = self.editor_context.create_sub_context(ull_mapper.get_sl_type(), ull_mapper.get_sl_data())
+        # ctx.freeze_none = True
 
         def on_close(evt):
             _ = evt
@@ -184,6 +183,8 @@ class ListGrid(GridBase):
                 continue
             break
 
+        # NOTE: DialogEditor of composited types should modify the original value, not set a new one,
+        # to keep UndoManager work properly.
         self.editor_context.attr_data[:] = ull_data
 
         # close current dialog

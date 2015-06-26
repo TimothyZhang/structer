@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # Copyright 2014 Timothy Zhang(zt@live.cn).
 #
 # This file is part of Structer.
@@ -15,13 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
-
-
-# -*- coding: utf-8 -*-
-#import os, types, copy, ast, imp, inspect
-
-#from structer import log
-
 from structer import const, util
 from clazz import Clazz
 from composite_types import *
@@ -36,17 +31,17 @@ Terminology
   Clazz: object type. Eg: Monster, Skill, NPC, Buff  
 '''
 
+
 class TypeManager(object):
     def __init__(self):
         # name -> ObjectType
         self._clazzes = {}
-#         self._enums = {}
-#         self._structs = {}
-#         self._unions = {}
+
+        self._parsed_enums = {}
+        self._parsed_unions = {}
+        self._parsed_structs = {}
         
     def get_clazzes(self):
-        #for k,v in self._clazzes.iteritems():
-        #    yield k,v
         return self._clazzes.values()
     
     def get_clazz_by_name(self, name):
@@ -72,8 +67,6 @@ class TypeManager(object):
             for clazz_obj in clazze_objs:
                 atstruct, data = clazz_obj.clazz.atstruct, clazz_obj.raw_data
                 
-                
-                #struct = self._parse_struct(data, project, False)
                 name = data['name']
                 attrs = self._parse_struct_attrs(data['attrs'], project)
                 exporter = data.get('exporter', u'')
@@ -94,7 +87,7 @@ class TypeManager(object):
                 
                 # extra settings
                 clazz.unique_attrs = clazz_obj.get_attr_value('unique_attrs',)
-                #clazz.name_attr = atstruct.get_attr_value('name_attr')
+                # clazz.name_attr = atstruct.get_attr_value('name_attr')
                 clazz.max_number = clazz_obj.get_attr_value('max_number')
                 clazz.min_number = clazz_obj.get_attr_value('min_number')
                                 
@@ -103,14 +96,14 @@ class TypeManager(object):
                     # icon path is relative to editor project root
                     icon = util.normpath(icon)
                     if not os.path.isabs(icon):
-                        icon = util.normpath( os.path.join(const.PROJECT_FOLDER_TYPE, icon) )                        
+                        icon = util.normpath(os.path.join(const.PROJECT_FOLDER_TYPE, icon))
                     clazz.icon = icon
                 
                 self._clazzes[clazz.name] = clazz
         finally:
-            #del self._parsed_enums
-            #del self._parsed_unions
-            #del self._parsed_structs
+            # del self._parsed_enums
+            # del self._parsed_unions
+            # del self._parsed_structs
             pass
         
     def get_enums(self):
@@ -120,7 +113,7 @@ class TypeManager(object):
         return self._parsed_unions.values()
     
     def _parse_type(self, type_data, project):
-        '''Generate AttrType from type_data
+        """Generate AttrType from type_data
     
         Args:
             type_data: value of ATUnion(editor_types.u_type)           
@@ -128,8 +121,8 @@ class TypeManager(object):
     
         Returns:
             AttrType
-        '''
-        #print '_parse_type', type_data
+        """
+        # print '_parse_type', type_data
         type_name = type_data[0]
         type_type = editor_types.u_type.get_atstruct(type_name)
         
@@ -137,20 +130,20 @@ class TypeManager(object):
             val = type_type.get_attr_value("predefined_type", type_data[1], project)
             obj = project.object_manager.get_object(val)
             data = obj.get_attr_value("predefined_type")
-            #print '>>>', data
+            # print '>>>', data
             return self._parse_type(data, project)
         
         class_args = {}        
-        #if type_name == 'List' and u'element_type' not in type_data[1]:
+        # if type_name == 'List' and u'element_type' not in type_data[1]:
         #    type_data[1]['element_type'] = type_data[1]['type']
         
         for attr in type_type.struct.iterate():
             val = type_type.get_attr_value(attr.name, type_data[1], project)
                         
-            #if type_name == 'List':
-            #    if attr.name == 'element_type':
-            #        if val is None:
-            #            val = type_type.get_attr_value('type', type_data[1], project)
+            # if type_name == 'List':
+            #     if attr.name == 'element_type':
+            #         if val is None:
+            #             val = type_type.get_attr_value('type', type_data[1], project)
             
             if type(attr.type) is ATRef: 
                 ref = project.object_manager.get_object(val, attr.type.clazz_name)
@@ -167,19 +160,18 @@ class TypeManager(object):
                     log.error("ref to %s is None: %s", attr.type.clazz_name, val)
                     return None
             elif attr.type.name == editor_types.atu_type.name: 
-                #attr.type, 
+                # attr.type,
                 val = self._parse_type(val, project)
-            
             
             class_args[attr.name] = val
         
-        attr_type_class = globals()['AT%s'%type_name]
+        attr_type_class = globals()['AT%s' % type_name]
         
-        #try:
+        # try:
         return attr_type_class(**class_args)
-        #except Exception, e:
-        #    print '>>>:',type_name
-        #    raise
+        # except Exception, e:
+        #     print '>>>:',type_name
+        #     raise
     
     def _parse_struct(self, struct_def_data, project, cache=True):
         struct_name = struct_def_data['name']
@@ -201,18 +193,19 @@ class TypeManager(object):
         attrs = []
         for attr_def in attrs_def_data:
             attr_type = self._parse_type(attr_def['type'], project)           
-            attrs.append( Attr(attr_def['name'], attr_type, attr_def['description']) )
+            attrs.append(Attr(attr_def['name'], attr_type, attr_def['description']))
         
         return attrs     
     
     def _parse_enum(self, enum_obj, project):
-        ''' 
+        """
         Args:
             enum_obj: object of editor_types.clazz_enum
         
         Returns:
             Enum
-        '''
+        """
+        _ = project
         
         enum_name = enum_obj.get_attr_value('name')
         if enum_name in self._parsed_enums:
@@ -221,7 +214,7 @@ class TypeManager(object):
         # [{'name':, 'value':}, ...]
         items = enum_obj.get_attr_value('items')
         # [[name,value], ...]
-        items = [[item['name'],item['value'], item.get('label', item['name'])] for item in items]
+        items = [[item['name'], item['value'], item.get('label', item['name'])] for item in items]
         
         export_names = enum_obj.get_attr_value('export_names')
         convert_to_int = enum_obj.get_attr_value('convert_to_int')
@@ -244,11 +237,12 @@ class TypeManager(object):
             str_template = item.get('str_template', u'')
             exporter = item.get('exporter', u'')
             struct = Struct(item['name'], attrs, str_template=str_template, label=item.get('label'), exporter=exporter)
-            structs.append( [ATStruct( struct ), item['value']] )
+            structs.append([ATStruct(struct), item['value']])
         
         export_names = union_obj.get_attr_value('export_names')
         convert_to_int = union_obj.get_attr_value('convert_to_int')
-        union = self._parsed_unions[union_name] = Union(union_name, structs, export_names=export_names, convert_to_int=convert_to_int)
+        union = self._parsed_unions[union_name] = Union(union_name, structs, export_names=export_names,
+                                                        convert_to_int=convert_to_int)
         
         return union
         
@@ -256,7 +250,8 @@ class TypeManager(object):
         print 'Clazzes:'
         for n, c in self._clazzes.iteritems():
             print '   ', n, c
-                
+
+
 def test():
     tm = TypeManager()
     tm.load_editor_types()
@@ -264,4 +259,3 @@ def test():
 
 if __name__ == '__main__': 
     test()
-

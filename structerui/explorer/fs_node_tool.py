@@ -16,19 +16,17 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
-import os, time, json
+import time
+import json
 import collections
-
-import wx
+import traceback
 
 from structer import const, fs_util
 from structer.fs_manager import FOLDER_CONFLICTION_STRATEGY_RENAME
 from structer.fs_manager import FOLDER_CONFLICTION_STRATEGY_MERGE
 from structer.fs_manager import FolderConflictionException
 
-from structerui import log
-#from structerui.res import get_real_path
+
 from structerui.util import *
 
 CLIPBOARD_DATA_FORMAT = "__structer_fs_nodes_ajfdi1209dfsdf923jsdf1f4abz__"
@@ -574,6 +572,13 @@ class FSNodeTool(object):
          
     def is_container(self, node):
         return not self.project.fs_manager.is_recycled(node) and (node.is_folder() or fs_util.is_filter(node))
+
+    @staticmethod
+    def get_chooser_from_filter_str(filter_str):
+        # todo: this is not safe!
+        choose = None
+        exec filter_str
+        return choose
     
     def get_children(self, node):
         if node.is_folder():
@@ -581,15 +586,16 @@ class FSNodeTool(object):
         
         if fs_util.is_filter(node):
             filter_str = node.data
-            l = {}
-            g = {time}
+            # l = {}
+            # g = {time}
             try:            
-                exec(filter_str, g, l)
+                func = self.get_chooser_from_filter_str(filter_str)
             except:
+                traceback.print_exc()
                 log.error('invalid filter str in %s: %s', node.uuid, filter_str)
                 return []
             
-            func = l.get('choose')
+            # func = l.get('choose')
             if func:                
                 objects = self.project.object_manager.iter_all_objects(func)
                 fsm = self.project.fs_manager

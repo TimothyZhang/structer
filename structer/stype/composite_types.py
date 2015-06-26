@@ -17,13 +17,15 @@
 
 
 import string
-      
+
+
 class Attr(object):
     def __init__(self, name, attr_type, description=''):
         self.name = name        
         self.type = attr_type        
         self.description = description  
-        
+
+
 class Enum(object):
     def __init__(self, name, items, export_names=False, convert_to_int=False):
         ''' item: [[name(str), value(int), label(str)], ...] or [[name(str), value(int)], ...]'''

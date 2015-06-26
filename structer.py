@@ -16,10 +16,9 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
 import optparse
-
 from structer.project import Project
+
 
 def export(project_path, dst_path):
     p = Project(project_path, False)
@@ -32,12 +31,14 @@ def export(project_path, dst_path):
     exp = DefaultExporter()
     
     from zipfile import ZipFile
+    zf = None
     try:
         zf = ZipFile(dst_path, 'w')
         exp.export(p, zf.writestr)
     finally:
         if zf:
             zf.close()
+
 
 def make_option_parser():
     usage = """%prog -s project_path -d output_path export"""
@@ -48,11 +49,12 @@ def make_option_parser():
     parser.add_option('-d', '--dest', dest="dest", help="dest(output) folder")
     return parser
 
+
 def main():
     parser = make_option_parser()        
     (options, args) = parser.parse_args()
     
-    if len(args)==1:
+    if len(args) == 1:
         cmd = args[0]    
         if cmd == 'export':                     
             export(options.source, options.dest)
@@ -60,6 +62,6 @@ def main():
         
     parser.print_usage()
 
+
 if __name__ == '__main__':
     main()
-

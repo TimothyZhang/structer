@@ -14,6 +14,3 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
-
-
-#from type_manager import TypeManager

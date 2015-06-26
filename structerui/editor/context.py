@@ -40,6 +40,9 @@ class EditorContext(object):
         self._undo_manager = undo_manager
         self._read_only = read_only
 
+        # if value is None, do not edit
+        self.freeze_none = False
+
     @property
     def undo_manager(self):
         return self._undo_manager

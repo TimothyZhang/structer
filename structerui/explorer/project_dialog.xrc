@@ -1,0 +1,138 @@
+<?xml version="1.0" ?>
+<resource class="wxListBox">
+  <object class="wxDialog" name="ProjectDialog">
+    <object class="wxBoxSizer">
+      <orient>wxHORIZONTAL</orient>
+      <object class="spacer">
+        <size>5,5</size>
+      </object>
+      <object class="sizeritem">
+        <object class="wxBoxSizer">
+          <object class="spacer">
+            <size>5,15</size>
+          </object>
+          <object class="sizeritem">
+            <object class="wxBoxSizer">
+              <object class="sizeritem">
+                <object class="wxStaticText">
+                  <label>Path:</label>
+                </object>
+                <flag>wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL</flag>
+              </object>
+              <object class="spacer">
+                <size>5,5</size>
+              </object>
+              <object class="sizeritem">
+                <object class="wxTextCtrl" name="text_ctrl">
+                  <XRCED>
+                    <assign_var>1</assign_var>
+                  </XRCED>
+                </object>
+                <option>1</option>
+                <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL</flag>
+                <minsize>400,20</minsize>
+              </object>
+              <object class="spacer"/>
+              <object class="sizeritem">
+                <object class="wxButton" name="button_browse">
+                  <label>&amp;Browse</label>
+                  <XRCED>
+                    <events>EVT_BUTTON</events>
+                    <assign_var>1</assign_var>
+                  </XRCED>
+                </object>
+                <flag>wxALIGN_RIGHT|wxALIGN_CENTRE_VERTICAL</flag>
+              </object>
+              <orient>wxHORIZONTAL</orient>
+            </object>
+            <flag>wxEXPAND</flag>
+          </object>
+          <object class="spacer">
+            <size>5,5</size>
+          </object>
+          <object class="sizeritem">
+            <object class="wxStaticText">
+              <label>Recent projects:</label>
+            </object>
+          </object>
+          <object class="spacer">
+            <size>5,5</size>
+          </object>
+          <object class="sizeritem">
+            <object class="wxListBox" name="list_box">
+              <size>400,200</size>
+              <content>
+                <item/>
+              </content>
+              <focused>1</focused>
+              <XRCED>
+                <events>EVT_LISTBOX|EVT_LISTBOX_DCLICK</events>
+                <assign_var>1</assign_var>
+              </XRCED>
+            </object>
+            <option>1</option>
+            <flag>wxEXPAND|wxALIGN_CENTRE_HORIZONTAL</flag>
+            <minsize>400,200</minsize>
+          </object>
+          <object class="spacer">
+            <size>5,5</size>
+          </object>
+          <object class="sizeritem">
+            <object class="wxBoxSizer">
+              <object class="sizeritem">
+                <object class="wxCheckBox" name="checkbox_create">
+                  <label>create project if not exists</label>
+                  <checked>1</checked>
+                  <enabled>0</enabled>
+                  <XRCED>
+                    <assign_var>1</assign_var>
+                  </XRCED>
+                </object>
+                <option>1</option>
+                <flag>wxEXPAND|wxALIGN_CENTRE_HORIZONTAL</flag>
+              </object>
+              <orient>wxHORIZONTAL</orient>
+            </object>
+            <flag>wxEXPAND</flag>
+          </object>
+          <object class="spacer">
+            <size>5,5</size>
+          </object>
+          <object class="sizeritem">
+            <object class="wxBoxSizer">
+              <orient>wxVERTICAL</orient>
+              <object class="sizeritem">
+                <object class="wxButton" name="button_open">
+                  <label>&amp;Open/Create</label>
+                  <default>1</default>
+                  <XRCED>
+                    <events>EVT_BUTTON|EVT_UPDATE_UI</events>
+                    <assign_var>1</assign_var>
+                  </XRCED>
+                </object>
+                <flag>wxALIGN_RIGHT|wxALIGN_CENTRE_VERTICAL</flag>
+              </object>
+            </object>
+            <flag>wxEXPAND</flag>
+          </object>
+          <object class="spacer">
+            <size>5,5</size>
+          </object>
+          <orient>wxVERTICAL</orient>
+        </object>
+        <option>1</option>
+        <flag>wxEXPAND</flag>
+      </object>
+      <object class="spacer">
+        <size>5,5</size>
+      </object>
+    </object>
+    <size>640,480</size>
+    <title>Open or create project</title>
+    <centered>1</centered>
+    <style>wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER|wxCLOSE_BOX</style>
+    <XRCED>
+      <events>EVT_CHAR_HOOK</events>
+    </XRCED>
+  </object>
+</resource>

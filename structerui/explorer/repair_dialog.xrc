@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+<resource class="unknown">
+  <object class="wxDialog" name="RepairDialog">
+    <object class="wxBoxSizer">
+      <orient>wxVERTICAL</orient>
+      <object class="sizeritem">
+        <object class="wxPanel" name="repair_panel">
+          <size>640,480</size>
+          <XRCED>
+            <assign_var>1</assign_var>
+          </XRCED>
+          <object class="wxBoxSizer">
+            <orient>wxVERTICAL</orient>
+            <object class="sizeritem">
+              <object class="unknown" name="shell_ctrl"/>
+              <option>1</option>
+              <flag>wxALL|wxEXPAND|wxGROW</flag>
+            </object>
+          </object>
+        </object>
+        <option>1</option>
+        <flag>wxALL|wxEXPAND|wxGROW</flag>
+        <minsize>640,480</minsize>
+      </object>
+    </object>
+  </object>
+</resource>

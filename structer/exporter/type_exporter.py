@@ -104,7 +104,7 @@ class JsTypeExporter(BaseExporter):
             lists.append('    /**\n'
                          '    * @type {Object.<string, kd.%sBase>}\n'
                          '    */\n'
-                         '    "%ss": undefined' % (clazz.name, var_name))
+                         '    "%ss": {}' % (clazz.name, var_name))
 
         for struct in self.project.type_manager.get_structs():
             js_classes.append(self.export_struct(struct))

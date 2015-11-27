@@ -137,8 +137,8 @@ def set_level(level):
 
 def _print(record):
     msg = record.format()
-    if isinstance(msg, unicode):
-        msg = msg.encode('utf-8')
+    # if isinstance(msg, unicode):
+    #     msg = msg.encode('utf-8')
     print msg
 
 def _log(record):

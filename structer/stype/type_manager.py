@@ -124,11 +124,11 @@ class TypeManager(object):
             AttrType
         """
         # print '_parse_type', type_data
-        type_name = type_data[0]
+        type_name = type_data['key']
         type_type = editor_types.u_type.get_atstruct(type_name)
         
         if type_type == editor_types.s_predefined_type:
-            val = type_type.get_attr_value("predefined_type", type_data[1], project)
+            val = type_type.get_attr_value("predefined_type", type_data[type_name], project)
             obj = project.object_manager.get_object(val)
             data = obj.get_attr_value("predefined_type")
             # print '>>>', data
@@ -139,7 +139,7 @@ class TypeManager(object):
         #    type_data[1]['element_type'] = type_data[1]['type']
         
         for attr in type_type.struct.iterate():
-            val = type_type.get_attr_value(attr.name, type_data[1], project)
+            val = type_type.get_attr_value(attr.name, type_data[type_data['key']], project)
                         
             # if type_name == 'List':
             #     if attr.name == 'element_type':

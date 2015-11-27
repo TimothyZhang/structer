@@ -63,7 +63,12 @@ class ObjectManager(object):
         
         # verify all
         for obj in self.iter_all_objects():
-            obj.verify()                
+            try:
+                obj.verify()
+            except:
+                import traceback
+                traceback.print_exc()
+                success = False
         
         for node in fsm.walk(fsm.recycle, True):
             if not fs_util.is_object(node):

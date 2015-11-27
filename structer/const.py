@@ -25,6 +25,8 @@ PROJECT_FOLDER_DATA = "data"
 # folder to store type infomations, under project root 
 PROJECT_FOLDER_TYPE = "type"
 
+PROJECT_FILE = '.structer'
+
 FILE_TYPE_OBJECT = 'object'
 FILE_TYPE_FILTER = 'filter'
 

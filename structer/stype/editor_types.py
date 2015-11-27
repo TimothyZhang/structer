@@ -184,7 +184,7 @@ for name in ['tags', 'enable']:
 for a in v:
     if a['name'] == 'id':
         at = a['type']
-        if at[0] == 'Int' and at[1]['min'] < 0:
+        if at['key'] == 'Int' and at[at['key']]['min'] < 0:
             error(u'class id MUST >= 0')
         
 '''
@@ -270,12 +270,11 @@ clazz_union = _Clazz(CLAZZ_NAME_UNION, [Attr("name", ATStr(0, 255)),
                                             Attr("attrs", ATList(ATStruct(s_attr))),
                                             Attr("str_template", ATStr(),
                                                  u'eg: "ID: ${id}, Name: $name, Price: $$${price}'),
-                                            Attr("exporter", ATStr(multiline=True))],
-                                                                             str_template=u'${name}')
-                                                                      ), minlen=1, unique_attrs=['name'])
-                                             ),
-                                        Attr('export_names', ATBool(0),
-                                             u'export names instead of values(value by default)'),
+                                            Attr("exporter", ATStr(multiline=True))],str_template=u'${name}')),
+                                                             minlen=1, unique_attrs=['name'])
+                                            ),
+                                        # Attr('export_names', ATBool(0),
+                                        # u'export names instead of values(value by default)'),
                                         Attr('convert_to_int', ATBool(0), u'convert values to integers')],
                      verifier=class_union_verifier)
 

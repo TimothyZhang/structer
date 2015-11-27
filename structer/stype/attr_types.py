@@ -193,7 +193,7 @@ class AttrType(object):
                 self._verifier(self, val, project, vlog.error)
             except Exception, e:
                 log.error(e, 'error in verifier of %s', self.name)
-                vlog.error('verifier error: %s', str(e))
+                vlog.error('verifier error: %s %s', e.__class__.__name__, str(e))
 
         return vlog
 
@@ -544,6 +544,8 @@ class ATList(AttrType):
 
     def fix(self, val, fixer, project):
         newval = fixer(self, val, project)
+        if val is None:
+            return
         return [self.element_type.fix(element, fixer, project) for element in newval]
 
 
@@ -733,7 +735,7 @@ class ATUnion(AttrType):
 
         # BE CAREFULL! editor_types.u_type was created with an empty union!!!
         # It's NOT used, since get_default() was overridden
-        self._default = ['', {}]  # it's an invalid value
+        # self._default = ['', {}]  # it's an invalid value
 
         if filter:
             for name in filter:
@@ -749,46 +751,46 @@ class ATUnion(AttrType):
         key = self.atenum.names[0]
         atstruct = self.union.get_atstruct(key)
         val = atstruct.get_default(project)
-        return [key, val]
+        return {'key': key, key: val}
 
     def get_value_type(self, val):
-        atstruct = self.union.get_atstruct(val[0])
+        atstruct = self.union.get_atstruct(val['key'])
         return atstruct
 
     def get_value(self, val):
-        return val[1]
+        return val[val['key']]
 
     def _verify(self, val, project, recurse=True, vlog=None):
-        if type(val) is not list or len(val) != 2 or type(val[0]) is not unicode or type(val[1]) is not dict:
+        if not isinstance(val, dict) or 'key' not in val or val['key'] not in val or not isinstance(val[val['key']], dict):
             vlog.error("invalid data structure for %s: %s", self.name, val)
             return
 
-        atstruct = self.union.get_atstruct(val[0])
+        atstruct = self.union.get_atstruct(val['key'])
         if not atstruct:
-            vlog.error('invalid union item for %s:% s', self.name, val[0])
+            vlog.error('invalid union item for %s:% s', self.name, val['key'])
             return
         else:
             if self._filter:
-                if val[0] not in self._filter:
-                    vlog.error('union value disabled for %s: %s', self.name, val[0])
+                if val['key'] not in self._filter:
+                    vlog.error('union value disabled for %s: %s', self.name, val['key'])
                     return
 
         # check struct
         if recurse:
-            atstruct.verify(val[1], project, recurse, vlog)
+            atstruct.verify(val[val['key']], project, recurse, vlog)
 
     def compare(self, v1, v2):
-        r = cmp(v1[0], v2[0])
+        r = cmp(v1['key'], v2['key'])
         if r != 0:
             return r
 
-        atstruct = self.union.get_atstruct(v1[0])
-        if not atstruct:
-            # error...
-            return cmp(v1[1], v2[1])
+        atstruct = self.union.get_atstruct(v1['key'])
+        # if not atstruct:
+        #     # error...
+        #     return cmp(v1[v1['key']], v2[v2['key']])
 
         for attr in atstruct.struct.iterate():
-            r = attr.type.compare(v1[1].get(attr.name), v2[1].get(attr.name))
+            r = attr.type.compare(v1[v1['key']].get(attr.name), v2[v2['key']].get(attr.name))
             if r != 0:
                 return r
         return 0
@@ -798,31 +800,33 @@ class ATUnion(AttrType):
         if vlog.has_error():
             return []
 
-        atstruct = self.union.get_atstruct(val[0])
-        return atstruct.get_refs(val[1], project)
+        atstruct = self.union.get_atstruct(val['key'])
+        return atstruct.get_refs(val[val['key']], project)
 
     def str(self, val, project):
         # todo: need verify?
 
-        atstruct = self.union.get_atstruct(val[0])
+        atstruct = self.union.get_atstruct(val['key'])
         # todo: ...
-        return self.atenum.enum.label_of(val[0]) + ": " + atstruct.str(val[1], project)
+        return self.atenum.enum.label_of(val['key']) + ": " + atstruct.str(val[val['key']], project)
 
     def _export(self, val, project):
-        r = [val[0], None]
+        #r = [val['key'], None]
+        r = {'key', val['key']}
+        r[val['key']] = None
 
         if not self.union.export_names:
-            r[0] = self.atenum.enum.value_of(val[0])
+            r['key'] = self.atenum.enum.value_of(val['key'])
 
-        atstruct = self.union.get_atstruct(val[0])
-        r[1] = atstruct.export(val[1], project)
+        atstruct = self.union.get_atstruct(val['key'])
+        r[val['key']] = atstruct.export(val[val['key']], project)
         return r
 
     def fix(self, val, fixer, project):
         newval = fixer(self, val, project)
 
-        atstruct = self.union.get_atstruct(val[0])
-        newval[1] = atstruct.fix(newval[1], fixer, project)
+        atstruct = self.union.get_atstruct(newval['key'])
+        newval[newval['key']] = atstruct.fix(newval[newval['key']], fixer, project)
 
         return newval
 

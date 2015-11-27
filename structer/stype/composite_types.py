@@ -143,7 +143,7 @@ class Struct(object):
     
 
 class Union(object):
-    def __init__(self, name, structs, export_names = False, convert_to_int=False):
+    def __init__(self, name, structs, export_names=True, convert_to_int=False):
         ''' structs: [[ATStruct, value], ...]'''
         self.name = name
         self._export_names = export_names

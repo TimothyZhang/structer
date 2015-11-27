@@ -23,15 +23,14 @@ Created on 2013-11-21
 
 @author: Administrator
 '''
-import os, traceback
+import os
+import traceback
+import json
 
 import const
-
-
-#from stype.clazz import Clazz
 from stype import editor_types
 from stype.type_manager import TypeManager
-from stype.attr_types import ATInt
+from stype.attr_types import ATInt, ATUnion
 
 from fs_manager import FileSystemManager
 import fs_util
@@ -126,14 +125,18 @@ class Project(object):
         if not self.object_manager.load():
             self._has_error = True         
         
-        #todo: enable evt_manager here. previously events should be ignored.
-                
+        # todo: enable evt_manager here. previously events should be ignored.
                 
         # Creates root folder for each Clazz, if it's a new project
         if self._auto_create_clazz_folder:
             for clazz in self.type_manager.get_clazzes():
                 if not self.fs_manager.root.get_sub_folder_by_name(clazz.name):                    
                     self.fs_manager.create_folder(self.fs_manager.root, clazz.name)
+
+        # Creates project file
+        if is_new and not self.is_type_editor:
+            proj = {'version': 2}
+            open(os.path.join(self.path, const.PROJECT_FILE), 'wb').write(json.dumps(proj))
                 
         return is_new
         
@@ -235,8 +238,7 @@ class Project(object):
     
     def delete_object(self, obj):
         self.fs_manager.delete(obj.uuid)
-    
-    
+
     def fix_all(self, fixer):
         for obj in self.object_manager.iter_all_objects():
             obj.fix(fixer)
@@ -257,7 +259,6 @@ class Project(object):
                             val[attr.name] = attr.type.get_default(project)
                     
             return val
-        
         self.fix_all(fixer)
         
     def fix_struct_reset(self, struct_name, attr_name):
@@ -299,6 +300,16 @@ class Project(object):
                 val[attr_name] = func(attr_name, val[attr_name], at, project)                
             return val
         
+        self.fix_all(fixer)
+
+    def fix_union_dict(self):
+        def fixer(at, val, project):
+            if isinstance(at, ATUnion) and isinstance(val, list):
+                r = dict({'key': val[0]})
+                r[val[0]] = val[1]
+                return r
+            return val
+
         self.fix_all(fixer)
                 
 if __name__ == '__main__':

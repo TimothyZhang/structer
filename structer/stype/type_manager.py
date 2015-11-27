@@ -106,6 +106,9 @@ class TypeManager(object):
             # del self._parsed_unions
             # del self._parsed_structs
             pass
+
+    def get_structs(self):
+        return self._parsed_structs.values()
         
     def get_enums(self):
         return self._parsed_enums.values()
@@ -137,7 +140,8 @@ class TypeManager(object):
         class_args = {}        
         # if type_name == 'List' and u'element_type' not in type_data[1]:
         #    type_data[1]['element_type'] = type_data[1]['type']
-        
+
+        internal_attr = None
         for attr in type_type.struct.iterate():
             val = type_type.get_attr_value(attr.name, type_data[type_data['key']], project)
                         
@@ -157,6 +161,7 @@ class TypeManager(object):
                         val = self._parse_enum(ref, project)
                     elif attr.type.clazz_name == editor_types.CLAZZ_NAME_UNION:
                         val = self._parse_union(ref, project)
+                    internal_attr = val
                 else:
                     log.error("ref to %s is None: %s", attr.type.clazz_name, val)
                     return None
@@ -165,9 +170,16 @@ class TypeManager(object):
                 val = self._parse_type(val, project)
             
             class_args[attr.name] = val
+
+        verifier = getattr(internal_attr, 'verifier', None)
+        if verifier:
+            class_args['verifier'] = verifier
+        exporter = getattr(internal_attr, 'exporter', None)
+        if exporter:
+            class_args['exporter'] = exporter
         
         attr_type_class = globals()['AT%s' % type_name]
-        
+
         # try:
         return attr_type_class(**class_args)
         # except Exception, e:
@@ -238,12 +250,13 @@ class TypeManager(object):
             str_template = item.get('str_template', u'')
             exporter = item.get('exporter', u'')
             struct = Struct(item['name'], attrs, str_template=str_template, label=item.get('label'), exporter=exporter)
-            structs.append([ATStruct(struct), item['value']])
+            structs.append([ATStruct(struct, exporter=exporter, str_template=str_template), item['value']])
         
         export_names = union_obj.get_attr_value('export_names')
         convert_to_int = union_obj.get_attr_value('convert_to_int')
+        union_exporter = union_obj.get_attr_value('exporter')
         union = self._parsed_unions[union_name] = Union(union_name, structs, export_names=export_names,
-                                                        convert_to_int=convert_to_int)
+                                                        convert_to_int=convert_to_int, exporter=union_exporter)
         
         return union
         

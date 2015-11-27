@@ -184,14 +184,16 @@ for name in ['tags', 'enable']:
 for a in v:
     if a['name'] == 'id':
         at = a['type']
-        if at['key'] == 'Int' and at[at['key']]['min'] < 0:
-            error(u'class id MUST >= 0')
+        # if at['key'] == 'Int' and at[at['key']]['min'] < 0:
+        #     error(u'class id MUST >= 0')
+        if at['key'] != 'Str':
+            error(u'class id should be Str!')
         
 '''
 clazz_clazz = _Clazz(CLAZZ_NAME_CLAZZ, [Attr("name", atstr_identifier, "Name of the class. eg: Monster, Skill, NPC"),
                                         Attr("attrs", ATList(ATStruct(s_attr), unique_attrs=['name'],
                                                              verifier=clazz_attrs_verifier),
-                                             'Attribute List. "id" and "name" are required.'),
+                                             'Attribute List. "id" and "name" are required, "id" should be Str.'),
                                         Attr("unique_attrs", ATList(ATStr(1, 255), True),
                                              'Attributes names must be unique. eg: "id"'),
                                         #Attr("name_attr", ATStr(1, 255, u"name"), "The attribute to be used as objects's name. Can be Str or I18N"),
@@ -246,7 +248,8 @@ clazz_enum = _Clazz(CLAZZ_NAME_ENUM, [Attr("name", ATStr(1, 255)),
                                                            unique_attrs=['name'])),
                                       Attr('export_names', ATBool(0),
                                            'export names instead of values(value by default)'),
-                                      Attr('convert_to_int', ATBool(0), u'convert values to integers')],
+                                      Attr('convert_to_int', ATBool(0), u'convert values to integers')
+                                      ],
                     verifier=class_enum_verifier)
 clazz_enum.icon = "icons/enum.png"
 
@@ -275,7 +278,10 @@ clazz_union = _Clazz(CLAZZ_NAME_UNION, [Attr("name", ATStr(0, 255)),
                                             ),
                                         # Attr('export_names', ATBool(0),
                                         # u'export names instead of values(value by default)'),
-                                        Attr('convert_to_int', ATBool(0), u'convert values to integers')],
+                                        Attr('convert_to_int', ATBool(0), u'convert values to integers'),
+                                        Attr('exporter', ATStr(), u'custom exporter')
+                                        ],
+
                      verifier=class_union_verifier)
 
 clazz_union.icon = "icons/union.png"

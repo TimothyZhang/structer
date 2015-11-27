@@ -658,7 +658,7 @@ class ATRef(AttrType):
 class ATEnum(AttrType):
     """value: enum itemname(str)"""
 
-    def __init__(self, enum, default=None, filter=[], **kwargs):
+    def __init__(self, enum, default=None, filter=(), **kwargs):
         """
         Args:
             enum: Instance of Enum
@@ -670,7 +670,9 @@ class ATEnum(AttrType):
         self.enum = enum
         assert not default or enum.has_name(default), u'ATEnum %s' % enum.name
 
-        if default is None:
+        if not self.enum.has_name(default):
+            if default:
+                log.error('invalid default value for enum %s: %s' % (self.name, default))
             default = enum.names[0]
         self._default = default
 
@@ -723,7 +725,7 @@ class ATUnion(AttrType):
 
     atenum = None
 
-    def __init__(self, union, filter=[], **kwargs):
+    def __init__(self, union, filter=(), **kwargs):
         """
         :param Union union:
         :param filter:
@@ -812,7 +814,7 @@ class ATUnion(AttrType):
 
     def _export(self, val, project):
         #r = [val['key'], None]
-        r = {'key', val['key']}
+        r = dict({'key': val['key']})
         r[val['key']] = None
 
         if not self.union.export_names:
@@ -841,11 +843,6 @@ class ATStruct(AttrType):
         :param kwargs:
         :return:
         """
-        if not kwargs.get('exporter'):
-            kwargs['exporter'] = struct.exporter_str
-        if not kwargs.get('verifier'):
-            kwargs['verifier'] = struct.verifier_str
-
         AttrType.__init__(self, '%s@' % struct.name, **kwargs)
 
         self.__strut = struct

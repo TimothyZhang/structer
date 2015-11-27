@@ -114,8 +114,8 @@ class Struct(object):
 
         self.___str_template = str_template
         self._str_template = string.Template(str_template) if str_template else None
-        self.exporter_str = exporter
-        self.verifier_str = verifier
+        self.exporter = exporter
+        self.verifier = verifier
         
         self.__attrs = attrs        
         self.__attr_map = {}
@@ -143,12 +143,12 @@ class Struct(object):
     
 
 class Union(object):
-    def __init__(self, name, structs, export_names=True, convert_to_int=False):
+    def __init__(self, name, structs, export_names=True, convert_to_int=False, exporter=u''):
         ''' structs: [[ATStruct, value], ...]'''
         self.name = name
         self._export_names = export_names
         self._convert_to_int = convert_to_int
-                
+        self.exporter = exporter
         self.set_structs(structs)
         
     @property

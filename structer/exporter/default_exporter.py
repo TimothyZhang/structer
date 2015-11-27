@@ -18,6 +18,8 @@
 
 import json
 
+from base import BaseExporter
+
 
 class Exporter(object):
     def get_name(self):
@@ -48,26 +50,22 @@ class Exporter(object):
         raise
 
 
-class DefaultExporter(Exporter):
-    def __init__(self):
-        pass
+class DefaultExporter(BaseExporter):
+    def export(self):
+        project = self.project
 
-    def get_name(self):
-        return "Default Exporter"
-
-    def get_exported_wildcard(self):
-        return "Zip archive (*.zip)|*.zip"
-
-    def export(self, project, write_func):
+        # objects for each class
         for clazz in project.type_manager.get_clazzes():
-            clazz_all = []
+            clazz_all = {}
             for obj in project.object_manager.get_objects(clazz):
-                clazz_all.append(obj.export())
+                clazz_all[obj.id] = obj.export()
 
             data = json.dumps(clazz_all, sort_keys=True)
-            write_func('%s.json' % clazz.name, data)
+            self.save('%s.json' % clazz.name, data)
 
+        # constants
         consts = []
+        # enum constants
         for enum in project.type_manager.get_enums():
             for name in enum.names:
                 val = name if enum.export_names else enum.value_of(name)
@@ -75,6 +73,7 @@ class DefaultExporter(Exporter):
                     val = '"%s"' % val
                 consts.append((('%s_%s' % (enum.name, name)).upper(), val))
 
+        # union constants
         for union in project.type_manager.get_unions():
             enum = union.atenum.enum
             for name in enum.names:
@@ -84,4 +83,4 @@ class DefaultExporter(Exporter):
                 consts.append((('%s_%s' % (union.name, name)).upper(), val))
 
         consts_str = '\n'.join(['%s = %s' % (n, v) for n, v in consts])
-        write_func('consts.txt', consts_str)
+        self.save('consts.txt', consts_str)

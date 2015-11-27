@@ -39,3 +39,4 @@ XTable?
 '''
 
 from default_exporter import DefaultExporter
+from type_exporter import JsTypeExporter

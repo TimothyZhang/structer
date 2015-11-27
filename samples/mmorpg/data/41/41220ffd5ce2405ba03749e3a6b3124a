@@ -14,9 +14,11 @@
 "xx":
 "heal 30% percent of hp"},
 "effects":
-[["heal",
+[{"heal":
 {"percent":
-30}]],
+30},
+"key":
+"heal"}],
 "id":
 4,
 "mana_cost":
@@ -31,11 +33,13 @@
 "target":
 "ally",
 "target_number":
-1}},
+1,
+"test_only":
+null}},
 "filetype":
 "object",
 "modify_time":
-1398760916.9,
+1448595963.427,
 "name":
 "",
 "parent":

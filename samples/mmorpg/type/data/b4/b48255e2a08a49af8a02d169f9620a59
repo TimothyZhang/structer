@@ -10,7 +10,7 @@
 "name":
 "id",
 "type":
-["Int",
+{"Int":
 {"default":
 0,
 "exporter":
@@ -20,13 +20,15 @@
 "min":
 0,
 "verifier":
-""}]},
+""},
+"key":
+"Int"}},
 {"description":
 "",
 "name":
 "name",
 "type":
-["Struct",
+{"Struct":
 {"exporter":
 "",
 "str_template":
@@ -34,17 +36,19 @@
 "struct":
 "372431546d6e4dff817eb91721274c56",
 "verifier":
-""}]},
+""},
+"key":
+"Struct"}},
 {"description":
 "health point of each level",
 "name":
 "hp",
 "type":
-["List",
+{"List":
 {"delimiter":
 "; ",
 "element_type":
-["Int",
+{"Int":
 {"default":
 1,
 "exporter":
@@ -54,7 +58,9 @@
 "min":
 1,
 "verifier":
-""}],
+""},
+"key":
+"Int"},
 "exporter":
 "",
 "maxlen":
@@ -64,17 +70,19 @@
 "unique_attrs":
 [],
 "verifier":
-""}]},
+""},
+"key":
+"List"}},
 {"description":
 "mana point of each level",
 "name":
 "mp",
 "type":
-["List",
+{"List":
 {"delimiter":
 "; ",
 "element_type":
-["Int",
+{"Int":
 {"default":
 1,
 "exporter":
@@ -84,7 +92,9 @@
 "min":
 1,
 "verifier":
-""}],
+""},
+"key":
+"Int"},
 "exporter":
 "",
 "maxlen":
@@ -94,17 +104,19 @@
 "unique_attrs":
 [],
 "verifier":
-""}]},
+""},
+"key":
+"List"}},
 {"description":
 "a hero can have many skills",
 "name":
 "skills",
 "type":
-["List",
+{"List":
 {"delimiter":
 "; ",
 "element_type":
-["Ref",
+{"Ref":
 {"class_name":
 "abc5ab9230a648fb92758e592b35d030",
 "exporter":
@@ -112,7 +124,9 @@
 "nullable":
 0,
 "verifier":
-""}],
+""},
+"key":
+"Ref"},
 "exporter":
 "",
 "maxlen":
@@ -122,7 +136,9 @@
 "unique_attrs":
 [],
 "verifier":
-""}]}],
+""},
+"key":
+"List"}}],
 "exporter":
 "",
 "icon":
@@ -133,13 +149,15 @@
 0,
 "name":
 "HeroClass",
+"str_template":
+"${name}",
 "unique_attrs":
 ["id",
 "name"]}},
 "filetype":
 "object",
 "modify_time":
-1442913793.209,
+1448595953.914,
 "name":
 "",
 "parent":

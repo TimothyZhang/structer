@@ -38,5 +38,5 @@ XClass?
 XTable?        
 '''
 
-from default_exporter import DefaultExporter
+from default_exporter import DefaultObjectExporter
 from type_exporter import JsTypeExporter

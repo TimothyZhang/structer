@@ -50,7 +50,7 @@ class Exporter(object):
         raise
 
 
-class DefaultExporter(BaseExporter):
+class DefaultObjectExporter(BaseExporter):
     def export(self):
         project = self.project
 
@@ -62,25 +62,3 @@ class DefaultExporter(BaseExporter):
 
             data = json.dumps(clazz_all, sort_keys=True)
             self.save('%s.json' % clazz.name, data)
-
-        # constants
-        consts = []
-        # enum constants
-        for enum in project.type_manager.get_enums():
-            for name in enum.names:
-                val = name if enum.export_names else enum.value_of(name)
-                if type(val) is str or type(val) is unicode:
-                    val = '"%s"' % val
-                consts.append((('%s_%s' % (enum.name, name)).upper(), val))
-
-        # union constants
-        for union in project.type_manager.get_unions():
-            enum = union.atenum.enum
-            for name in enum.names:
-                val = name if enum.export_names else enum.value_of(name)
-                if type(val) is str or type(val) is unicode:
-                    val = '"%s"' % val
-                consts.append((('%s_%s' % (union.name, name)).upper(), val))
-
-        consts_str = '\n'.join(['%s = %s' % (n, v) for n, v in consts])
-        self.save('consts.txt', consts_str)

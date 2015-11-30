@@ -105,6 +105,7 @@ class PyTypeExporter(BaseExporter):
                 if type(val) is str or type(val) is unicode:
                     val = '"%s"' % val
                 consts.append((('%s_%s' % (enum.name, name)).upper(), val))
+                consts.append((None, None))
             consts.append((None, None))
 
         # union constants
@@ -115,6 +116,7 @@ class PyTypeExporter(BaseExporter):
                 if type(val) is str or type(val) is unicode:
                     val = '"%s"' % val
                 consts.append((('%s_%s' % (union.name, name)).upper(), val))
+                consts.append((None, None))
             consts.append((None, None))
 
         consts_str = ''.join([('\n' if n is None else ('%s = %s' % (n, v))) for n, v in consts])

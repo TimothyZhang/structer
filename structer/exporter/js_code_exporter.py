@@ -6,6 +6,14 @@ from structer.stype.attr_types import (ATInt, ATStr, ATStruct, ATUnion, ATBool, 
                                        ATList, ATRef)
 
 
+JS_KEYWORDS = {'abstract', 'arguments', 'boolean', 'break', 'byte', 'case', 'catch', 'char', 'class', 'const',
+               'continue', 'debugger', 'default', 'delete', 'do', 'double', 'else', 'enum', 'eval', 'export',
+               'extends', 'false', 'final', 'finally', 'float', 'for', 'function', 'goto', 'if', 'implements',
+               'import', 'in', 'instanceof', 'int', 'interface', 'let', 'long', 'native', 'new', 'null', 'package',
+               'private', 'protected', 'public', 'return', 'short', 'static', 'super', 'switch', 'synchronized',
+               'this', 'throw', 'throws', 'transient', 'true', 'try', 'typeof', 'var', 'void', 'volatile', 'while',
+               'with', 'yield'}
+
 JS_CLASS_TEMPLATE = 'kd.%sBase = ff.Class.extend({\n%s\n});'
 
 
@@ -40,14 +48,25 @@ def js_get_default_by_type(js_type):
     return 'null'
 
 
-def js_generate_member(js_type, name):
-    return '    /**\n'\
+def is_js_keyword(name):
+    return name in JS_KEYWORDS
+
+
+def js_generate_member(js_type, name, description=None):
+    if is_js_keyword(name):
+        # noinspection PyAugmentAssignment
+        name = '_' + name
+
+    if not description:
+        description = ''
+
+    return '    /** %s\n'\
            '    * @type {%s}\n'\
            '    */\n'\
-           '    "%s": %s' % (js_type, name, js_get_default_by_type(js_type))
+           '    "%s": %s' % (description, js_type, name, js_get_default_by_type(js_type))
 
 
-class JsTypeExporter(BaseExporter):
+class JsCodeExporter(BaseExporter):
     def get_jstype_by_attrtype(self, at):
         if isinstance(at, (ATInt, ATFloat, ATRef)):
             return 'number'
@@ -82,7 +101,7 @@ class JsTypeExporter(BaseExporter):
         attr_defs = []
         for attr in struct.iterate():
             js_type = self.get_jstype_by_attrtype(attr.type)
-            attr_defs.append(js_generate_member(js_type, attr.name))
+            attr_defs.append(js_generate_member(js_type, attr.name, attr.description))
 
         return JS_CLASS_TEMPLATE % (struct.name, ',\n\n'.join(attr_defs))
 
@@ -155,4 +174,4 @@ class JsTypeExporter(BaseExporter):
                 '%s\n'\
                 '});\n' % (',\n\n'.join(lists))
 
-        self.save('gen_structer_types.js', code)
+        self.save('gen_structer_types.js', code.encode('utf-8'))

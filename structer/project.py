@@ -1,3 +1,4 @@
+# coding=utf-8
 # Copyright 2014 Timothy Zhang(zt@live.cn).
 #
 # This file is part of Structer.
@@ -16,13 +17,6 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
-#coding=utf-8
-'''
-Created on 2013-11-21
-
-@author: Administrator
-'''
 import os
 import traceback
 import json
@@ -38,27 +32,28 @@ from ref_manager import RefManager
 from obj_manager import ObjectManager
 from event_manager import EventManager
 
-import log, util
+import log
+import util
 
 
 class Project(object):
-    '''Holds all information of a project.
+    """Holds all information of a project.
     
     Attributes:
         path: Path of project root.
         is_type_editor: bool. True if the project is used by type editor, load types from editor_types.py
-        auto_create_clazz_folder: automaticly creates a folder for each clazz under root
+        auto_create_clazz_folder: automaticaly creates a folder for each clazz under root
          
         type_manager: An instance of TypeManager, which holds all Clazz infos.
         fs_manager: An instance of FileSystemManager
         ref_manager: An instance of RefManager, which manages all relations between all objects.
-    '''    
+    """    
     def __init__(self, root, is_type_editor):
-        '''
+        """
         Args:
             root: path of project root folder
             is_type_editor: bool. see class docstring                
-        '''
+        """
         self.path = util.normpath(os.path.abspath(root))
         self.is_type_editor = is_type_editor        
         self._auto_create_clazz_folder = True
@@ -66,32 +61,32 @@ class Project(object):
         # Must be the first
         self.event_manager = EventManager()        
         self.type_manager = TypeManager()        
-        self.fs_manager = FileSystemManager(self, os.path.join(self.path, const.PROJECT_FOLDER_DATA) )
+        self.fs_manager = FileSystemManager(self, os.path.join(self.path, const.PROJECT_FOLDER_DATA))
         # should after fs_manager
         self.object_manager = ObjectManager(self)
         # should after object_manager
         self.ref_manager = RefManager()        
         
-        #self._langauges = ('en', )
+        # self._languages = ('en', )
         self._default_language = 'en'
         self._translations = {}
         
         self.tags = set()
-        
+
+        self._editor_project = None
         self._next_ids = {}  # {clazz_name: next_id}
         self._has_error = False
         self._loaded = False
     
     @property
     def name(self):
-        p = os.path.split(self.path)
-        return p[-1]
+        return os.path.split(self.path)[-1]
         
     def load(self):
-        ''' Load the project 
+        """ Load the project 
         Returns:
             True if it's a new project, otherwise False
-        '''
+        """
         assert not self._loaded
         self._loaded = True
         self._has_error = False
@@ -100,24 +95,25 @@ class Project(object):
             self.type_manager.load_editor_types()
                         
         else:
-            self._editor_project = p = Project( os.path.join(self.path, const.PROJECT_FOLDER_TYPE), True )
-            p.load()
-            
+            self._editor_project = editor_project = Project(os.path.join(self.path, const.PROJECT_FOLDER_TYPE), True)
+            editor_project.load()
+
+            # noinspection PyBroadException
             try:
-                self.type_manager.load_types(p)
+                self.type_manager.load_types(editor_project)
             except:
                 traceback.print_exc()
                 self._has_error = True
                                         
             # load setting
-            setting_objs = p.object_manager.get_objects(editor_types.CLAZZ_NAME_SETTING)        
-            if len(setting_objs)==1:
+            setting_objs = editor_project.object_manager.get_objects(editor_types.CLAZZ_NAME_SETTING)
+            if len(setting_objs) == 1:
                 setting_obj = setting_objs[0]                
-                self._translations = dict( setting_obj.get_attr_value('translations') )
-                self.tags = set(setting_obj.get_attr_value('tags',[]) )
+                self._translations = dict(setting_obj.get_attr_value('translations'))
+                self.tags = set(setting_obj.get_attr_value('tags', []))
                 self.tags.add('export')
                 self._auto_create_clazz_folder = setting_obj.get_attr_value('auto_create_clazz_folder')
-            elif len(setting_objs)>1:
+            elif len(setting_objs) > 1:
                 log.error('too many Setting objects: %s', len(setting_objs))
             
         is_new = self.fs_manager.load()            
@@ -141,7 +137,7 @@ class Project(object):
         return is_new
         
     def has_error(self, print_=False):
-        '''todo: this method is slow!'''
+        """todo: this method is slow!"""
         if self._has_error:
             print 'project error'
             return True
@@ -173,17 +169,17 @@ class Project(object):
         return self._default_language
     
     def translate(self, text):
-        '''Translates text with user defined translation dictionary in Setting''' 
+        """Translates text with user defined translation dictionary in Setting""" 
         return self._translations.get(text, text)
 
-    def get_object(self, uuid, clazz_or_name = None):        
+    def get_object(self, uuid, clazz_or_name=None):
         return self.object_manager.get_object(uuid, clazz_or_name)
     
     def get_object_by_fsfile(self, fs_file):
-        return self.get_object( fs_file.uuid, fs_util.get_object_clazz_name(fs_file) )
+        return self.get_object(fs_file.uuid, fs_util.get_object_clazz_name(fs_file))
 
     def create_object(self, folder, clazz, data=None):
-        '''Creates a new object.
+        """Creates a new object.
         
         Args:
             folder: where the new object should be
@@ -192,7 +188,7 @@ class Project(object):
             
         Returns:
             Object
-        '''
+        """
         
         # number limit      
         count = len(self.object_manager.get_objects(clazz))
@@ -200,16 +196,16 @@ class Project(object):
             raise Exception(u'%s number reached max limit: %s' % (clazz.name, clazz.max_number))
                          
         file_data = fs_util.generate_file_data_by_clazz(self, clazz, data)
-        file_ = self.fs_manager.create_file(folder, 'object', '', file_data )
+        file_ = self.fs_manager.create_file(folder, 'object', '', file_data)
         obj = self.object_manager.get_object(file_.uuid, clazz.name)
         
         # auto increase id if need
         next_id = self.next_object_id(clazz)
-        if next_id != None:                    
+        if next_id is not None:
             obj.set_attr_value('id', next_id)
             self.save_object(obj)
         return obj
-        #return self.object_manager.create_object(clazz, file_.uuid)
+        # return self.object_manager.create_object(clazz, file_.uuid)
         
     def next_object_id(self, clazz):
         """return next available id, or None if default value is Okay. """
@@ -245,15 +241,15 @@ class Project(object):
             
     def fix_struct_add_attr(self, struct_name=None, attr_name=None):
         from stype.attr_types import ATStruct
-        struct_name = '%s@'%struct_name if struct_name else None
+        struct_name = '%s@' % struct_name if struct_name else None
 
         def fixer(at, val, project):
             if type(at) is ATStruct and (not struct_name or at.name == struct_name):
-                if attr_name: # specified attr
+                if attr_name:  # specified attr
                     if val.get(attr_name) is None:
                         attr = at.get_attr(attr_name)
                         val[attr_name] = attr.type.get_default(project)
-                else: # all missing attrs
+                else:  # all missing attrs
                     for attr in at.struct.iterate():
                         if val.get(attr.name) is None:
                             val[attr.name] = attr.type.get_default(project)
@@ -263,7 +259,7 @@ class Project(object):
         
     def fix_struct_reset(self, struct_name, attr_name):
         from stype.attr_types import ATStruct
-        struct_name = '%s@'%struct_name
+        struct_name = '%s@' % struct_name
 
         def fixer(at, val, project):
             if type(at) is ATStruct and (at.name == struct_name):                                
@@ -276,8 +272,9 @@ class Project(object):
         
     def fix_struct_rename_attr(self, struct_name, new_name, old_name):
         from stype.attr_types import ATStruct
-        struct_name = '%s@'%struct_name
+        struct_name = '%s@' % struct_name
 
+        # noinspection PyUnusedLocal
         def fixer(at, val, project):
             if type(at) is ATStruct and (at.name == struct_name):                
                 if val.get(new_name) is None and old_name in val:
@@ -288,12 +285,12 @@ class Project(object):
         self.fix_all(fixer)        
     
     def fix_struct_attr(self, struct_name, attr_name, func):
-        '''fix attr of struct by provided func
+        """fix attr of struct by provided func
             
             func(name, oldval, type, project) -> newval
-        '''
+        """
         from stype.attr_types import ATStruct
-        struct_name = '%s@'%struct_name
+        struct_name = '%s@' % struct_name
 
         def fixer(at, val, project):
             if type(at) is ATStruct and (at.name == struct_name):
@@ -303,6 +300,7 @@ class Project(object):
         self.fix_all(fixer)
 
     def fix_union_dict(self):
+        # noinspection PyUnusedLocal
         def fixer(at, val, project):
             if isinstance(at, ATUnion) and isinstance(val, list):
                 r = dict({'key': val[0]})
@@ -315,5 +313,3 @@ class Project(object):
 if __name__ == '__main__':
     p = Project("c:\\test", False)
     p.load()
-
-

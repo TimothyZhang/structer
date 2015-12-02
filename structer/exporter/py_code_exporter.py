@@ -86,6 +86,7 @@ class PyCodeExporter(BaseExporter):
                 return 'int'
         if isinstance(at, ATList):
             element_type = self.get_pytype_by_attrtype(at.element_type)
+            # fixme: ugly hack for kingdom
             if element_type == get_py_class_name('YieldItemWithRate'):
                 return 'Yield'
             if element_type == get_py_class_name('CostItem'):

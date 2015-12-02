@@ -56,11 +56,11 @@ def _export_at(at):
     if isinstance(at, (ATStr, ATFile, ATFolder)):
         return {'type': 'string'}
     if isinstance(at, ATStruct):
-        return {'type': 'struct', 'name': at.name}
+        return {'type': 'struct', 'name': at.struct.name}
     if isinstance(at, ATUnion):
-        return {'type': 'union', 'name': at.name}
+        return {'type': 'union', 'name': at.union.name}
     if isinstance(at, ATEnum):
-        return {'type': 'enum', 'name': at.name}
+        return {'type': 'enum', 'name': at.enum.name}
     if isinstance(at, ATList):
         # fixme: ugly hack for kingdom
         if at.element_type.name == 'CostItem&':

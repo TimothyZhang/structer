@@ -1,6 +1,7 @@
 # coding=utf-8
 __author__ = 'Timothy'
 
+import json
 import re
 import keyword
 from base import BaseExporter
@@ -147,14 +148,19 @@ class PyCodeExporter(BaseExporter):
 
     def export(self):
         res_classes = []
-        lists = []
+        manager_attrs = []
+        container_map = {}
 
         for clazz in self.project.type_manager.get_clazzes():
             res_classes.append(self._export_struct(clazz.atstruct.struct))
 
-            var_name = get_py_var_name_by_class_name(clazz.name)
-            lists.append('    %ss = {}\n'
-                         '    """:type: dict[str, %s]"""\n' % (var_name, get_py_class_name(clazz.name)))
+            var_name = get_py_var_name_by_class_name(clazz.name) + 's'
+            container_map[clazz.name] = var_name
+            manager_attrs.append('    %s = {}\n'
+                                 '    """:type: dict[str, %s]"""\n' % (var_name, get_py_class_name(clazz.name)))
+
+        lines = ['        ' + line for line in json.dumps(container_map, indent=4).split('\n')]
+        manager_attrs.insert(0, '    CLASS_TO_CONTAINER = \\\n%s\n' % '\n'.join(lines))
 
         for struct in self.project.type_manager.get_structs():
             res_classes.append(self._export_struct(struct))
@@ -168,11 +174,11 @@ class PyCodeExporter(BaseExporter):
         # code += self._export_types()
 
         # ResXXX
-        code += '\n\n'
+        code += '\n'
         code += '\n\n\n'.join(res_classes)
         code += '\n\n\n'
 
         # ResManager
-        code += PY_CLASS_TEMPLATE % ('ResManagerBase', '\n'.join(lists))
+        code += PY_CLASS_TEMPLATE % ('ResManagerBase', '\n'.join(manager_attrs))
 
         self.save('gen_structer_types.py', code.encode('utf-8'))

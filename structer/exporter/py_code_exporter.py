@@ -86,13 +86,11 @@ class PyCodeExporter(BaseExporter):
             else:
                 return 'int'
         if isinstance(at, ATList):
-            element_type = self.get_pytype_by_attrtype(at.element_type)
-            # fixme: ugly hack for kingdom
-            if element_type == get_py_class_name('YieldItemWithRate'):
-                return 'Yield'
-            if element_type == get_py_class_name('CostItem'):
+            if at.element_type.name == 'CostItem&':
                 return 'Cost'
-            return 'tuple[%s]' % element_type
+            if at.element_type.name == 'YieldItemWithRate@':
+                return 'Yield'
+            return 'tuple[%s]' % self.get_pytype_by_attrtype(at.element_type)
         raise Exception('unsupported type: %s %s' % (at.__class__.__name__, at.name))
 
     def _export_struct(self, struct):

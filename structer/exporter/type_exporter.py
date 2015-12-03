@@ -65,7 +65,7 @@ def _export_at(at):
         # fixme: ugly hack for kingdom
         if at.element_type.name == 'CostItem&':
             return {'type': 'Cost'}
-        if at.element_type.name == 'YieldItemWithRate&':
+        if at.element_type.name == 'YieldItemWithRate@':
             return {'type': 'Yield'}
         return {'type': 'list', 'element_type': _export_at(at.element_type)}
 

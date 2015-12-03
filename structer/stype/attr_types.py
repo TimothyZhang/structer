@@ -813,16 +813,17 @@ class ATUnion(AttrType):
         return self.atenum.enum.label_of(val['key']) + ": " + atstruct.str(val[val['key']], project)
 
     def _export(self, val, project):
-        #r = [val['key'], None]
-        r = dict({'key': val['key']})
-        r[val['key']] = None
+        # todo: need a flag
 
+        exported_key = key = val['key']
         if not self.union.export_names:
-            r['key'] = self.atenum.enum.value_of(val['key'])
+            exported_key = self.atenum.enum.value_of(val['key'])
 
-        atstruct = self.union.get_atstruct(val['key'])
-        r[val['key']] = atstruct.export(val[val['key']], project)
-        return r
+        atstruct = self.union.get_atstruct(key)
+        exported_data = atstruct.export(val[val['key']], project)
+
+        return [exported_key, exported_data]
+        # return {'key': key, key: exported_data}
 
     def fix(self, val, fixer, project):
         newval = fixer(self, val, project)

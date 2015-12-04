@@ -115,7 +115,7 @@ class PyCodeExporter(BaseExporter):
                 val = name if enum.export_names else enum.value_of(name)
                 if type(val) is str or type(val) is unicode:
                     val = '"%s"' % val
-                prefix, suffix = camel_case_to_underscore(enum.name), camel_case_to_underscore(name)
+                prefix, suffix = camel_case_to_underscore(enum.name), name
                 consts.append((('%s_%s' % (prefix, suffix)).upper(), val))
                 consts.append((None, None))
             consts.append((None, None))
@@ -127,7 +127,7 @@ class PyCodeExporter(BaseExporter):
                 val = name if enum.export_names else enum.value_of(name)
                 if type(val) is str or type(val) is unicode:
                     val = '"%s"' % val
-                prefix, suffix = camel_case_to_underscore(enum.name), camel_case_to_underscore(name)
+                prefix, suffix = camel_case_to_underscore(enum.name), name
                 consts.append((('%s_%s' % (prefix, suffix)).upper(), val))
                 consts.append((None, None))
             consts.append((None, None))

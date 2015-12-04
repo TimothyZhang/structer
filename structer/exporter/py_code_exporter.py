@@ -2,11 +2,13 @@
 __author__ = 'Timothy'
 
 import json
-import re
 import keyword
+
 from base import BaseExporter
 from structer.stype.attr_types import (ATInt, ATStr, ATStruct, ATUnion, ATBool, ATEnum, ATFile, ATFloat, ATFolder,
                                        ATList, ATRef)
+
+from util import camel_case_to_underscore
 
 
 PY_CLASS_TEMPLATE = 'class %s(object):\n%s'
@@ -47,12 +49,6 @@ def py_generate_member(py_type, name, description=None):
 
 def get_py_class_name(name):
     return 'Res%s' % name
-
-
-def get_py_var_name_by_class_name(name):
-    words = re.findall('[A-Z][a-z0-9]*', name)
-    assert ''.join(words) == name, 'invalid class/struct name: %s' % name
-    return '_'.join(map(unicode.lower, words))
 
 
 class PyCodeExporter(BaseExporter):
@@ -119,7 +115,8 @@ class PyCodeExporter(BaseExporter):
                 val = name if enum.export_names else enum.value_of(name)
                 if type(val) is str or type(val) is unicode:
                     val = '"%s"' % val
-                consts.append((('%s_%s' % (enum.name, name)).upper(), val))
+                prefix, suffix = camel_case_to_underscore(enum.name), camel_case_to_underscore(name)
+                consts.append((('%s_%s' % (prefix, suffix)).upper(), val))
                 consts.append((None, None))
             consts.append((None, None))
 
@@ -130,7 +127,8 @@ class PyCodeExporter(BaseExporter):
                 val = name if enum.export_names else enum.value_of(name)
                 if type(val) is str or type(val) is unicode:
                     val = '"%s"' % val
-                consts.append((('%s_%s' % (union.name, name)).upper(), val))
+                prefix, suffix = camel_case_to_underscore(enum.name), camel_case_to_underscore(name)
+                consts.append((('%s_%s' % (prefix, suffix)).upper(), val))
                 consts.append((None, None))
             consts.append((None, None))
 
@@ -152,7 +150,7 @@ class PyCodeExporter(BaseExporter):
         for clazz in self.project.type_manager.get_clazzes():
             res_classes.append(self._export_struct(clazz.atstruct.struct))
 
-            var_name = get_py_var_name_by_class_name(clazz.name) + 's'
+            var_name = camel_case_to_underscore(clazz.name) + 's'
             container_map[clazz.name] = var_name
             manager_attrs.append('    %s = {}\n'
                                  '    """:type: dict[str, %s]"""\n' % (var_name, get_py_class_name(clazz.name)))

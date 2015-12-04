@@ -5,6 +5,8 @@ from base import BaseExporter
 from structer.stype.attr_types import (ATInt, ATStr, ATStruct, ATUnion, ATBool, ATEnum, ATFile, ATFloat, ATFolder,
                                        ATList, ATRef)
 
+from util import camel_case_to_underscore
+
 
 JS_KEYWORDS = {'abstract', 'arguments', 'boolean', 'break', 'byte', 'case', 'catch', 'char', 'class', 'const',
                'continue', 'debugger', 'default', 'delete', 'do', 'double', 'else', 'enum', 'eval', 'export',
@@ -337,7 +339,7 @@ class JsCodeExporter(BaseExporter):
             else:
                 return 'number'
         if isinstance(at, ATList):
-            print 'ele name:', at.element_type.name
+            # print 'ele name:', at.element_type.name
             if at.element_type.name == 'CostItem&':
                 return 'kd.Cost'
             if at.element_type.name == 'YieldItemWithRate@':
@@ -384,7 +386,8 @@ class JsCodeExporter(BaseExporter):
         for enum in project.type_manager.get_enums():
             for name in enum.names:
                 val = name if enum.export_names else enum.value_of(name)
-                cg.add_var('kd.%s_%s' % (enum.name.upper(), name.upper()), val=val)
+                prefix, suffix = camel_case_to_underscore(enum.name), camel_case_to_underscore(name)
+                cg.add_var('kd.%s_%s' % (prefix.upper(), suffix.upper()), val=val)
             cg.add_line()
 
         # union constants
@@ -394,7 +397,8 @@ class JsCodeExporter(BaseExporter):
                 val = name if enum.export_names else enum.value_of(name)
                 if type(val) is str or type(val) is unicode:
                     val = '"%s"' % val
-                cg.add_var('kd.%s_%s' % (union.name.upper(), name.upper()), val=val)
+                prefix, suffix = camel_case_to_underscore(enum.name), camel_case_to_underscore(name)
+                cg.add_var('kd.%s_%s' % (prefix.upper(), suffix.upper()), val=val)
             cg.add_line()
 
     def export(self):

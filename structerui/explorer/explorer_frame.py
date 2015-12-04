@@ -512,10 +512,10 @@ class ExplorerFrame(xrcExplorerFrame):
             from zipfile import ZipFile
             zf = ZipFile(path, 'w')
 
-            from structer.exporter.default_exporter import DefaultObjectExporter
+            from structer.exporter import JsCodeExporter
             # from structer.exporter.type_exporter import JsTypeExporter
 
-            for exporter_class in (DefaultObjectExporter, ):
+            for exporter_class in (JsCodeExporter, ):
                 e = exporter_class(self.project)
                 e.export()
                 for name, data in e.get_files().iteritems():

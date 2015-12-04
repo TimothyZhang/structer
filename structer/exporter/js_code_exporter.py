@@ -397,7 +397,7 @@ class JsCodeExporter(BaseExporter):
                 val = name if enum.export_names else enum.value_of(name)
                 if type(val) is str or type(val) is unicode:
                     val = '"%s"' % val
-                prefix, suffix = camel_case_to_underscore(enum.name), name
+                prefix, suffix = camel_case_to_underscore(union.name), name
                 cg.add_var('kd.%s_%s' % (prefix.upper(), suffix.upper()), val=val)
             cg.add_line()
 

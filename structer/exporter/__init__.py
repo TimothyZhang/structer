@@ -39,6 +39,4 @@ XTable?
 '''
 
 from default_exporter import DefaultObjectExporter
-from js_code_exporter import JsCodeExporter
-from py_code_exporter import PyCodeExporter
 from type_exporter import JsonTypeExporter

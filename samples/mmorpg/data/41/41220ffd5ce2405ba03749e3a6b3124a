@@ -20,7 +20,7 @@
 "key":
 "heal"}],
 "id":
-4,
+"3",
 "mana_cost":
 40,
 "name":
@@ -35,11 +35,11 @@
 "target_number":
 1,
 "test_only":
-null}},
+[]}},
 "filetype":
 "object",
 "modify_time":
-1448595963.427,
+1449741330.917,
 "name":
 "",
 "parent":

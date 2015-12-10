@@ -42,7 +42,7 @@
 "key":
 "dmg"}],
 "id":
-3,
+"2",
 "mana_cost":
 10,
 "name":
@@ -57,11 +57,11 @@
 "target_number":
 1,
 "test_only":
-null}},
+[]}},
 "filetype":
 "object",
 "modify_time":
-1448595963.426,
+1449741330.895,
 "name":
 "",
 "parent":

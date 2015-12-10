@@ -20,7 +20,7 @@
 "key":
 "invisible"}],
 "id":
-5,
+"4",
 "mana_cost":
 30,
 "name":
@@ -35,11 +35,11 @@
 "target_number":
 1,
 "test_only":
-null}},
+[]}},
 "filetype":
 "object",
 "modify_time":
-1448595963.424,
+1449741330.937,
 "name":
 "",
 "parent":

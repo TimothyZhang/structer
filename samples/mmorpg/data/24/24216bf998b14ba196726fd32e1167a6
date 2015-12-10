@@ -42,7 +42,7 @@
 "target":
 "enemy",
 "target_number":
-2,
+3,
 "test_only":
 [[{"dmg":
 {"element":
@@ -107,7 +107,7 @@
 "filetype":
 "object",
 "modify_time":
-1449742260.565,
+1449742489.538,
 "name":
 "",
 "parent":

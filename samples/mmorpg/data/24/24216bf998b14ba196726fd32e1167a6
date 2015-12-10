@@ -5,7 +5,7 @@
 "Skill",
 "data":
 {"cd":
-60,
+90,
 "description":
 {"cn":
 "\u5bf9\u4e00\u4e2a\u654c\u4eba\u9020\u621020-30\u70b9\u4f24\u5bb3\u5e76\u4f7f\u5176\u7729\u66552\u79d2",
@@ -107,7 +107,7 @@
 "filetype":
 "object",
 "modify_time":
-1449741330.862,
+1449742216.262,
 "name":
 "",
 "parent":

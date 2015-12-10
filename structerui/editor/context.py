@@ -192,13 +192,14 @@ class FrameEditorContext(EditorContext):
                     data2.pop('__uuid__')
                     obj = objects.get(uuid)                    
                     if obj:
-                        objects.pop(uuid)                        
-                        obj.raw_data = data2
-                        try:
-                            self.project.save_object(obj)
-                        except Exception, e:
-                            log.alert(e, 'Failed to save %s', obj)
-                            success = False
+                        objects.pop(uuid)
+                        if self.clazz.atstruct.compare(data2, obj.raw_data) != 0:
+                            obj.raw_data = data2
+                            try:
+                                self.project.save_object(obj)
+                            except Exception, e:
+                                log.alert(e, 'Failed to save %s', obj)
+                                success = False
                     else:
                         log.alert('Internal error. Editing object not found: %s', uuid)
                         success = False

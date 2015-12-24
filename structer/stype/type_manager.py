@@ -239,24 +239,26 @@ class TypeManager(object):
         union_name = union_obj.get_attr_value("name")
         if union_name in self._parsed_unions:
             return self._parsed_unions[union_name]
-        
+
+        export_names = union_obj.get_attr_value('export_names')
+        convert_to_int = union_obj.get_attr_value('convert_to_int')
+        union_exporter = union_obj.get_attr_value('exporter')
+        union = self._parsed_unions[union_name] = Union(union_name, None, export_names=export_names,
+                                                        convert_to_int=convert_to_int, exporter=union_exporter)
+
+        # should set_struct after created Union(), to avoid dead recurse
         # [{'name':,'value':,'attrs':}, ...]
         items = union_obj.get_attr_value("items")
-        
+
         # [[Struct, value], ...]
-        structs = []  
-        for item in items:            
+        structs = []
+        for item in items:
             attrs = self._parse_struct_attrs(item['attrs'], project)
             str_template = item.get('str_template', u'')
             exporter = item.get('exporter', u'')
             struct = Struct(item['name'], attrs, str_template=str_template, label=item.get('label'), exporter=exporter)
             structs.append([ATStruct(struct, exporter=exporter, str_template=str_template), item['value']])
-        
-        export_names = union_obj.get_attr_value('export_names')
-        convert_to_int = union_obj.get_attr_value('convert_to_int')
-        union_exporter = union_obj.get_attr_value('exporter')
-        union = self._parsed_unions[union_name] = Union(union_name, structs, export_names=export_names,
-                                                        convert_to_int=convert_to_int, exporter=union_exporter)
+        union.set_structs(structs)
         
         return union
         

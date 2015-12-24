@@ -744,10 +744,16 @@ class ATUnion(AttrType):
                 assert union.get_atstruct(name) is not None
 
         self._filter = filter
-        self.update_union()
+        # self.update_union()
+        self.__atenum = None
 
-    def update_union(self):
-        self.atenum = ATEnum(self.union.enum, filter=self._filter)
+    # def update_union(self):
+    #     self.atenum = ATEnum(self.union.enum, filter=self._filter)
+    @property
+    def atenum(self):
+        if self.__atenum is None:
+            self.__atenum = ATEnum(self.union.enum, filter=self._filter)
+        return self.__atenum
 
     def get_default(self, project):
         key = self.atenum.names[0]

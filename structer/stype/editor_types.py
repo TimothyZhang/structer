@@ -152,11 +152,11 @@ s_enum = ATStruct(Struct(u"Enum", [Attr("enum", ATRef(CLAZZ_NAME_ENUM)),
                   verifier=s_enum_verifier)
 
 
-#u_type was not completed
+# u_type was not completed
 u_type.set_structs([[s, s.struct.name] for s in [s_int, s_bool, s_float, s_str, s_file, s_folder,
                                                  s_list, s_ref, s_struct, s_union, s_enum, s_predefined_type]])
-atu_type.update_union()
-#u_int_or_str = Union("IntOrStr", [Struct("Int", [Attr("value", ATInt())]),
+# atu_type.update_union()
+# u_int_or_str = Union("IntOrStr", [Struct("Int", [Attr("value", ATInt())]),
 #                                  Struct("Str", [Attr("value", ATStr())])])
 
 regex_identifier = "^[A-Za-z_][a-zA-Z0-9_]*$"
@@ -273,7 +273,7 @@ clazz_union = _Clazz(CLAZZ_NAME_UNION, [Attr("name", ATStr(0, 255)),
                                             Attr("attrs", ATList(ATStruct(s_attr))),
                                             Attr("str_template", ATStr(),
                                                  u'eg: "ID: ${id}, Name: $name, Price: $$${price}'),
-                                            Attr("exporter", ATStr(multiline=True))],str_template=u'${name}')),
+                                            Attr("exporter", ATStr(multiline=True))], str_template=u'${name}')),
                                                              minlen=1, unique_attrs=['name'])
                                             ),
                                         # Attr('export_names', ATBool(0),

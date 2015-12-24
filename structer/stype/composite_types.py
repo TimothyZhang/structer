@@ -93,7 +93,7 @@ class Enum(object):
     def label_of(self, name):
         l = self.__name2labels.get(name)
         if not l:
-            l = u'Invalid: %s'%name
+            l = u'Invalid: %s' % name
         return l
     
     def name_of_label(self, label):
@@ -143,13 +143,25 @@ class Struct(object):
     
 
 class Union(object):
-    def __init__(self, name, structs, export_names=True, convert_to_int=False, exporter=u''):
-        ''' structs: [[ATStruct, value], ...]'''
+    name = ''
+    _export_names = False
+    _convert_to_int = False
+    exporter = u''
+    enum = None
+    __at_enum = None
+    __structs_map = None
+
+    def __init__(self, name, structs=None, export_names=True, convert_to_int=False, exporter=u''):
+        """ structs: [[ATStruct, value], ...]"""
+        self.init(name, structs, export_names, convert_to_int, exporter)
+
+    def init(self, name, structs, export_names=True, convert_to_int=False, exporter=u''):
         self.name = name
         self._export_names = export_names
         self._convert_to_int = convert_to_int
         self.exporter = exporter
-        self.set_structs(structs)
+        if structs:
+            self.set_structs(structs)
         
     @property
     def convert_to_int(self):
@@ -160,7 +172,6 @@ class Union(object):
         return self._export_names   
     
     def set_structs(self, structs):
-        #self.__structs = structs
         self.__structs_map = {}
         
         enum_items = [] 

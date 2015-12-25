@@ -49,6 +49,9 @@ class TypeManager(object):
     
     def get_struct_by_name(self, name):
         return self._parsed_structs.get(name)
+
+    def get_enum_by_name(self, name):
+        return self._parsed_enums.get(name)
     
     def load_editor_types(self):        
         for _, v in vars(editor_types).iteritems():

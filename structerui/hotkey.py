@@ -76,7 +76,7 @@ def build_keystr(evt):
 
 
 def check(keydef, keystr):
-    print 'check hotkey', keydef, keystr
+    # print 'check hotkey', keydef, keystr
     if type(keydef) is tuple:
         return keystr in keydef
     

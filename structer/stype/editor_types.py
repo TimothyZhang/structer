@@ -40,12 +40,15 @@ CLAZZ_NAME_SETTING = u"Setting"
 CLAZZ_NAME_PREDEFINED_TYPE = u'PredefinedType'
 
 # structs for define AttrTypes
+
+INT_MAX = 2**63-1
+INT_MIN = -2**63
 s_int_verifier = u'''
 if not v['min']<=v['default']<=v['max']:
     error(u'default value out of range. %s<=%s<=%s' % (v['min'], v['default'], v['max']))
 '''
-s_int = ATStruct(Struct(u"Int", [Attr("min", ATInt(default=-0x80000000)),
-                                 Attr("max", ATInt(default=0x7FFFFFFF)),
+s_int = ATStruct(Struct(u"Int", [Attr("min", ATInt(min=INT_MIN, max=INT_MAX, default=-0x80000000)),
+                                 Attr("max", ATInt(min=INT_MIN, max=INT_MAX, default=0x7FFFFFFF)),
                                  Attr("default", ATInt(default=0)),
                                  Attr("verifier", ATStr(multiline=True)),
                                  Attr("exporter", ATStr(multiline=True))],

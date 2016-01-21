@@ -15,6 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+There are 4 types of nodes in explorer:
+1. FsFolder
+2. FsFile
+3. SearchResult
+"""
+
 
 import time
 import json
@@ -25,7 +32,6 @@ from structer import const, fs_util
 from structer.fs_manager import FOLDER_CONFLICTION_STRATEGY_RENAME
 from structer.fs_manager import FOLDER_CONFLICTION_STRATEGY_MERGE
 from structer.fs_manager import FolderConflictionException
-
 
 from structerui.util import *
 
@@ -40,13 +46,13 @@ Write a python function with name "choose", which accepts three parameters:
         file.modify_time: time in seconds
         file.create_time: time in seconds
         file.tags: a set of tags of the object
-    project: the Project instance        
+    project: the Project instance
 \"\"\"
 def choose(obj, file, project):
     # all monsters whose level is 10
     if obj.clazz.name == 'Monster' and obj['level'] == 10:
         return True
-      
+
     # all objects modified in recent 24 hours, any type
     #import time
     #if time.time() - file.modify_time < 3600 * 24:
@@ -74,12 +80,14 @@ class FSNodeTool(object):
         return self._explorer
     
     def create_image_list(self, size=(16, 16)):
-        '''Creates an image list for nodes
-        
-        Returns:
-            (wxImageList, name_to_image_id), name_to_image_id is a dict whose key is image name, and value is id in 
+        """Creates an image list for nodes
+
+        :param size: size of each image
+        :type size: tuple[int]
+        :return (wxImageList, name_to_image_id), name_to_image_id is a dict whose key is image name, and value is id in
             that image list
-        '''
+        :rtype: (wx.ImageList, dict[str, id])
+        """
         image_list = wx.ImageList(size[0], size[1])
         
         # {image name: image id in list}
@@ -228,10 +236,10 @@ class FSNodeTool(object):
 
     # noinspection PyMethodMayBeStatic
     def create_clipboard_data(self, uuids, action):
-        '''
+        """
         Args:
             action: 'copy' or 'cut'
-        '''
+        """
         data = {'uuids': uuids, 'action': action}
         data = json.dumps(data)
         
@@ -276,11 +284,11 @@ class FSNodeTool(object):
         return True
 
     def rename(self, fs_node, new_name):
-        '''Rename a fs_node to new_name
+        """Rename a fs_node to new_name
         
         Returns:
             True if sucessed, or False if failed
-        '''
+        """
         if self.can_rename(fs_node):
             try:
                 self.project.fs_manager.rename(fs_node.uuid, new_name)
@@ -330,7 +338,7 @@ class FSNodeTool(object):
         return menu
     
     def add_create_menu(self, menu, nodes, event_menu):
-        '''todo: the name "menu" and "event_menu" should be more clarified'''
+        """todo: the name "menu" and "event_menu" should be more clarified"""
         item = menu.Append(wx.NewId(), u'&Folder')
         self._bind_menu(event_menu, self._on_create_folder, item.GetId(), nodes)
 
@@ -414,7 +422,7 @@ class FSNodeTool(object):
         return bool(tags or tagged)
         
     def _add_menu_search(self, menu, nodes):
-        u'''Returns True if any menu added, otherwise returns False'''
+        u"""Returns True if any menu added, otherwise returns False"""
         
         if self.can_search(nodes):            
             item = menu.Append(wx.NewId(), u'&Search')        
@@ -422,7 +430,7 @@ class FSNodeTool(object):
             return True
     
     def _add_menu_open(self, menu, nodes):
-        u'''Returns True if any menu added, False if no menu added'''
+        u"""Returns True if any menu added, False if no menu added"""
         
         if not self.can_open(nodes):
             return False
@@ -496,10 +504,10 @@ class FSNodeTool(object):
         return menus > 0
     
     def can_open(self, fs_nodes):
-        '''
+        """
         Args:
             fs_nodes: a FSNode, or a list of FSNodes
-        '''
+        """
         
         # Only 1 node
         # if len(fs_nodes)==1:
@@ -529,11 +537,11 @@ class FSNodeTool(object):
         return False
     
     def open(self, fs_nodes):
-        '''Open one or more nodes
+        """Open one or more nodes
         
         Args:
             fs_nodes: a FSNode, or a list of FSNodes
-        '''
+        """
         assert self.can_open(fs_nodes)
         
         fsm = self.project.fs_manager

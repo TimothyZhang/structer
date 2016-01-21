@@ -127,7 +127,7 @@ class FSNodeTool(object):
         if node.is_folder():
             return 'Folder'
         
-        if node.filetype == const.FILE_TYPE_FILTER:
+        if node.file_type == const.FILE_TYPE_FILTER:
             return 'Filter'
         
         obj = self._get_object_by_node(node)
@@ -144,7 +144,7 @@ class FSNodeTool(object):
         if node.is_folder():
             return ICON_FOLDER
         
-        if node.filetype == const.FILE_TYPE_FILTER:
+        if node.file_type == const.FILE_TYPE_FILTER:
             return ICON_FILTER
         
         obj = self._get_object_by_node(node)

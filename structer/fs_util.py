@@ -21,10 +21,10 @@ import const
 from stype.clazz import Clazz, Object
 
 def is_object(fs_node):
-    return not fs_node.is_folder() and fs_node.filetype == const.FILE_TYPE_OBJECT
+    return not fs_node.is_folder() and fs_node.file_type == const.FILE_TYPE_OBJECT
 
 def is_filter(fs_node):
-    return not fs_node.is_folder() and fs_node.filetype == const.FILE_TYPE_FILTER
+    return not fs_node.is_folder() and fs_node.file_type == const.FILE_TYPE_FILTER
 
 def get_object_clazz_name(fs_node):
     return fs_node.data['clazz']

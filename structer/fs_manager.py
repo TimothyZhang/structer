@@ -41,7 +41,7 @@ class FolderConflictionException(Exception):
     pass
 
 class FileSystemManager(object):  
-    '''Simulates a virtual file system.
+    """Simulates a virtual file system.
 
     (The main reason not using native file system is, subversion puts a ".svn" folder in each native folder, and it's
     complicated to manage that correctly if we want to move/rename folders. Althoulgh Latest subversion client
@@ -391,7 +391,7 @@ class FileSystemManager(object):
                 self._copy_tree(child, new, strategy)
             return new
         elif type(node) is File:
-            new = self.create_file(parent, node.filetype, node.name, node.data)
+            new = self.create_file(parent, node.file_type, node.name, node.data)
             return new
         else:
             raise Exception('invalid node type: %s' % type(node))
@@ -459,7 +459,7 @@ class FileSystemManager(object):
         return old_parent
 
     def delete(self, uuid_):
-        '''"Delete" a FSNode.
+        """Delete a FSNode.
 
         Deleted nodes are marked as "deleted", native files will never been removed physically
         """

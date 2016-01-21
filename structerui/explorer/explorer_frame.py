@@ -500,8 +500,8 @@ class ExplorerFrame(xrcExplorerFrame):
 
         wildcard = 'Zip archive (*.zip)|*.zip'
         dlg = wx.FileDialog(self, message="Choose export location",
-                            #defaultDir=self.project.path,
-                            #defaultFile="",
+                            # defaultDir=self.project.path,
+                            # defaultFile="",
                             wildcard=wildcard ,
                             style=wx.SAVE|wx.FD_OVERWRITE_PROMPT
                            )
@@ -516,10 +516,10 @@ class ExplorerFrame(xrcExplorerFrame):
             from zipfile import ZipFile
             zf = ZipFile(path, 'w')
 
-            from structer.exporter import JsCodeExporter
+            from structer.exporter import DefaultObjectExporter
             # from structer.exporter.type_exporter import JsTypeExporter
 
-            for exporter_class in (JsCodeExporter, ):
+            for exporter_class in (DefaultObjectExporter, ):
                 e = exporter_class(self.project)
                 e.export()
                 for name, data in e.get_files().iteritems():

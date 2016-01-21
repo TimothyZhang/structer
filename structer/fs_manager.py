@@ -399,7 +399,7 @@ class FileSystemManager(object):
                 self._copy_tree(child, new, strategy)
             return new
         elif type(node) is File:
-            new = self.create_file(parent, node.filetype, node.name, node.data)
+            new = self.create_file(parent, node.file_type, node.name, node.data)
             return new
         else:
             raise Exception('invalid node type: %s' % type(node))

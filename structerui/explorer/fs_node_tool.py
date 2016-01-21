@@ -15,6 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+There are 4 types of nodes in explorer:
+1. FsFolder
+2. FsFile
+3. SearchResult
+"""
+
 
 import time
 import json
@@ -25,7 +32,6 @@ from structer import const, fs_util
 from structer.fs_manager import FOLDER_CONFLICTION_STRATEGY_RENAME
 from structer.fs_manager import FOLDER_CONFLICTION_STRATEGY_MERGE
 from structer.fs_manager import FolderConflictionException
-
 
 from structerui.util import *
 
@@ -40,13 +46,13 @@ Write a python function with name "choose", which accepts three parameters:
         file.modify_time: time in seconds
         file.create_time: time in seconds
         file.tags: a set of tags of the object
-    project: the Project instance        
+    project: the Project instance
 \"\"\"
 def choose(obj, file, project):
     # all monsters whose level is 10
     if obj.clazz.name == 'Monster' and obj['level'] == 10:
         return True
-      
+
     # all objects modified in recent 24 hours, any type
     #import time
     #if time.time() - file.modify_time < 3600 * 24:
@@ -75,10 +81,12 @@ class FSNodeTool(object):
     
     def create_image_list(self, size=(16, 16)):
         """Creates an image list for nodes
-        
-        Returns:
-            (wxImageList, name_to_image_id), name_to_image_id is a dict whose key is image name, and value is id in 
+
+        :param size: size of each image
+        :type size: tuple[int]
+        :return (wxImageList, name_to_image_id), name_to_image_id is a dict whose key is image name, and value is id in
             that image list
+        :rtype: (wx.ImageList, dict[str, id])
         """
         image_list = wx.ImageList(size[0], size[1])
         

@@ -41,8 +41,11 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
         """:type: dict[str, int]"""
 
         self._fs_parent = None      # Folder or Filter
+        """:type: FsNode"""
         self._fs_nodes = []
+        """:type: list[FsNode]"""
         self._history = []          # navigation history
+        """:type: list[FsNode]"""
         self._history_index = -1
         # 'id', 'name', 'time'
         self._sort_by = 'name'

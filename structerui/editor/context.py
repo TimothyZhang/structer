@@ -193,6 +193,7 @@ class FrameEditorContext(EditorContext):
                     obj = objects.get(uuid)                    
                     if obj:
                         objects.pop(uuid)
+
                         if self.clazz.atstruct.compare(data2, obj.raw_data) != 0:
                             obj.raw_data = data2
                             try:

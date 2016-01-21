@@ -38,5 +38,4 @@ XClass?
 XTable?        
 '''
 
-from default_exporter import DefaultObjectExporter
-from type_exporter import JsonTypeExporter
+from default_exporter import DefaultExporter

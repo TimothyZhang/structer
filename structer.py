@@ -27,8 +27,8 @@ def export(project_path, dst_path):
     if p.has_error():
         raise Exception('All errors must be fixed before exporting.')
     
-    from structer.exporter import DefaultObjectExporter
-    exp = DefaultObjectExporter()
+    from structer.exporter import DefaultExporter
+    exp = DefaultExporter()
     
     from zipfile import ZipFile
     zf = None

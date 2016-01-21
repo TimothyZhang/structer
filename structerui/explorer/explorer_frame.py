@@ -493,33 +493,34 @@ class ExplorerFrame(xrcExplorerFrame):
         if self.project.has_error(True):
             log.alert("All errors must be fixed before exporting.")
             return
-
-        wildcard = 'Zip archive (*.zip)|*.zip'
-        dlg = wx.FileDialog(self, message="Choose export location",
-                            #defaultDir=self.project.path,
-                            #defaultFile="",
-                            wildcard=wildcard ,
-                            style=wx.SAVE|wx.FD_OVERWRITE_PROMPT
-                           )
-        if wx.ID_CANCEL == dlg.ShowModal():
+        
+        from structer.exporter import DefaultExporter
+        exp = DefaultExporter()
+        
+        wildcard = exp.get_exported_wildcard()
+        if wildcard is None:
+            # need a folder
+            raise NotImplemented
+        
+            #path = ...
+        else:
+            dlg = wx.FileDialog(self, message="Choose export location",                               
+                                #defaultDir=self.project.path, 
+                                #defaultFile="",
+                                wildcard=wildcard ,
+                                style=wx.SAVE|wx.FD_OVERWRITE_PROMPT
+                               )
+            if wx.ID_CANCEL == dlg.ShowModal():
+                dlg.Destroy()
+                return False
+                            
+            path = dlg.GetPath()
             dlg.Destroy()
-            return False
-
-        path = dlg.GetPath()
-        dlg.Destroy()
             
         try:
             from zipfile import ZipFile
             zf = ZipFile(path, 'w')
-
-            from structer.exporter import JsCodeExporter
-            # from structer.exporter.type_exporter import JsTypeExporter
-
-            for exporter_class in (JsCodeExporter, ):
-                e = exporter_class(self.project)
-                e.export()
-                for name, data in e.get_files().iteritems():
-                    zf.writestr(name, data)
+            exp.export(self.project, zf.writestr)
         except Exception, e:
             log.alert(e, "Failed to export")
             return False

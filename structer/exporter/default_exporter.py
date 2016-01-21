@@ -18,8 +18,6 @@
 
 import json
 
-from base import BaseExporter
-
 
 class Exporter(object):
     def get_name(self):
@@ -50,15 +48,40 @@ class Exporter(object):
         raise
 
 
-class DefaultObjectExporter(BaseExporter):
-    def export(self):
-        project = self.project
+class DefaultExporter(Exporter):
+    def __init__(self):
+        pass
 
-        # objects for each class
+    def get_name(self):
+        return "Default Exporter"
+
+    def get_exported_wildcard(self):
+        return "Zip archive (*.zip)|*.zip"
+
+    def export(self, project, write_func):
         for clazz in project.type_manager.get_clazzes():
-            clazz_all = {}
+            clazz_all = []
             for obj in project.object_manager.get_objects(clazz):
-                clazz_all[obj.id] = obj.export()
+                clazz_all.append(obj.export())
 
             data = json.dumps(clazz_all, sort_keys=True)
-            self.save('%s.json' % clazz.name, data)
+            write_func('%s.json' % clazz.name, data)
+
+        consts = []
+        for enum in project.type_manager.get_enums():
+            for name in enum.names:
+                val = name if enum.export_names else enum.value_of(name)
+                if type(val) is str or type(val) is unicode:
+                    val = '"%s"' % val
+                consts.append((('%s_%s' % (enum.name, name)).upper(), val))
+
+        for union in project.type_manager.get_unions():
+            enum = union.atenum.enum
+            for name in enum.names:
+                val = name if enum.export_names else enum.value_of(name)
+                if type(val) is str or type(val) is unicode:
+                    val = '"%s"' % val
+                consts.append((('%s_%s' % (union.name, name)).upper(), val))
+
+        consts_str = '\n'.join(['%s = %s' % (n, v) for n, v in consts])
+        write_func('consts.txt', consts_str)

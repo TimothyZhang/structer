@@ -74,11 +74,7 @@ class UnionListListMapper(object):
             j = 0
             for i, u_item_type in enumerate(self._u_item_types):
                 atstruct = union.get_atstruct(u_item_type)
-                u_item_type2, u_item_data2 = None, None
-                if j < len(ul_data):
-                    u_item_type2 = ul_data[j]['key']
-                    u_item_data2 = ul_data[j][u_item_type2]
-
+                u_item_type2, u_item_data2 = ul_data[j] if j < len(ul_data) else (None, None)
                 if u_item_type2 == u_item_type:
                     for attr in atstruct.struct.iterate():
                         sl_attr_name = '%s-%s-%s' % (i+1, u_item_type, attr.name)
@@ -107,7 +103,7 @@ class UnionListListMapper(object):
             ul_data = []
             for i, u_item_type in enumerate(self._u_item_types):
                 u_item_data = {}
-                u_data = {'key': u_item_type, u_item_type: u_item_data}
+                u_data = [u_item_type, u_item_data]
                 atstruct = union.get_atstruct(u_item_type)
                 for attr in atstruct.struct.iterate():
                     sl_attr_name = '%s-%s-%s' % (i+1, u_item_type, attr.name)
@@ -124,12 +120,7 @@ class UnionListListMapper(object):
         return ull_data
 
     @staticmethod
-    def check_ull_type(ull_type):
-        # check type
-        if not isinstance(ull_type, ATList):
-            return False
-        ul_type = ull_type.element_type
-
+    def check_element_type(ul_type):
         if not isinstance(ul_type, ATList):
             return False
         u_type = ul_type.element_type
@@ -137,6 +128,14 @@ class UnionListListMapper(object):
         if not isinstance(u_type, ATUnion):
             return False
         return True
+
+    @staticmethod
+    def check_ull_type(ull_type):
+        # check type
+        if not isinstance(ull_type, ATList):
+            return False
+
+        return UnionListListMapper.check_element_type(ull_type.element_type)
 
     @staticmethod
     def get_union_item_names(ull_type, ull_data):
@@ -165,7 +164,7 @@ class UnionListListMapper(object):
         # extract and union item types
         u_item_types = []
         for u_data in ul_data:
-            u_item_type = u_data['key']
+            u_item_type = u_data[0]
             atstruct = u_type.union.get_atstruct(u_item_type)
             if not atstruct:
                 return None
@@ -176,7 +175,7 @@ class UnionListListMapper(object):
         for ul_data2 in ull_data:
             # if len(ul_data2) != len(ul_data):
             #    return None
-            u_item_types2 = [u_data2['key'] for u_data2 in ul_data2]
+            u_item_types2 = [u_data2[0] for u_data2 in ul_data2]
             if not is_sub_sequence(u_item_types2, u_item_types):
                 return None
 

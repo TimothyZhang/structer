@@ -49,9 +49,6 @@ class TypeManager(object):
     
     def get_struct_by_name(self, name):
         return self._parsed_structs.get(name)
-
-    def get_enum_by_name(self, name):
-        return self._parsed_enums.get(name)
     
     def load_editor_types(self):        
         for _, v in vars(editor_types).iteritems():
@@ -66,73 +63,49 @@ class TypeManager(object):
         self._parsed_structs = {}
         
         try:
-            self._load_classes(project)
-            self._load_enums(project)
-            self._load_structs(project)
-            self._load_unions(project)
-        finally:
-            # del self._parsed_enums
-            # del self._parsed_unions
-            # del self._parsed_structs
-            pass
-
-    def _load_classes(self, project):
-        clazze_objs = project.object_manager.get_objects(editor_types.CLAZZ_NAME_CLAZZ)
-        for clazz_obj in clazze_objs:
-            atstruct, data = clazz_obj.clazz.atstruct, clazz_obj.raw_data
-
-            name = data['name']
-            attrs = self._parse_struct_attrs(data['attrs'], project)
-            exporter = data.get('exporter', u'')
+            clazze_objs = project.object_manager.get_objects(editor_types.CLAZZ_NAME_CLAZZ)        
+            for clazz_obj in clazze_objs:
+                atstruct, data = clazz_obj.clazz.atstruct, clazz_obj.raw_data
+                
+                name = data['name']
+                attrs = self._parse_struct_attrs(data['attrs'], project)
+                exporter = data.get('exporter', u'')
 #                 # Add reserved attrs: tags & export
-#                 attrs.insert(0, Attr('tags',   ATList(ATStr(1), unique=True), 'TAGS') )
+#                 attrs.insert(0, Attr('tags',   ATList(ATStr(1), unique=True), 'TAGS') )                
 #                 attrs.insert(0, Attr('export', ATBool(0), 'export?') )
-#
+#                 
 #                 # move "name" & "id" to front
 #                 for attr_name in ['name', 'id']:
 #                     for attr in attrs:
 #                         if attr.name == attr_name:
 #                             attrs.remove(attr)
 #                             attrs.insert(0, attr)
-#                             break
+#                             break                        
 
-            str_template = clazz_obj.get_attr_value('str_template')
-            struct = Struct(name, attrs, str_template=str_template, exporter=exporter)
-            clazz = Clazz(ATStruct(struct))
-
-            # extra settings
-            clazz.unique_attrs = clazz_obj.get_attr_value('unique_attrs',)
-            # clazz.name_attr = clazz_obj.get_attr_value('name_attr')
-            clazz.max_number = clazz_obj.get_attr_value('max_number')
-            clazz.min_number = clazz_obj.get_attr_value('min_number')
-
-            icon = clazz_obj.get_attr_value('icon')
-            if icon:
-                # icon path is relative to editor project root
-                icon = util.normpath(icon)
-                if not os.path.isabs(icon):
-                    icon = util.normpath(os.path.join(const.PROJECT_FOLDER_TYPE, icon))
-                clazz.icon = icon
-
-            self._clazzes[clazz.name] = clazz
-
-    def _load_enums(self, project):
-        enum_objs = project.object_manager.get_objects(editor_types.CLAZZ_NAME_ENUM)
-        for enum_obj in enum_objs:
-            self._parse_enum(enum_obj, project)
-
-    def _load_structs(self, project):
-        struct_objs = project.object_manager.get_objects(editor_types.CLAZZ_NAME_STRUCT)
-        for struct_obj in struct_objs:
-            self._parse_struct(struct_obj, project)
-
-    def _load_unions(self, project):
-        union_objs = project.object_manager.get_objects(editor_types.CLAZZ_NAME_UNION)
-        for union_obj in union_objs:
-            self._parse_union(union_obj, project)
-
-    def get_structs(self):
-        return self._parsed_structs.values()
+                str_template = clazz_obj.get_attr_value('str_template')
+                struct = Struct(name, attrs, str_template=str_template, exporter=exporter)
+                clazz = Clazz(ATStruct(struct))
+                
+                # extra settings
+                clazz.unique_attrs = clazz_obj.get_attr_value('unique_attrs',)
+                # clazz.name_attr = clazz_obj.get_attr_value('name_attr')
+                clazz.max_number = clazz_obj.get_attr_value('max_number')
+                clazz.min_number = clazz_obj.get_attr_value('min_number')
+                                
+                icon = clazz_obj.get_attr_value('icon')
+                if icon:
+                    # icon path is relative to editor project root
+                    icon = util.normpath(icon)
+                    if not os.path.isabs(icon):
+                        icon = util.normpath(os.path.join(const.PROJECT_FOLDER_TYPE, icon))
+                    clazz.icon = icon
+                
+                self._clazzes[clazz.name] = clazz
+        finally:
+            # del self._parsed_enums
+            # del self._parsed_unions
+            # del self._parsed_structs
+            pass
         
     def get_enums(self):
         return self._parsed_enums.values()
@@ -151,11 +124,11 @@ class TypeManager(object):
             AttrType
         """
         # print '_parse_type', type_data
-        type_name = type_data['key']
+        type_name = type_data[0]
         type_type = editor_types.u_type.get_atstruct(type_name)
         
         if type_type == editor_types.s_predefined_type:
-            val = type_type.get_attr_value("predefined_type", type_data[type_name], project)
+            val = type_type.get_attr_value("predefined_type", type_data[1], project)
             obj = project.object_manager.get_object(val)
             data = obj.get_attr_value("predefined_type")
             # print '>>>', data
@@ -164,10 +137,9 @@ class TypeManager(object):
         class_args = {}        
         # if type_name == 'List' and u'element_type' not in type_data[1]:
         #    type_data[1]['element_type'] = type_data[1]['type']
-
-        internal_attr = None
+        
         for attr in type_type.struct.iterate():
-            val = type_type.get_attr_value(attr.name, type_data[type_data['key']], project)
+            val = type_type.get_attr_value(attr.name, type_data[1], project)
                         
             # if type_name == 'List':
             #     if attr.name == 'element_type':
@@ -185,7 +157,6 @@ class TypeManager(object):
                         val = self._parse_enum(ref, project)
                     elif attr.type.clazz_name == editor_types.CLAZZ_NAME_UNION:
                         val = self._parse_union(ref, project)
-                    internal_attr = val
                 else:
                     log.error("ref to %s is None: %s", attr.type.clazz_name, val)
                     return None
@@ -194,16 +165,9 @@ class TypeManager(object):
                 val = self._parse_type(val, project)
             
             class_args[attr.name] = val
-
-        verifier = getattr(internal_attr, 'verifier', None)
-        if verifier:
-            class_args['verifier'] = verifier
-        exporter = getattr(internal_attr, 'exporter', None)
-        if exporter:
-            class_args['exporter'] = exporter
         
         attr_type_class = globals()['AT%s' % type_name]
-
+        
         # try:
         return attr_type_class(**class_args)
         # except Exception, e:
@@ -263,26 +227,23 @@ class TypeManager(object):
         union_name = union_obj.get_attr_value("name")
         if union_name in self._parsed_unions:
             return self._parsed_unions[union_name]
-
-        export_names = union_obj.get_attr_value('export_names')
-        convert_to_int = union_obj.get_attr_value('convert_to_int')
-        union_exporter = union_obj.get_attr_value('exporter')
-        union = self._parsed_unions[union_name] = Union(union_name, None, export_names=export_names,
-                                                        convert_to_int=convert_to_int, exporter=union_exporter)
-
-        # should set_struct after created Union(), to avoid dead recurse
+        
         # [{'name':,'value':,'attrs':}, ...]
         items = union_obj.get_attr_value("items")
-
+        
         # [[Struct, value], ...]
-        structs = []
-        for item in items:
+        structs = []  
+        for item in items:            
             attrs = self._parse_struct_attrs(item['attrs'], project)
             str_template = item.get('str_template', u'')
             exporter = item.get('exporter', u'')
             struct = Struct(item['name'], attrs, str_template=str_template, label=item.get('label'), exporter=exporter)
-            structs.append([ATStruct(struct, exporter=exporter, str_template=str_template), item['value']])
-        union.set_structs(structs)
+            structs.append([ATStruct(struct), item['value']])
+        
+        export_names = union_obj.get_attr_value('export_names')
+        convert_to_int = union_obj.get_attr_value('convert_to_int')
+        union = self._parsed_unions[union_name] = Union(union_name, structs, export_names=export_names,
+                                                        convert_to_int=convert_to_int)
         
         return union
         

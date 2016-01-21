@@ -40,15 +40,16 @@ CLAZZ_NAME_SETTING = u"Setting"
 CLAZZ_NAME_PREDEFINED_TYPE = u'PredefinedType'
 
 # structs for define AttrTypes
-
-INT_MAX = 2**63-1
-INT_MIN = -2**63
 s_int_verifier = u'''
 if not v['min']<=v['default']<=v['max']:
     error(u'default value out of range. %s<=%s<=%s' % (v['min'], v['default'], v['max']))
 '''
-s_int = ATStruct(Struct(u"Int", [Attr("min", ATInt(min=INT_MIN, max=INT_MAX, default=-0x80000000)),
-                                 Attr("max", ATInt(min=INT_MIN, max=INT_MAX, default=0x7FFFFFFF)),
+
+MAX_INT = 2**63-1
+MIN_INT = -2**63
+
+s_int = ATStruct(Struct(u"Int", [Attr("min", ATInt(min=MIN_INT, max=MAX_INT, default=-0x80000000)),
+                                 Attr("max", ATInt(min=MIN_INT, max=MAX_INT, default=0x7FFFFFFF)),
                                  Attr("default", ATInt(default=0)),
                                  Attr("verifier", ATStr(multiline=True)),
                                  Attr("exporter", ATStr(multiline=True))],
@@ -155,11 +156,11 @@ s_enum = ATStruct(Struct(u"Enum", [Attr("enum", ATRef(CLAZZ_NAME_ENUM)),
                   verifier=s_enum_verifier)
 
 
-# u_type was not completed
+#u_type was not completed
 u_type.set_structs([[s, s.struct.name] for s in [s_int, s_bool, s_float, s_str, s_file, s_folder,
                                                  s_list, s_ref, s_struct, s_union, s_enum, s_predefined_type]])
-# atu_type.update_union()
-# u_int_or_str = Union("IntOrStr", [Struct("Int", [Attr("value", ATInt())]),
+atu_type.update_union()
+#u_int_or_str = Union("IntOrStr", [Struct("Int", [Attr("value", ATInt())]),
 #                                  Struct("Str", [Attr("value", ATStr())])])
 
 regex_identifier = "^[A-Za-z_][a-zA-Z0-9_]*$"
@@ -187,16 +188,14 @@ for name in ['tags', 'enable']:
 for a in v:
     if a['name'] == 'id':
         at = a['type']
-        # if at['key'] == 'Int' and at[at['key']]['min'] < 0:
-        #     error(u'class id MUST >= 0')
-        if at['key'] != 'Str':
-            error(u'class id should be Str!')
+        if at[0] == 'Int' and at[1]['min'] < 0:
+            error(u'class id MUST >= 0')
         
 '''
 clazz_clazz = _Clazz(CLAZZ_NAME_CLAZZ, [Attr("name", atstr_identifier, "Name of the class. eg: Monster, Skill, NPC"),
                                         Attr("attrs", ATList(ATStruct(s_attr), unique_attrs=['name'],
                                                              verifier=clazz_attrs_verifier),
-                                             'Attribute List. "id" and "name" are required, "id" should be Str.'),
+                                             'Attribute List. "id" and "name" are required.'),
                                         Attr("unique_attrs", ATList(ATStr(1, 255), True),
                                              'Attributes names must be unique. eg: "id"'),
                                         #Attr("name_attr", ATStr(1, 255, u"name"), "The attribute to be used as objects's name. Can be Str or I18N"),
@@ -251,8 +250,7 @@ clazz_enum = _Clazz(CLAZZ_NAME_ENUM, [Attr("name", ATStr(1, 255)),
                                                            unique_attrs=['name'])),
                                       Attr('export_names', ATBool(0),
                                            'export names instead of values(value by default)'),
-                                      Attr('convert_to_int', ATBool(0), u'convert values to integers')
-                                      ],
+                                      Attr('convert_to_int', ATBool(0), u'convert values to integers')],
                     verifier=class_enum_verifier)
 clazz_enum.icon = "icons/enum.png"
 
@@ -276,15 +274,13 @@ clazz_union = _Clazz(CLAZZ_NAME_UNION, [Attr("name", ATStr(0, 255)),
                                             Attr("attrs", ATList(ATStruct(s_attr))),
                                             Attr("str_template", ATStr(),
                                                  u'eg: "ID: ${id}, Name: $name, Price: $$${price}'),
-                                            Attr("exporter", ATStr(multiline=True))], str_template=u'${name}')),
-                                                             minlen=1, unique_attrs=['name'])
-                                            ),
-                                        # Attr('export_names', ATBool(0),
-                                        # u'export names instead of values(value by default)'),
-                                        Attr('convert_to_int', ATBool(0), u'convert values to integers'),
-                                        Attr('exporter', ATStr(), u'custom exporter')
-                                        ],
-
+                                            Attr("exporter", ATStr(multiline=True))],
+                                                                             str_template=u'${name}')
+                                                                      ), minlen=1, unique_attrs=['name'])
+                                             ),
+                                        Attr('export_names', ATBool(0),
+                                             u'export names instead of values(value by default)'),
+                                        Attr('convert_to_int', ATBool(0), u'convert values to integers')],
                      verifier=class_union_verifier)
 
 clazz_union.icon = "icons/union.png"

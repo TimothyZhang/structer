@@ -32,7 +32,6 @@ The second and belowing rows refers to attributes of the struct of that key.
 Once the first row(union key) changed, all the other rows are changed.
 '''
 
-
 class UnionTable(StructTable):
     def __init__(self, ctx):
         StructTable.__init__(self, ctx)
@@ -50,7 +49,7 @@ class UnionTable(StructTable):
         
     @property
     def atstruct(self):
-        key = self._ctx.attr_data['key']
+        key = self._ctx.attr_data[0]
         return self.union.get_atstruct(key)
     
     @property
@@ -74,9 +73,9 @@ class UnionTable(StructTable):
         attr = self.get_attr_of_row(row)
             
         if row == 0:
-            val = self._ctx.attr_data['key']
+            val = self._ctx.attr_data[0]
         else:
-            val = self._ctx.attr_data[self._ctx.attr_data['key']].get(attr.name)
+            val = self._ctx.attr_data[1].get(attr.name)        
         return val
 
     def set_value(self, row, col, value):
@@ -84,16 +83,15 @@ class UnionTable(StructTable):
             return
         
         if row == 0:
-            old = self._ctx.attr_data['key']
+            old = self._ctx.attr_data[0]
             if old != value:
                 self._clear_rows()
-                self._ctx.attr_data['key'] = value
-                if value not in self._ctx.attr_data:
-                    self._ctx.attr_data[value] = self.atstruct.get_default(self._ctx.project)
+                self._ctx.attr_data[0] = value
+                self._ctx.attr_data[1] = self.atstruct.get_default(self._ctx.project)
                 self._add_rows()
         else: 
             attr = self.struct.get_attr_by_index(row-1)
-            self._ctx.attr_data[self._ctx.attr_data['key']][attr.name] = value
+            self._ctx.attr_data[1][attr.name] = value        
 
     def _clear_rows(self):
         #self.GetView().ForceRefresh()

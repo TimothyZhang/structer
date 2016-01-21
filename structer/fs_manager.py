@@ -527,7 +527,7 @@ class FileSystemManager(object):
         self._new_event(FSEvent.DELETE, node)
 
     def _save(self, node):
-        node.touch()
+        # node.touch()
         data = node.dump()
 
         rp = self._get_real_path(node.uuid)

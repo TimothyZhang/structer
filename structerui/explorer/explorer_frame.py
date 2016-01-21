@@ -98,7 +98,11 @@ class ExplorerFrame(xrcExplorerFrame):
     #     b = event.GetSkipped()
     #     print 'ProcessEvent:', event, a, b
     #     return a
-    
+
+    @property
+    def list(self):
+        return self._list
+
     def _create_tree(self):
         self._tree_panel = scrolled.ScrolledPanel(self.main_panel, -1,
                                  style = wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER, name="TreePanel" )

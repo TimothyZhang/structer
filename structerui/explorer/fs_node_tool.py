@@ -62,6 +62,7 @@ def choose(obj, file, project):
 
 class FSNodeTool(object):
     def __init__(self, explorer, ctrl):
+        _ = ctrl
         self._explorer = explorer
     
     @property
@@ -72,7 +73,7 @@ class FSNodeTool(object):
     def explorer(self):
         return self._explorer
     
-    def create_image_list(self, size=(16,16)):
+    def create_image_list(self, size=(16, 16)):
         '''Creates an image list for nodes
         
         Returns:
@@ -85,17 +86,17 @@ class FSNodeTool(object):
         name_to_image_id = {}
         
         # folders
-        for name in [ICON_FOLDER, ICON_OBJECT,ICON_FILTER]:            
+        for name in [ICON_FOLDER, ICON_OBJECT, ICON_FILTER]:
             bmp = get_bitmap(name, size, self.project)
             i = image_list.Add(bmp)
-            name_to_image_id[name]=i
+            name_to_image_id[name] = i
         
         if self.project:    
             for clazz in self.project.type_manager.get_clazzes():
                 bmp = get_clazz_bitmap(clazz, size, self.project)
                 i = image_list.Add(bmp)
-                name_to_image_id[clazz.icon]=i        
-        #self.SetImageList(self._image_list)
+                name_to_image_id[clazz.icon] = i
+        # self.SetImageList(self._image_list)
         return image_list, name_to_image_id   
     
     def _get_object_by_node(self, node):
@@ -134,9 +135,10 @@ class FSNodeTool(object):
             return obj.clazz.name
         
         return 'Unknown'
-    
+
+    # noinspection PyMethodMayBeStatic
     def get_modify_time(self, node):
-        return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime( node.modify_time ))
+        return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(node.modify_time))
     
     def get_icon(self, node):
         if node.is_folder():
@@ -161,11 +163,11 @@ class FSNodeTool(object):
             return   
         
         index = self._show_node_in_list(folder)
-        self.explorer._list.EditLabel(index)
+        self.explorer.list.EditLabel(index)
         
     def _on_create_filter(self, nodes):
         assert self.can_create(nodes)
-        self.do_create_filter( nodes[0] )                
+        self.do_create_filter(nodes[0])
     
     def do_create_filter(self, parent):
         try:
@@ -179,11 +181,11 @@ class FSNodeTool(object):
         
         # rename
         index = self._show_node_in_list(node)
-        self.explorer._list.EditLabel(index)     
+        self.explorer.list.EditLabel(index)
     
     def _on_create_object(self, nodes, clazz):
-        #print '_on_create_object'
-        assert len(nodes)==1
+        # print '_on_create_object'
+        assert len(nodes) == 1
         
         self.do_create_object(nodes[0], clazz)
         
@@ -209,28 +211,29 @@ class FSNodeTool(object):
             log.alert(e, 'Create object failed.')            
             return
         
-        fs_node = self.project.fs_manager.get_node_by_uuid( obj.uuid )
+        fs_node = self.project.fs_manager.get_node_by_uuid(obj.uuid)
         self._show_node_in_list(fs_node)
         
     def _show_node_in_list(self, fs_node):        
         l = self.explorer.list
         
         if l.fs_parent != fs_node.parent:
-            #l.set_parent(fs_node.parent)
-            self.explorer.set_path( fs_node.parent )
+            # l.set_parent(fs_node.parent)
+            self.explorer.set_path(fs_node.parent)
         
         l.SetFocus()
         index = l.get_index_by_node(fs_node)
-        l.single_select( index )
-        return index        
-    
+        l.single_select(index)
+        return index
+
+    # noinspection PyMethodMayBeStatic
     def create_clipboard_data(self, uuids, action):
         '''
         Args:
             action: 'copy' or 'cut'
         '''
         data = {'uuids': uuids, 'action': action}
-        data = json.dumps( data )
+        data = json.dumps(data)
         
         # save to system clipboard        
         do = wx.CustomDataObject(CLIPBOARD_DATA_FORMAT)
@@ -239,12 +242,13 @@ class FSNodeTool(object):
     
     def _set_clipboard(self, uuids, action):        
         if wx.TheClipboard.Open():
-            wx.TheClipboard.SetData( self.create_clipboard_data(uuids, action) )
+            wx.TheClipboard.SetData(self.create_clipboard_data(uuids, action))
             wx.TheClipboard.Close()
             return True
         
         return False
 
+    # noinspection PyMethodMayBeStatic
     def parse_clipboard_data(self, data):
         data = data.GetData()
         data = json.loads(data)
@@ -286,14 +290,16 @@ class FSNodeTool(object):
                             
         return True
 
+    # noinspection PyMethodMayBeStatic
     def _bind_menu(self, menu, call_back, id_, *args):
         def func(evt):
+            _ = evt
             call_back(*args)
-        menu.Bind(wx.EVT_MENU, func, id = id_)
+        menu.Bind(wx.EVT_MENU, func, id=id_)
             
     def get_menu(self, nodes):
         menu = wx.Menu()    
-        fsm = self.project.fs_manager
+        # fsm = self.project.fs_manager
                
         if self.can_restore(nodes):
             item = menu.Append(wx.NewId(), u'&Restore')
@@ -335,7 +341,7 @@ class FSNodeTool(object):
             menu.AppendSeparator()
             # Clazzes
             clazzes = self.project.type_manager.get_clazzes()
-            clazzes.sort(key=lambda x:x.name)
+            clazzes.sort(key=lambda x: x.name)
             for clazz in clazzes:
                 item = menu.Append(wx.NewId(), clazz.name)
                 self._bind_menu(event_menu, self._on_create_object, item.GetId(), nodes, clazz)
@@ -393,7 +399,7 @@ class FSNodeTool(object):
         if tags:
             submenu = wx.Menu()
             for tag in tags:            
-                item = submenu.Append(wx.NewId(), tag )            
+                item = submenu.Append(wx.NewId(), tag)
                 self._bind_menu(menu, self.do_add_tag, item.GetId(), obj_nodes, tag)
             menu.AppendSubMenu(submenu, u"&Add tag")
         
@@ -424,7 +430,7 @@ class FSNodeTool(object):
         # Get nodes which are objects
         obj_nodes = filter(fs_util.is_object, nodes)
         
-        if not obj_nodes and len(nodes)==1:
+        if not obj_nodes and len(nodes) == 1:
             if self.is_container(nodes[0]):  # all nodes in this filter or folder
                 obj_nodes = filter(fs_util.is_object, self.project.fs_manager.walk(nodes[0], False))
         
@@ -454,13 +460,13 @@ class FSNodeTool(object):
                 self._bind_menu(menu, self.do_edit, item.GetId(), objects)
             else:  # More than 1 clazz, use a sub menu
                 clazz_count = counts.items()
-                clazz_count.sort(key=lambda x:x[0].name.lower())
+                clazz_count.sort(key=lambda x: x[0].name.lower())
                 
                 if counts.values().count(1):  # At lease 1 clazz has only 1 object
                     submenu = wx.Menu()
                     for clazz, count in clazz_count:
                         if count == 1:
-                            item = submenu.Append(wx.NewId(), u'%s' % clazz.name )
+                            item = submenu.Append(wx.NewId(), u'%s' % clazz.name)
                             objects_ = [obj for obj in objects if obj.clazz == clazz]
                             assert len(objects_) == 1
                             self._bind_menu(menu, self.do_edit, item.GetId(), objects_[0])
@@ -468,14 +474,14 @@ class FSNodeTool(object):
                 
                 submenu = wx.Menu()
                 for clazz, count in clazz_count:
-                    item = submenu.Append(wx.NewId(), u'%s(%s)' % (clazz.name, count) )
-                    self._bind_menu(menu, self.do_edit, item.GetId(), [obj for obj in objects if obj.clazz==clazz])
+                    item = submenu.Append(wx.NewId(), u'%s(%s)' % (clazz.name, count))
+                    self._bind_menu(menu, self.do_edit, item.GetId(), [obj for obj in objects if obj.clazz == clazz])
                 menu.AppendSubMenu(submenu, u"&Batch Edit")
             
             menus = 1
         
         # filter & folder
-        if len(nodes)==1:
+        if len(nodes) == 1:
             node = nodes[0]
             if self.is_container(node):
                 item = menu.Append(wx.NewId(), u'&Open')
@@ -487,7 +493,7 @@ class FSNodeTool(object):
                 self._bind_menu(menu, self.edit_filter, item.GetId(), node)
                 menus += 1                        
         
-        return menus>0
+        return menus > 0
     
     def can_open(self, fs_nodes):
         '''
@@ -496,7 +502,7 @@ class FSNodeTool(object):
         '''
         
         # Only 1 node
-        #if len(fs_nodes)==1:
+        # if len(fs_nodes)==1:
         if type(fs_nodes) is not list:
             fs_node = fs_nodes            
             if self.is_container(fs_node):
@@ -504,7 +510,7 @@ class FSNodeTool(object):
             
             return self.is_project_editable()
 
-        if len(fs_nodes)==0:
+        if len(fs_nodes) == 0:
             return False
                                 
         if not self.is_project_editable():
@@ -514,7 +520,7 @@ class FSNodeTool(object):
         clazz_name = set()
         for fs_node in fs_nodes:
             if fs_util.is_object(fs_node) and not self.project.fs_manager.is_recycled(fs_node):
-                clazz_name.add( fs_util.get_object_clazz_name(fs_node) )
+                clazz_name.add(fs_util.get_object_clazz_name(fs_node))
             else:
                 clazz_name.add(None)
         
@@ -533,35 +539,34 @@ class FSNodeTool(object):
         fsm = self.project.fs_manager
         
         # Only 1 node
-        #if len(fs_nodes)==1:
+        # if len(fs_nodes)==1:
         if type(fs_nodes) is not list:
             fs_node = fs_nodes
             
             # folder or filter
             if self.is_container(fs_node):                
-                self.explorer.set_path( fs_node )
+                self.explorer.set_path(fs_node)
                 return
             
             # edit the object
             if fs_util.is_object(fs_node):
                 # only if it's not recycled
                 if not fsm.is_recycled(fs_node):
-                    obj = self.project.get_object_by_fsfile( fs_node )                
-                    self.explorer.show_editor( obj )
+                    obj = self.project.get_object_by_fsfile(fs_node)
+                    self.explorer.show_editor(obj)
                 return
                         
-            raise Exception('invalid node to open: %s' % fs_node)            
-            return    
+            raise Exception('invalid node to open: %s' % fs_node)
         
         # multiple nodes, can only open if all nodes are objects with the same Clazz
-        self.explorer.show_editor( [self.project.get_object_by_fsfile( fs_node ) for fs_node in fs_nodes] )
+        self.explorer.show_editor([self.project.get_object_by_fsfile(fs_node) for fs_node in fs_nodes])
     
     def edit_filter(self, node):
         assert fs_util.is_filter(node)
         
         from filter_editor import FilterEditorDialog
         dlg = FilterEditorDialog(self.explorer)
-        dlg.set_value( node.data )
+        dlg.set_value(node.data)
         
         if wx.ID_OK == dlg.ShowModal():
             filter_str = dlg.get_value()            
@@ -590,7 +595,8 @@ class FSNodeTool(object):
             filter_str = node.data
             # l = {}
             # g = {time}
-            try:            
+            # noinspection PyBroadException
+            try:
                 func = self.get_chooser_from_filter_str(filter_str)
             except:
                 traceback.print_exc()
@@ -648,7 +654,7 @@ class FSNodeTool(object):
             log.alert(u"Failed to cut.")
     
     def can_paste(self, nodes):
-        if len(nodes)!=1:
+        if len(nodes) != 1:
             return False
         
         uuids, action = self._get_clipboard()
@@ -665,7 +671,7 @@ class FSNodeTool(object):
         if not target.is_folder() or fsm.is_recycled(target):
             return False        
         
-        if target == fsm.recycle and action !='cut':
+        if target == fsm.recycle and action != 'cut':
             return False 
         
         return True
@@ -696,15 +702,17 @@ class FSNodeTool(object):
             self._repeat_strategy('move', fs_nodes, fsm.move, target)                
         else:
             log.alert('invalid clipboard action: %s', action)
-    
+
+    # noinspection PyMethodMayBeStatic
     def _repeat_strategy(self, action_name, nodes, func, *args):
-        #todo: remember user's decision with a checkbox "apply to all"
+        # todo: remember user's decision with a checkbox "apply to all"
         for node in nodes:
             try:
                 try:
                     func(node, *args)
                 except FolderConflictionException:
-                    ret = wx.MessageBox(u"Folder with the same name already exists! Do you want to merge them?", style=wx.YES_NO|wx.ICON_WARNING)
+                    ret = wx.MessageBox(u"Folder with the same name already exists! Do you want to merge them?",
+                                        style=wx.YES_NO | wx.ICON_WARNING)
                     if ret == wx.YES:
                         func(node, *args, strategy=FOLDER_CONFLICTION_STRATEGY_MERGE)
             except Exception, e:
@@ -747,18 +755,18 @@ class FSNodeTool(object):
                 log.alert('internal error in fs_node_tool._on_delete')
                 return
             
-            ret = wx.MessageBox("Permanetly delete %s?" % self.get_readable_node_names(nodes), style=wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
-            #print ret, wx.YES, wx.NO, wx.ID_YES, wx.ID_NO
+            ret = wx.MessageBox("Permanetly delete %s?" % self.get_readable_node_names(nodes),
+                                style=wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
+            # print ret, wx.YES, wx.NO, wx.ID_YES, wx.ID_NO
             if ret == wx.NO:
                 return
             
             delete = fsm.destroy
         else:
-            ret = wx.MessageBox("Move %s to recycle bin?" % self.get_readable_node_names(nodes), style=wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
+            ret = wx.MessageBox("Move %s to recycle bin?" % self.get_readable_node_names(nodes),
+                                style=wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
             if ret == wx.NO:
                 return
-
-
             delete = fsm.delete
                 
         for node in nodes:
@@ -772,17 +780,21 @@ class FSNodeTool(object):
         if len(nodes) > 3:
             names += '...(%s files)' % len(nodes)
         return names
-                
+
+    # noinspection PyMethodMayBeStatic
     def can_undo(self, nodes):
+        _ = nodes
         return False
     
-    def do_undo(self,nodes):
+    def do_undo(self, nodes):
         pass
 
+    # noinspection PyMethodMayBeStatic
     def can_redo(self, nodes):
+        _ = nodes
         return False
     
-    def do_redo(self,nodes):
+    def do_redo(self, nodes):
         pass
     
     def can_restore(self, nodes):
@@ -803,7 +815,7 @@ class FSNodeTool(object):
         self._repeat_strategy('restore', nodes, self.project.fs_manager.undelete)
         
     def can_search(self, nodes):
-        return len(nodes)==1 and self.is_container(nodes[0])
+        return len(nodes) == 1 and self.is_container(nodes[0])
     
     def do_search(self, node):        
         def iter_maker():
@@ -811,18 +823,17 @@ class FSNodeTool(object):
                 if fs_util.is_object(node_):
                     yield self.project.get_object_by_fsfile(node_)            
         
-        #self.project.object_manager.filter_objects(iter)
+        # self.project.object_manager.filter_objects(iter)
         def on_selected(obj):
-            print 'search result:', obj,id, obj.name
-            #self.explorer.show_editor(obj)
+            print 'search result:', obj, id, obj.name
+            # self.explorer.show_editor(obj)
             node_ = self.project.fs_manager.get_node_by_uuid(obj.uuid)
             self.explorer.set_path(node_)            
         
         from structerui.editor.grid.cell_editor.dialog import RefDialog
         dlg = RefDialog(None, self.project, iter_maker, on_selected)
         dlg.Show()       
-            
-    
+
     def do_edit(self, objects):
         self.project.explorer.show_editor(objects)
     

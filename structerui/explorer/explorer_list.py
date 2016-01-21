@@ -233,7 +233,8 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
             
         if focused_node and self.GetItemCount() > 0:
             index = self.get_index_by_node(focused_node)
-            self.Focus(index)
+            if index >= 0:
+                self.Focus(index)
 
     def get_selected_nodes(self):
         nodes = []

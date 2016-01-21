@@ -29,7 +29,7 @@ import wx.grid as grid
 
 from structer import log
 from structer.stype.attr_types import *
-
+from structerui import util
 from structerui import hotkey
 from cell_editor import * 
 from cell_editor.dialog import RefEditorDialog, EditorDialog, FileDialog, FolderDialog
@@ -361,7 +361,8 @@ class GridBase(grid.Grid):
     def _show_tip(self, row, col, vlog=None):
         if row<0 or col<0:
             return
-        
+        if util.is_mac():
+            return
         r, c = row, col
         #print 'show tip:', row, col
         # show tip
@@ -461,7 +462,7 @@ class GridBase(grid.Grid):
         cursor_row, cursor_col = self.GetGridCursorRow(), self.GetGridCursorCol()
         row, col = evt.GetRow(), evt.GetCol()
         
-        if (row, col) == (cursor_row, cursor_col):            
+        if (row, col) == (cursor_row, cursor_col):
             self.hide_tip()
             self.show_tip(row, col)
         

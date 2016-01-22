@@ -31,7 +31,6 @@ Only 1,2,3 might appear in ExplorerList
 import time
 import json
 import collections
-import traceback
 
 from structer import const, fs_util
 from structer.exceptions import StructerException
@@ -735,7 +734,7 @@ class FSNodeTool(object):
             return False
               
         fsm = self.project.fs_manager        
-        if not isinstance(node, Folder) or fsm.is_recycled(target):
+        if not isinstance(target, Folder) or fsm.is_recycled(target):
             return False        
         
         if target == fsm.recycle and action != 'cut':
@@ -980,4 +979,4 @@ class FSNodeTool(object):
         if len(nodes) == 1:
             return obj.name
 
-        return '%s...' % object[0].name
+        return '%s...' % obj.name

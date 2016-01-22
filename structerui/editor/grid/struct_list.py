@@ -16,15 +16,11 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
 import wx
-import wx.grid as grid
 
-from structer.stype.attr_types import *
-
-from base_grid import GridBase
 from list_grid import ListGrid, ListTable
 from structerui.editor.context import FrameEditorContext
+
 
 class StructListTable(ListTable):
     def __init__(self, ctx):
@@ -33,6 +29,7 @@ class StructListTable(ListTable):
     @property
     def atstruct(self):    
         return self.attr_type.element_type
+
     @property
     def struct(self):
         return self.atstruct.struct
@@ -73,7 +70,8 @@ class StructListGrid(ListGrid):
         
     def insert(self, pos=-1, rows=1, add_undo=False):
         if self.is_editing_objects() and add_undo:
-            # if wx.NO == wx.MessageBox("%s %s(s) will be created, continue?" % (rows, self.editor_context.clazz.name), style=wx.YES_NO | wx.ICON_WARNING):
+            # if wx.NO == wx.MessageBox("%s %s(s) will be created, continue?" %
+            # (rows, self.editor_context.clazz.name), style=wx.YES_NO | wx.ICON_WARNING):
             #    return
             pass
             
@@ -83,7 +81,9 @@ class StructListGrid(ListGrid):
         if self.is_editing_objects():
             attr_type_names, datas = self._get_clipboard()
             if attr_type_names and datas:
-                if wx.NO == wx.MessageBox("%s %s(s) will be created, continue?" % (len(datas), self.editor_context.clazz.name), style=wx.YES_NO | wx.ICON_WARNING):
+                if wx.NO == wx.MessageBox("%s %s(s) will be created, continue?" %
+                                          (len(datas), self.editor_context.clazz.name),
+                                          style=wx.YES_NO | wx.ICON_WARNING):
                     return  
         
         ListGrid.insert_copied(self, pos)
@@ -97,17 +97,18 @@ class StructListGrid(ListGrid):
                     wx.MessageBox("Invalid selection area", "Error")
                     return
                 
-                top,left,bottom,right = block
+                top, left, bottom, right = block
                 
                 pos = top
                 rows = bottom - top + 1
                 
-            if wx.NO == wx.MessageBox("%s %s will be deleted, and can NOT undo!!!\nContinue?"%(rows, self.editor_context.clazz.name), style=wx.YES_NO|wx.ICON_WARNING):
+            if wx.NO == wx.MessageBox("%s %s will be deleted, and can NOT undo!!!\nContinue?" %
+                                      (rows, self.editor_context.clazz.name), style=wx.YES_NO | wx.ICON_WARNING):
                 return
         
         ListGrid.delete(self, pos, rows)
         
-        #todo: it'd be better to support undo
+        # todo: it'd be better to support undo
         if self.is_editing_objects() and add_undo:
             self.editor_context.undo_manager.clear()        
     

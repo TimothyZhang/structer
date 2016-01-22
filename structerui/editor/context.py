@@ -25,7 +25,7 @@ from undo import UndoManager
 
 
 class EditorContext(object):
-    """Holds all the informations need by an editor.
+    """Holds all the information need by an editor.
     
     Attributes:
         attr_type: instance of AttrType

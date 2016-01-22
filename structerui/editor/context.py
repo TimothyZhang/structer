@@ -160,7 +160,7 @@ class FrameEditorContext(EditorContext):
             return cmp_(self.attr_data, self._objects.raw_data) != 0
     
     def save(self):
-        """Save all datas
+        """Save all data
 
         Returns:
             True/False

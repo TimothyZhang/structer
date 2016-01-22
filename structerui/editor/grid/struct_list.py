@@ -79,10 +79,10 @@ class StructListGrid(ListGrid):
     
     def insert_copied(self, pos=-1):
         if self.is_editing_objects():
-            attr_type_names, datas = self._get_clipboard()
-            if attr_type_names and datas:
+            attr_type_names, data = self._get_clipboard()
+            if attr_type_names and data:
                 if wx.NO == wx.MessageBox("%s %s(s) will be created, continue?" %
-                                          (len(datas), self.editor_context.clazz.name),
+                                          (len(data), self.editor_context.clazz.name),
                                           style=wx.YES_NO | wx.ICON_WARNING):
                     return  
         

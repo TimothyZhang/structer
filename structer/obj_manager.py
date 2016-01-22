@@ -112,7 +112,7 @@ class ObjectManager(object):
         if fs_util.is_object(fs_node):
             object_ = self.get_object(fs_node.uuid)
             assert not object_
-            
+
             object_ = self._recycled_objects.get(fs_node.uuid)
             object_.verify()
             # self._manage_object( object_ )

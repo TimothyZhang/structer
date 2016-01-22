@@ -453,7 +453,7 @@ class FileSystemManager(object):
     def delete(self, uuid_):
         """Delete a FSNode.
 
-        Deleted nodes are marked as "deleted", native files will never been removed physically
+        Deleted nodes are marked as "deleted", native files will not be removed physically
         """
         node = self.get_node_by_uuid(uuid_)
 

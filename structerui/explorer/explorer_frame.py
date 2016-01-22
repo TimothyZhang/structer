@@ -195,12 +195,10 @@ class ExplorerFrame(xrcExplorerFrame):
                 return
         
         if hotkey.check(hotkey.EXPLORER_HISTORY_PREV, keystr):
-            print 'prev'
             if self.list.history_prev():
                 return
 
         if hotkey.check(hotkey.EXPLORER_HISTORY_NEXT, keystr):
-            print 'next'
             if self.list.history_next():
                 return
 

@@ -120,6 +120,6 @@ RESET = 'Delete'  # set to default
 # explorer
 EXPLORER_OPEN = 'Enter', 'Alt+Down'
 EXPLORER_UP_LEVEL = 'Alt+Up'
-EXPLORER_HISTORY_PREV = "Alt+Left", "Back"
+EXPLORER_HISTORY_PREV = "Alt+Left"  # , "Back" will interrupt text editing
 EXPLORER_HISTORY_NEXT = "Alt+Right"
 EXPLORER_RENAME = 'F2'

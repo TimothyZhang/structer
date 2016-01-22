@@ -16,8 +16,6 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
-import wx
 import wx.grid as grid
 
 

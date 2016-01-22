@@ -16,41 +16,51 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
 import wx
 
 from dialog import EditorDialog
-from structerui.editor.context import EditorContext
+# from structerui.editor.context import EditorContext
 
 from base_editor import GridCellBaseEditor
 
+
 def print_(s):
     print s
+
             
 class GridCellDialogEditor(GridCellBaseEditor):
-    '''Opens a new dialog to editor the grid cell'''
+    """Opens a new dialog to editor the grid cell"""
     
-    def __init__(self, dialog_class = None):
-        '''
+    def __init__(self, dialog_class=None):
+        """
         Args:
             dialog_class: the Class object of dialog. use EditorDialog by default.
-        '''
+        """
         GridCellBaseEditor.__init__(self)
         
         if dialog_class is None:
             dialog_class = EditorDialog
         self.dialog_class = dialog_class
-    
-    def Create(self, parent, id_, evtHandler):
+
+        self._grid = None
+        self._row = None
+        self._col = None
+        self._ctrl = None
+        self._dlg_ctx = None
+        self._top_level_window = None
+
+    # noinspection PyMethodOverriding
+    def Create(self, parent, id_, evt_handler):
         self._ctrl = wx.StaticText(parent, id_, "", style=wx.TE_PROCESS_ENTER |                                    
                                    wx.ST_NO_AUTORESIZE | 
                                    wx.ST_ELLIPSIZE_END)
-        #self._ctrl = wx.TextCtrl(parent, id_, "", style=wx.TE_PROCESS_ENTER )        
+        # self._ctrl = wx.TextCtrl(parent, id_, "", style=wx.TE_PROCESS_ENTER )
         self.SetControl(self._ctrl)
 
-        if evtHandler:
-            self._ctrl.PushEventHandler(evtHandler)
-            
+        if evt_handler:
+            self._ctrl.PushEventHandler(evt_handler)
+
+    # noinspection PyMethodOverriding
     def Clone(self):
         """
         Create a new object which is the copy of this one
@@ -58,19 +68,20 @@ class GridCellDialogEditor(GridCellBaseEditor):
         """
         return GridCellDialogEditor()
 
+    # noinspection PyMethodOverriding
     def SetSize(self, rect):
         """
         Called to position/size the edit control within the cell rectangle.
         If you don't fill the cell (the rect) then be sure to override
         PaintBackground and do something meaningful there.
         """        
-        #print 'setsize:', rect.x, rect.y, rect.width, rect.height
+        # print 'setsize:', rect.x, rect.y, rect.width, rect.height
         self._ctrl.SetDimensions(rect.x, rect.y, rect.width+2, rect.height+2,
-                               wx.SIZE_ALLOW_MINUS_ONE)
-        #self._ctrl.SetSize( wx.Size(rect.width, rect.height) )
-        #self._ctrl.SetPosition( wx.Point(rect.x, rect.y) )       
+                                 wx.SIZE_ALLOW_MINUS_ONE)
+        # self._ctrl.SetSize( wx.Size(rect.width, rect.height) )
+        # self._ctrl.SetPosition( wx.Point(rect.x, rect.y) )
 
-
+    # noinspection PyMethodOverriding
     def Show(self, show, attr):
         """
         Show or hide the edit control.  You can use the attr (if not None)
@@ -79,11 +90,11 @@ class GridCellDialogEditor(GridCellBaseEditor):
         super(GridCellDialogEditor, self).Show(show, attr)
         
         if show:
-            self._ctrl.SetBackgroundColour( wx.GREEN )
-            #self._ctrl.SetBackgroundColour( wx.GREEN )
+            self._ctrl.SetBackgroundColour(wx.GREEN)
+            # self._ctrl.SetBackgroundColour( wx.GREEN )
             if attr:
-                self._ctrl.SetForegroundColour( attr.GetTextColour() )
-                self._ctrl.SetFont( attr.GetFont() )        
+                self._ctrl.SetForegroundColour(attr.GetTextColour())
+                self._ctrl.SetFont(attr.GetFont())
         
 
 #     def PaintBackground(self, rect, attr, p):
@@ -96,14 +107,14 @@ class GridCellDialogEditor(GridCellBaseEditor):
 #         #print_("MyCellEditor: PaintBackground\n")
 #         pass
 
-
+    # noinspection PyMethodOverriding
     def BeginEdit(self, row, col, grid):
         """
         Fetch the value from the table and prepare the edit control
         to begin editing.  Set the focus to the edit control.
         *Must Override*
         """
-        #print 'begineditor'
+        # print 'begineditor'
         self._grid = grid
         self._row = row
         self._col = col
@@ -112,25 +123,25 @@ class GridCellDialogEditor(GridCellBaseEditor):
         at = tbl.get_attr_type(row, col)
         val = tbl.get_attr_value(row, col)
         
-        ### create context for new dialog        
+        # create context for new dialog
         # This a a little tricky!
         # val will not been copied, since val is always a container
         # If val was copied, UndoManager will NOT work properly!!!
         self._dlg_ctx = ctx = tbl.editor_context.create_sub_context(at, val)
         
-        ### display current value (backgrond is green highlighted)
+        # display current value (backgrond is green highlighted)
         self._ctrl.SetLabel(at.str(val, grid.editor_context.project))          
         
         # create dialog
         dlg = self.dialog_class(self._ctrl, ctx)
-        self._set_dialog_position(dlg, grid.get_cell_rect_on_screen(row, col) )
+        self._set_dialog_position(dlg, grid.get_cell_rect_on_screen(row, col))
         
         # ShowModal() will block the entire app, while ShowWindowModal() is only availabe on osx
         # so we should not use ShowModal() on EditorDialog
         if type(dlg) is EditorDialog:                         
             dlg.Bind(wx.EVT_CLOSE, self.OnDialogClose)
             
-            ### disable current TopLevelWindow(Frame or Dialog)
+            # disable current TopLevelWindow(Frame or Dialog)
             # find TopLevelWindow
             p = grid
             while p.GetParent() and not p.IsTopLevel():
@@ -139,7 +150,7 @@ class GridCellDialogEditor(GridCellBaseEditor):
             # disable it
             p.Enable(False)
         
-            ### undo manager        
+            # undo manager
             from structerui.editor.undo import OpenDialogAction
             ctx.undo_manager.add(OpenDialogAction(row, col))
 
@@ -156,30 +167,32 @@ class GridCellDialogEditor(GridCellBaseEditor):
             # end edit, right after Dialog closes
             grid.DisableCellEditControl()
 
-    def OnDialogClose(self, evt):        
+    # noinspection PyPep8Naming
+    def OnDialogClose(self, evt):
         dlg = evt.GetEventObject()
         assert dlg
         
-        ### undo manager
+        # undo manager
         if type(dlg) is EditorDialog:
             from structerui.editor.undo import CloseDialogAction
-            self._dlg_ctx.undo_manager.add( CloseDialogAction(self._row, self._col) )
+            self._dlg_ctx.undo_manager.add(CloseDialogAction(self._row, self._col))
             
-        ### restore TopLevelWindow
+        # restore TopLevelWindow
         self._top_level_window.Enable(True)
         
-        ### edit finished. 
+        # edit finished.
         # Must be placed at last, since it'll call Reset() indirectly
         self._grid.DisableCellEditControl()            
         
         evt.Skip()
-    
+
+    # noinspection PyMethodMayBeStatic
     def _set_dialog_position(self, dlg, parent_rect_on_screen):
-        '''Sets postions of new dialog
+        """Sets postions of new dialog
         
         Args:
             parent_rect_on_screen: the rect of cell been editing, in screen coordinates.
-        '''
+        """
         r = parent_rect_on_screen        
         w, h = dlg.GetSizeTuple()
         sw, sh = wx.DisplaySize()
@@ -196,9 +209,10 @@ class GridCellDialogEditor(GridCellBaseEditor):
         if x + w >= sw:
             x = sw - w - 1
         
-        dlg.SetPosition( wx.Point(x, y) )
-    
-    def EndEdit(self, row, col, grid, oldVal):
+        dlg.SetPosition(wx.Point(x, y))
+
+    # noinspection PyMethodOverriding
+    def EndEdit(self, row, col, grid, old_val):
         """
         End editing the cell.  This function must check if the current
         value of the editing control is valid and different from the
@@ -208,17 +222,16 @@ class GridCellDialogEditor(GridCellBaseEditor):
         *Must Override*
         """
         
-        #print 'EndEdit'
+        # print 'EndEdit'
 
-        ### For EditorDialog, val and oldVal is not only equal but the same object! Since val is a list or dict
-        # and we used it directly. But it might be different for other dialogs.                
-        #val =             
+        # For EditorDialog, val and old_val is not only equal but the same object! Since val is a list or dict
+        # and we used it directly. But it might be different for other dialogs.
         if self._dlg_ctx.is_modified():                        
             return self._dlg_ctx.attr_data
         else:
             return None
-        
 
+    # noinspection PyMethodOverriding
     def ApplyEdit(self, row, col, grid):
         """
         This function should save the value of the control into the
@@ -226,17 +239,16 @@ class GridCellDialogEditor(GridCellBaseEditor):
         a non-None value.
         *Must Override*
         """        
-        #print 'ApplyEdit'
-        grid.GetTable().SetValue(row, col, self._dlg_ctx.attr_data )                        
+        # print 'ApplyEdit'
+        grid.GetTable().SetValue(row, col, self._dlg_ctx.attr_data)
         self.Reset()
 
+    # noinspection PyMethodOverriding
     def Reset(self):
         """
         Reset the value in the control back to its starting value.
         *Must Override*
         """
-        pass        
-        #print 'Reset'
         self._dlg_ctx = None        
         self._grid = None
         self._top_level_window = None

@@ -16,7 +16,6 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
 import wx
 
 from structerui import hotkey
@@ -32,7 +31,7 @@ class EditorDialog(wx.Dialog):
         from structerui.editor.panel import EditorPanel, adjust_topwindow_size
         self.editor_panel = ep = EditorPanel(self, editor_context)
         
-        self.SetTitle( self.get_title() )    
+        self.SetTitle(self.get_title())
         self.Bind(wx.EVT_CHAR_HOOK, self.OnCharHook)
 
         adjust_topwindow_size(self, ep.get_preferred_size())

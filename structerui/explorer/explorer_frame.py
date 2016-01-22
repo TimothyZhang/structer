@@ -63,16 +63,8 @@ class ExplorerFrame(xrcExplorerFrame):
         self.SetIcon(icon)
         
         # Replace tool icons
-        tbsize = self.tool_bar.GetToolBitmapSize()
-        size = (tbsize.width, tbsize.height)
-        self.tool_bar.SetToolNormalBitmap(self.tool_open.GetId(), get_bitmap('icons/open.png', size, project))
-        self.tool_bar.SetToolNormalBitmap(self.tool_setting.GetId(), get_bitmap('icons/setting.png', size, project))
-        self.tool_bar.SetToolNormalBitmap(self.tool_repair.GetId(), get_bitmap('icons/repair.png', size, project))
-        self.tool_bar.SetToolNormalBitmap(self.tool_export.GetId(), get_bitmap('icons/export.png', size, project))
-        
-        self.tool_bar.SetToolNormalBitmap(self.tool_create_folder.GetId(), get_bitmap(ICON_FOLDER, size, project))
-        self.tool_bar.SetToolNormalBitmap(self.tool_create_filter.GetId(), get_bitmap(ICON_FILTER, size, project))
-                
+        self._update_tool_icons()
+
         # XRCed can't assign variable for wxMenu correctly        
         self.menu_windows = self.menu_close_all.GetMenu()
         self.menu_new = self.menu_new_dummy.GetMenu()
@@ -102,6 +94,18 @@ class ExplorerFrame(xrcExplorerFrame):
     @property
     def list(self):
         return self._list
+
+    def _update_tool_icons(self):
+        project = self.project
+        tbsize = self.tool_bar.GetToolBitmapSize()
+        size = (tbsize.width, tbsize.height)
+        self.tool_bar.SetToolNormalBitmap(self.tool_open.GetId(), get_bitmap('icons/open.png', size, project))
+        self.tool_bar.SetToolNormalBitmap(self.tool_setting.GetId(), get_bitmap('icons/setting.png', size, project))
+        self.tool_bar.SetToolNormalBitmap(self.tool_repair.GetId(), get_bitmap('icons/repair.png', size, project))
+        self.tool_bar.SetToolNormalBitmap(self.tool_export.GetId(), get_bitmap('icons/export.png', size, project))
+
+        self.tool_bar.SetToolNormalBitmap(self.tool_create_folder.GetId(), get_bitmap(ICON_FOLDER, size, project))
+        self.tool_bar.SetToolNormalBitmap(self.tool_create_filter.GetId(), get_bitmap(ICON_FILTER, size, project))
 
     def _create_tree(self):
         self._tree_panel = scrolled.ScrolledPanel(self.main_panel, -1,
@@ -309,14 +313,14 @@ class ExplorerFrame(xrcExplorerFrame):
             fs_node: Folder, or a filter
         """
         if self.list.node_tool.is_container(fs_node):
-            fs_folder = fs_node
+            fs_parent = fs_node
             fs_file = None
         else:
-            fs_folder = fs_node.parent
+            fs_parent = fs_node.parent
             fs_file = fs_node
         
-        self._tree.set_path(fs_folder)
-        self._list.set_parent(fs_folder)
+        self._tree.set_path(fs_parent)
+        self._list.set_parent(fs_parent)
         
         if file:
             self._list.single_select_node(fs_file)

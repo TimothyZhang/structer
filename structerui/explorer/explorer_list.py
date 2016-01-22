@@ -21,7 +21,7 @@ import copy
 import wx
 
 from structer import fs_util
-from structer.fs_manager import FSEvent
+from structer.fs_manager import FSEvent, Folder
 
 from structerui import hotkey, util
 
@@ -40,7 +40,10 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
         self._name_to_image_id = {}
         """:type: dict[str, int]"""
 
-        self._fs_parent = None      # Folder or Filter
+        # current location of explorer (the address in address bar)
+        self._fs_parent = None
+        """:type: FsNode"""
+
         """:type: FsNode"""
         self._fs_nodes = []
         """:type: list[FsNode]"""
@@ -119,6 +122,10 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
     def node_tool(self):
         return self._node_tool
     
+    # @property
+    # def fs_parent(self):
+    #     return self._fs_parent
+
     @property
     def fs_parent(self):
         return self._fs_parent
@@ -530,7 +537,7 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
                 self.Select(index, True)
                 
             target = self._fs_nodes[index]            
-            if not target.is_folder():
+            if not isinstance(target, Folder):
                 return wx.DragNone
         else:
             target = self.fs_parent                        
@@ -557,7 +564,7 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
             index, _ = self.HitTest(wx.Point(x, y))
             if 0 <= index < self.GetItemCount():
                 target = self._fs_nodes[index]
-                assert target.is_folder()
+                assert isinstance(target, Folder)
             else:
                 target = self.fs_parent 
                             

@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
-
-
-'''
+"""
 Defines all the types needed by TypeEditor.
 
 5 Clazzes are defined:    
@@ -26,7 +24,7 @@ Defines all the types needed by TypeEditor.
     Struct
     Union
     Setting: project setting. Only 1 object is allowd
-'''
+"""
 
 from attr_types import *
 from composite_types import *
@@ -40,10 +38,10 @@ CLAZZ_NAME_SETTING = u"Setting"
 CLAZZ_NAME_PREDEFINED_TYPE = u'PredefinedType'
 
 # structs for define AttrTypes
-s_int_verifier = u'''
+s_int_verifier = u"""
 if not v['min']<=v['default']<=v['max']:
     error(u'default value out of range. %s<=%s<=%s' % (v['min'], v['default'], v['max']))
-'''
+"""
 
 MAX_INT = 2**63-1
 MIN_INT = -2**63
@@ -81,15 +79,13 @@ s_str = ATStruct(Struct(u"Str", [Attr("minlen", ATInt(default=0)),
 s_file = ATStruct(Struct(u'File', [
     Attr("extensions", ATList(ATStr(), unique=True), u'Allowed file extensions. If empty, any file type is allowed.'),
     Attr('optional', ATBool(1), u'Is this attribute optional?'),
-    ]),
-                  str_template=u"${extensions}")
-s_folder = ATStruct(Struct(u'Folder', [Attr('optional', ATBool(1), u'Is this attribute optional?'),
-                                       ]),
+    ]), str_template=u"${extensions}")
+s_folder = ATStruct(Struct(u'Folder', [Attr('optional', ATBool(1), u'Is this attribute optional?'), ]),
                     str_template=u"Folder")
 
 # u_type represents an AttrType
-#Note: cyclic ref: utype needs slist, slist need utype
-#So we create a dummy u_type first, it'll be completed later
+# Note: cyclic ref: utype needs slist, slist need utype
+# So we create a dummy u_type first, it'll be completed later
 u_type = Union("TypeDef", [[s, s.struct.name] for s in [s_int, s_bool, s_float, s_str]])
 atu_type = ATUnion(u_type)
 
@@ -172,13 +168,13 @@ s_attr = Struct("AttrDef", [attr_attr_name,
                 str_template=u'${name}')
 
 
-def _Clazz(*args, **kwargs):
+def _clazz(*args, **kwargs):
     return Clazz(ATStruct(Struct(*args, **kwargs)))
 
 ################################################################################
 # Class
 ################################################################################
-clazz_attrs_verifier = '''names = [a['name'] for a in v]
+clazz_attrs_verifier = """names = [a['name'] for a in v]
 for name in ['id', 'name']:
     if name not in names:
         error('required attr "%s" is missing', name)
@@ -191,29 +187,27 @@ for a in v:
         if at[0] == 'Int' and at[1]['min'] < 0:
             error(u'class id MUST >= 0')
         
-'''
-clazz_clazz = _Clazz(CLAZZ_NAME_CLAZZ, [Attr("name", atstr_identifier, "Name of the class. eg: Monster, Skill, NPC"),
+"""
+clazz_clazz = _clazz(CLAZZ_NAME_CLAZZ, [Attr("name", atstr_identifier, "Name of the class. eg: Monster, Skill, NPC"),
                                         Attr("attrs", ATList(ATStruct(s_attr), unique_attrs=['name'],
                                                              verifier=clazz_attrs_verifier),
                                              'Attribute List. "id" and "name" are required.'),
                                         Attr("unique_attrs", ATList(ATStr(1, 255), True),
                                              'Attributes names must be unique. eg: "id"'),
-                                        #Attr("name_attr", ATStr(1, 255, u"name"), "The attribute to be used as objects's name. Can be Str or I18N"),
                                         Attr("str_template", ATStr(0, 255, u'${name}'), "how to display this object."),
                                         Attr("max_number", ATInt(1, default=0x7FFFFFFF), "max number of objects"),
                                         Attr("min_number", ATInt(default=0), "min number of objects"),
                                         Attr("icon", ATFile(['.png'], True),
                                              "Icon for this class to be shown in editor"),
                                         Attr("exporter", ATStr(multiline=True)),
-                                        # Attr("base",  ATRef(CLAZZ_NAME_CLAZZ, True),  "Derive all attributes from") #not supoorted yet
                                         ])
 clazz_clazz.icon = "icons/class.png"
-#todo: verify unique_attrs 
+# todo: verify unique_attrs
 
 ################################################################################
 # Enum
 ################################################################################
-class_enum_verifier = u'''
+class_enum_verifier = u"""
 # names must be valid variables.
 import re
 regex = re.compile('^[a-zA-Z0-9_]+$')
@@ -237,24 +231,25 @@ if v['convert_to_int']:
             int(val)
         except:
             error("can't convert to int: %s", val)            
-'''
-clazz_enum = _Clazz(CLAZZ_NAME_ENUM, [Attr("name", ATStr(1, 255)),
-                                      #Attr("items", ATList(ATStruct(s_enum_item)))] )
-                                      Attr("items", ATList(ATStruct(Struct("EnumItem", [
-                                          Attr("name", ATStr(1, 255), u"Never change names once they've been used."),
-                                          Attr("value", ATStr(0, 255),
-                                               u"Values rather than name are exported by default"),
-                                          Attr("label", ATStr(0, 255),
-                                               u'Label of this item. If empty, use name instead.')],
-                                                                           str_template=u'${name}')), True, 1,
-                                                           unique_attrs=['name'])),
+"""
+clazz_enum = _clazz(CLAZZ_NAME_ENUM, [Attr("name", ATStr(1, 255)),
+                                      # Attr("items", ATList(ATStruct(s_enum_item)))] )
+                                      Attr("items", ATList(ATStruct(
+                                          Struct("EnumItem", [
+                                              Attr("name", ATStr(1, 255),
+                                                   u"Never change names once they've been used."),
+                                              Attr("value", ATStr(0, 255),
+                                                   u"Values rather than name are exported by default"),
+                                              Attr("label", ATStr(0, 255),
+                                                   u'Label of this item. If empty, use name instead.')],
+                                                 str_template=u'${name}')), True, 1, unique_attrs=['name'])),
                                       Attr('export_names', ATBool(0),
                                            'export names instead of values(value by default)'),
                                       Attr('convert_to_int', ATBool(0), u'convert values to integers')],
                     verifier=class_enum_verifier)
 clazz_enum.icon = "icons/enum.png"
 
-clazz_struct = _Clazz(CLAZZ_NAME_STRUCT, [Attr("name", atstr_identifier, "Name of the struct"),
+clazz_struct = _clazz(CLAZZ_NAME_STRUCT, [Attr("name", atstr_identifier, "Name of the struct"),
                                           Attr("attrs", ATList(ATStruct(s_attr), unique_attrs=['name'])),
                                           Attr("str_template", ATStr(),
                                                'eg: "ID: ${id}, Name: $name, Price: $$${price}'),
@@ -265,7 +260,7 @@ clazz_struct.icon = "icons/struct.png"
 # Union
 ################################################################################
 class_union_verifier = class_enum_verifier
-clazz_union = _Clazz(CLAZZ_NAME_UNION, [Attr("name", ATStr(0, 255)),
+clazz_union = _clazz(CLAZZ_NAME_UNION, [Attr("name", ATStr(0, 255)),
                                         #Attr("structs", ATList(ATRef(CLAZZ_NAME_STRUCT)))
                                         Attr("items", ATList(ATStruct(Struct("UnionItem", [
                                             Attr("name", ATStr(0, 255), u"Never change names once they've been used."),
@@ -290,9 +285,9 @@ clazz_union.icon = "icons/union.png"
 # Setting
 ################################################################################
 e_file_path = Enum(u'FilePathExport', [[u'FullPath', 0], [u'NameOnly', 1], [u'RelativePath', 2]])
-clazz_setting = _Clazz(CLAZZ_NAME_SETTING, [
-    #Attr("languages", ATList(ATStr(2,8,u"en"), unique=True)),
-    #Attr("default_language", ATStr(2,8,u"en")),
+clazz_setting = _clazz(CLAZZ_NAME_SETTING, [
+    # Attr("languages", ATList(ATStr(2,8,u"en"), unique=True)),
+    # Attr("default_language", ATStr(2,8,u"en")),
     Attr("translations",
          ATList(ATStruct(Struct("Dictionary", [Attr("keyword", ATStr(1), "str to translate(NOT used now!)"),
                                                Attr("translation", ATStr(), "translated")
@@ -311,6 +306,6 @@ clazz_setting.min_number = 0
 ################################################################################
 # PredefinedType
 ################################################################################
-clazz_predefined_type = _Clazz(CLAZZ_NAME_PREDEFINED_TYPE, [Attr("name", ATStr(0, 255)),
+clazz_predefined_type = _clazz(CLAZZ_NAME_PREDEFINED_TYPE, [Attr("name", ATStr(0, 255)),
                                                             Attr("predefined_type", atu_type, "Type to be reused.")])
 clazz_predefined_type.icon = "icons/predefined_type.png"

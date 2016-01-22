@@ -16,8 +16,7 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
-'''
+"""
 ERROR Levels:
 
 DEBUG: For developer only.
@@ -29,9 +28,10 @@ FATAL: Serious error that prevents editor from working. Failed assertions are fa
 Example:
     log.error(exception, "this is an error: %s", "bad")  # first argument is an Exception instance
     log.error("this is another error")                   # or just a string 
-'''
+"""
 
-import traceback, sys
+import traceback
+import sys
 
 LEVELS = ['DEBUG', "INFO", 'WARN', "ERROR", "FATAL"]
 DEBUG = LEVELS.index('DEBUG')
@@ -44,6 +44,7 @@ FATAL = LEVELS.index("FATAL")
 _level = 0
 
 # _trackers = []
+
 
 class Record(object):
     def __init__(self, level, *args, **kwargs):
@@ -65,8 +66,8 @@ class Record(object):
     def format(self, with_level=True):        
         msg = self.msg % tuple(self.args)
         if with_level:
-            msg = '[%s]%s' %(LEVELS[self.level], msg)
-        #if self.exception:
+            msg = '[%s]%s' % (LEVELS[self.level], msg)
+        # if self.exception:
         #    msg = '%s: %s' % (msg, self.exception)
         return msg
 
@@ -135,22 +136,21 @@ def set_level(level):
     else:
         _level = level
 
+
 def _print(record):
     msg = record.format()
     if isinstance(msg, unicode):
         msg = msg.encode('utf-8')
     print msg
 
+
 def _log(record):
-#     if _trackers:
-#         for tracker in _trackers:
-#             tracker.add( record ) 
-#     else:
-    _print( record )
+    _print(record)
     
     if record.exc_info:
-        #sys.stdout.flush()
-        traceback.print_exception( *(record.exc_info) )    
+        # sys.stdout.flush()
+        traceback.print_exception(*record.exc_info)    
+
 
 def debug(*args, **kwargs):    
     if _level <= DEBUG:
@@ -158,11 +158,13 @@ def debug(*args, **kwargs):
         _log(r)
         return r
     
+
 def info(*args, **kwargs):    
     if _level <= INFO:
         r = Record(INFO, *args, **kwargs)
         _log(r)
         return r
+
 
 def warn(*args, **kwargs):    
     if _level <= WARN:
@@ -170,24 +172,27 @@ def warn(*args, **kwargs):
         _log(r)
         return r
 
+
 def error(*args, **kwargs):    
     if _level <= ERROR:                
         r = Record(ERROR, *args, **kwargs)
         _log(r)
         return r
 
+
 def assert_(condition, msg, *args):
     if not condition:
         return error(msg, *args)
         
+
 def fatal(*args, **kwargs):
-    '''The first argument might be an Exception'''
+    """The first argument might be an Exception"""
     if _level <= FATAL:
         r = Record(FATAL, *args, **kwargs)
         _log(r)
         return r
 
-if __name__=='__main__':
+if __name__ == '__main__':
     def test():
         error('123123')
 #     if track_errors(test):

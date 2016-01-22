@@ -20,7 +20,7 @@
 import time
 import wx
 
-from structer.fs_manager import FSEvent
+from structer.fs_manager import FSEvent, Folder
 from structer import fs_util
 
 from structerui import log, hotkey
@@ -73,6 +73,7 @@ class ExplorerTree(wx.TreeCtrl, wx.DropTarget):
         self.Bind(wx.EVT_TREE_END_LABEL_EDIT, self._on_end_label_edit)
                 
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self._sel_changed)
+
         # double clicked
         self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self._on_active)
         # DnD
@@ -124,6 +125,9 @@ class ExplorerTree(wx.TreeCtrl, wx.DropTarget):
         Args:
             fs_node: Folder, or a filter
         """
+        if not isinstance(fs_node, Folder) and not fs_util.is_filter(fs_node):
+            return
+
         tree_item_id = self._get_tree_item_id_by_fs_node(fs_node)
         assert tree_item_id
 
@@ -145,7 +149,7 @@ class ExplorerTree(wx.TreeCtrl, wx.DropTarget):
         assert self.node_tool.is_container(fs_node)
         
         n = 0
-        if fs_node.is_folder():
+        if isinstance(fs_node, Folder):
             for child_fs_node in self.node_tool.get_children(fs_node):
                 if self.node_tool.is_container(child_fs_node):
                     self._add_child(tree_item_id, child_fs_node)                
@@ -328,7 +332,8 @@ class ExplorerTree(wx.TreeCtrl, wx.DropTarget):
             return
         
         # update label
-        if fs_node.is_folder() or fs_util.is_filter(fs_node):
+        # todo: is_container?
+        if isinstance(fs_node, Folder) or fs_util.is_filter(fs_node):
             old = self.GetItemText(tree_item_id)
             if old != fs_node.name:
                 self.Delete(tree_item_id)
@@ -407,7 +412,7 @@ class ExplorerTree(wx.TreeCtrl, wx.DropTarget):
                     self.Expand(tree_item_id)
                         
             target = self._get_fs_node_by_tree_item_id(tree_item_id)            
-            if target and target.is_folder():
+            if target and isinstance(target, Folder):
                 if d == wx.DragCopy:
                     if self.node_tool.can_paste_data(target, 'copy'):
                         return d
@@ -432,7 +437,7 @@ class ExplorerTree(wx.TreeCtrl, wx.DropTarget):
             
             tree_item_id, _ = self.HitTest(wx.Point(x, y))
             target = self._get_fs_node_by_tree_item_id(tree_item_id)
-            assert target and target.is_folder()
+            assert target and isinstance(target, Folder)
                             
             if d == wx.DragCopy:
                 self.node_tool.do_paste_data(target, uuids, 'copy')

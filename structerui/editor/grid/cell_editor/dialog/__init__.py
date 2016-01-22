@@ -16,7 +16,6 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
 """
 All dialogs are created with (parent, editor_context)
 """

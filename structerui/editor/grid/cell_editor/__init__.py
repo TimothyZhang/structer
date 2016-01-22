@@ -16,10 +16,9 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
 from dialog_editor import GridCellDialogEditor
 from enum_editor import GridCellEnumEditor
 from list_enum_unique_editor import GridCellUniqueEnumListEditor
-#from ref_editor import GridCellRefEditor
+# from ref_editor import GridCellRefEditor
 from number_editor import GridCellIntEditor, GridCellFloatEditor
 from str_editor import GridCellStrEditor

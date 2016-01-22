@@ -15,47 +15,48 @@
 # You should have received a copy of the GNU General Public License
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
-
-
 import os
+
 
 def normpath(p):     
     p = p.replace('/', os.path.sep)
     p = p.replace('\\', os.path.sep)
     return p    
+
     
-def get_absolute_path(path, relaltive_to):
-    '''Gets absolute path of "path", which was relative to "relaltive_to"
+def get_absolute_path(path, relative_to):
+    """Gets absolute path of "path", which was relative to "relative_to"
     
     Args:
         path: an absolute path, or a path which is relative to "relative_to"
-        relaltive_to: 
+        relative_to:
         
-    Retunrs:
+    Returns:
         Absolute path    
-    '''
+    """
     path = normpath(path)
     if os.path.isabs(path):
         return path
     
-    p = os.path.join(relaltive_to, path)
-    p = os.path.abspath( normpath(p) )
+    p = os.path.join(relative_to, path)
+    p = os.path.abspath(normpath(p))
     return p
     
-def get_relative_path(path, relaltive_to):
-    '''Gets relative path of "path" relatives to "relaltive_to" 
+
+def get_relative_path(path, relative_to):
+    """Gets relative path of "path" relatives to "relative_to"
     
     Args:
-        path: absolute path, or relative path which is relative to current woking directory
-        relaltive_to:
+        path: absolute path, or relative path which is relative to current working directory
+        relative_to:
         
     Returns:
         Path relative to "relative_to"
-    '''
+    """
     
     abs_path = normpath(os.path.abspath(path))
     p = normpath(abs_path)        
-    p2 = normpath(relaltive_to)
+    p2 = normpath(relative_to)
     sep = os.path.sep
     
     if p == p2:
@@ -74,19 +75,19 @@ def get_relative_path(path, relaltive_to):
     while i < n:        
         if p[i] != p2[i]:        
             break
-        i+=1
+        i += 1
         
-    r = ''.join( ['..%s'%sep] * (len(p2)-i) )
+    r = ''.join(['..%s' % sep] * (len(p2)-i))
     r += sep.join(p[i:])
     return r
 
 
 def is_sub_sequence(a, b):
     """
-    Determines whether a is a subsequence of b. (NOTE: not sub list!)
+    Determines whether a is a sub sequence of b. (NOTE: not sub list!)
     :param list | tuple a:
     :param list | tuple b:
-    :return: True if a is subsequence of b, otherwise False
+    :return: True if a is sub sequence of b, otherwise False
     :rtype: bool
     """
     i = j = 0

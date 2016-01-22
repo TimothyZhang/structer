@@ -8,8 +8,6 @@
 1,
 "export_names":
 0,
-"exporter":
-"",
 "items":
 [{"attrs":
 [{"description":
@@ -17,7 +15,7 @@
 "name":
 "min",
 "type":
-{"Int":
+["Int",
 {"default":
 0,
 "exporter":
@@ -27,15 +25,13 @@
 "min":
 0,
 "verifier":
-""},
-"key":
-"Int"}},
+""}]},
 {"description":
 "maximal damage",
 "name":
 "max",
 "type":
-{"Int":
+["Int",
 {"default":
 0,
 "exporter":
@@ -45,15 +41,13 @@
 "min":
 0,
 "verifier":
-""},
-"key":
-"Int"}},
+""}]},
 {"description":
 "",
 "name":
 "element",
 "type":
-{"Enum":
+["Enum",
 {"default":
 "",
 "enum":
@@ -61,9 +55,7 @@
 "filter":
 [],
 "verifier":
-""},
-"key":
-"Enum"}}],
+""}]}],
 "exporter":
 "",
 "label":
@@ -80,7 +72,7 @@
 "name":
 "seconds",
 "type":
-{"Int":
+["Int",
 {"default":
 0,
 "exporter":
@@ -90,9 +82,7 @@
 "min":
 0,
 "verifier":
-""},
-"key":
-"Int"}}],
+""}]}],
 "exporter":
 "",
 "label":
@@ -109,7 +99,7 @@
 "name":
 "percent",
 "type":
-{"Int":
+["Int",
 {"default":
 0,
 "exporter":
@@ -119,9 +109,7 @@
 "min":
 0,
 "verifier":
-""},
-"key":
-"Int"}}],
+""}]}],
 "exporter":
 "",
 "label":
@@ -138,7 +126,7 @@
 "name":
 "seconds",
 "type":
-{"Int":
+["Int",
 {"default":
 0,
 "exporter":
@@ -148,9 +136,7 @@
 "min":
 0,
 "verifier":
-""},
-"key":
-"Int"}}],
+""}]}],
 "exporter":
 "",
 "label":
@@ -166,7 +152,7 @@
 "filetype":
 "object",
 "modify_time":
-1449741264.496,
+1398759344.493,
 "name":
 "",
 "parent":

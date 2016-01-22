@@ -4,10 +4,12 @@
 "\"\"\"\nWrite a python function with name \"choose\", which accepts three parameters:\n    obj: the Object instance, all objects in current project will be tested.\n        obj.clazz\n        obj['attribute']\n    file: the File instance\n        file.modify_time: time in seconds\n        file.create_time: time in seconds\n        file.tags: a set of tags of the object\n    project: the Project instance        \n\"\"\"\ndef choose(obj, file, project):\n    # all monsters whose level is 10\n    #if obj.clazz.name == 'Monster' and obj['level'] == 10:\n    #    return True\n      \n    # all objects modified in recent 24 hours, any type\n    #import time\n    #if time.time() - file.modify_time < 3600 * 24:\n    #    return True\r\n    if 'export' in file.tags:\r\n        return True\n\n    # all objects with tag: X'mas\n    #if \"X'mas\" in file.tags:\n    #    return True\n\n    return False\n",
 "filetype":
 "filter",
+"modify_time":
+1435238763.07,
 "name":
 "Export",
 "parent":
-"fafaaf1f84944424bf0a5bd03ea5a0f9",
+"81b54b0b982d4b33900f361413fab53c",
 "tags":
 [],
 "type":

@@ -14,13 +14,11 @@
 "xx":
 "invisible for 30 seconds"},
 "effects":
-[{"invisible":
+[["invisible",
 {"seconds":
-120},
-"key":
-"invisible"}],
+120}]],
 "id":
-"4",
+5,
 "mana_cost":
 30,
 "name":
@@ -39,7 +37,7 @@
 "filetype":
 "object",
 "modify_time":
-1449741330.937,
+1398761576.798,
 "name":
 "",
 "parent":

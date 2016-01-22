@@ -14,17 +14,15 @@
 "xx":
 "deal 30-35 fire damage to an enemy"},
 "effects":
-[{"dmg":
+[["dmg",
 {"element":
 "fire",
 "max":
 35,
 "min":
-30},
-"key":
-"dmg"}],
+30}]],
 "id":
-"5",
+6,
 "mana_cost":
 30,
 "name":
@@ -43,7 +41,7 @@
 "filetype":
 "object",
 "modify_time":
-1449741330.957,
+1398761576.801,
 "name":
 "",
 "parent":

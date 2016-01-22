@@ -69,7 +69,7 @@ class ListTable(TableBase):
         return self.attr_type.element_type.get_default(self._ctx.project)
     
     def InsertRows(self, pos, num_rows):
-        self._insert_row_datas(pos, num_rows)
+        self._insert_row_data(pos, num_rows)
                     
         msg = grid.GridTableMessage(self,                                   # The table
                                     grid.GRIDTABLE_NOTIFY_ROWS_INSERTED,    # what we did to it
@@ -86,10 +86,10 @@ class ListTable(TableBase):
         self.GetView().GoToCell(pos, cc)
         
         # Scrollbar might appear after new rows inserted
-        # todo: is there an event for scrollbar showing/hidding?
+        # todo: is there an event for scrollbar showing/hidden?
         self.GetView().auto_size()
 
-    def _insert_row_datas(self, pos, num_rows):
+    def _insert_row_data(self, pos, num_rows):
         for i in xrange(num_rows):
             item = self.attr_type.element_type.get_default(self._ctx.project)        
             self.attr_data.insert(pos, item)
@@ -281,18 +281,11 @@ class ListGrid(GridBase):
         attr_type_names, data = self.make_copy_data((pos, 0, pos+len(data)-1, self.GetNumberCols()-1))
         self._ctx.undo_manager.add(ListInsertAction(pos, attr_type_names, data))
         
-    def insert_data(self, attr_type_names, datas, pos=-1):
-        self.insert(pos, len(datas))
+    def insert_data(self, attr_type_names, data, pos=-1):
+        self.insert(pos, len(data))
         
         cursor_row = self.GetGridCursorRow()
-        self.paste_data(attr_type_names, datas, (cursor_row, 0, cursor_row+len(datas)-1, self.GetNumberCols()-1))        
-    
-#     def _append_copied(self):
-#         attr_type_names, datas = self._get_clipboard()
-#         if attr_type_names is None:
-#             return
-#         self._append(len(datas))
-#         self._paste()
+        self.paste_data(attr_type_names, data, (cursor_row, 0, cursor_row+len(data)-1, self.GetNumberCols()-1))
     
     def _select_rows(self):
         # selection block 
@@ -329,8 +322,8 @@ class ListGrid(GridBase):
         # undo
         if add_undo:
             from structerui.editor.undo import ListDeleteAction            
-            attr_type_names, datas = self.make_copy_data((pos, 0, pos+rows-1, self.GetNumberCols()-1))
-            self._ctx.undo_manager.add(ListDeleteAction(pos, attr_type_names, datas))
+            attr_type_names, data = self.make_copy_data((pos, 0, pos+rows-1, self.GetNumberCols()-1))
+            self._ctx.undo_manager.add(ListDeleteAction(pos, attr_type_names, data))
         
         tbl.DeleteRows(pos, rows)
     
@@ -342,16 +335,16 @@ class ListGrid(GridBase):
                 wx.MessageBox("Invalid selection area", "Error")
                 return
         
-        attr_types, datas = self.make_copy_data(block)
-        self._set_clipboard(attr_types, datas)
+        attr_types, data = self.make_copy_data(block)
+        self._set_clipboard(attr_types, data)
         
     def make_copy_data(self, block):
         top, left, bottom, right = block
         tbl = self.GetTable()
         # create clip board data        
         attr_types = [tbl.get_attr_type(top, c) for c in xrange(left, right+1)]
-        datas = [[tbl.get_value(r, c) for c in xrange(left, right+1)] for r in xrange(top, bottom+1)]
-        return attr_types, datas
+        data = [[tbl.get_value(r, c) for c in xrange(left, right+1)] for r in xrange(top, bottom+1)]
+        return attr_types, data
     
     def _cut(self):
         # selection block 
@@ -373,10 +366,10 @@ class ListGrid(GridBase):
         t = self.GetTable()
         return [t.get_attr_type(c, 0).name for c in xrange(self.GetNumberCols())]
 
-    def _paste_data(self, attr_type_names, datas):         
-        self.paste_data(attr_type_names, datas, add_undo=True)
+    def _paste_data(self, attr_type_names, data):
+        self.paste_data(attr_type_names, data, add_undo=True)
         
-    def paste_data(self, attr_type_names, datas, block=None, add_undo=False):
+    def paste_data(self, attr_type_names, data, block=None, add_undo=False):
         if block is None:
             # paste to selected area
             block = self._get_selection_block()
@@ -385,12 +378,12 @@ class ListGrid(GridBase):
             if block:
                 top, left, bottom, right = block
             
-            # only selected 1 cell, expand the area to exaclty match the data size
+            # only selected 1 cell, expand the area to exactly match the data size
             if top == bottom and left == right:
                 # calc target area
                 top, left = self.GetGridCursorRow(), self.GetGridCursorCol()
-                rows = len(datas)
-                cols = len(datas[0])
+                rows = len(data)
+                cols = len(data[0])
                 bottom, right = top+rows-1, left+cols-1
         else:
             top, left, bottom, right = block
@@ -409,7 +402,7 @@ class ListGrid(GridBase):
                 return
         
         block = (top, left, bottom, right)
-        self.batch_mutate(block, datas, add_undo=add_undo)
+        self.batch_mutate(block, data, add_undo=add_undo)
                 
     
 if __name__ == '__main__':

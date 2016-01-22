@@ -522,8 +522,8 @@ class GridBase(grid.Grid):
             self.SelectCol(c, True)
 
     # noinspection PyMethodMayBeStatic
-    def _set_clipboard(self, attr_types, datas):
-        data = json.dumps([[at.name for at in attr_types], datas])
+    def _set_clipboard(self, attr_types, data):
+        data = json.dumps([[at.name for at in attr_types], data])
         
         # save to system clipboard        
         do = wx.CustomDataObject(CLIPBOARD_DATA_FORMAT)
@@ -544,20 +544,20 @@ class GridBase(grid.Grid):
             
         if not success:
             # clip board data not match, try to paste strings
-            names, datas = self._get_text_clipboard()            
+            names, data = self._get_text_clipboard()
             if not names:
                 wx.MessageBox("invalid clipboard type")
-            return names, datas
+            return names, data
         
         # get data
         data = do.GetData()
-        attr_type_names, datas = json.loads(data)
+        attr_type_names, data = json.loads(data)
         
-        if len(datas) == 0 or len(datas[0]) == 0:
+        if len(data) == 0 or len(data[0]) == 0:
             wx.MessageBox("empty clipboard data")
             return None, None
         
-        return attr_type_names, datas
+        return attr_type_names, data
 
     # noinspection PyMethodMayBeStatic
     def _get_text_clipboard(self):
@@ -569,15 +569,15 @@ class GridBase(grid.Grid):
             return None, None
         
         text = do.GetText()
-        datas = [line.split('\t') for line in text.split('\n') if line]
-        if not datas:
+        data = [line.split('\t') for line in text.split('\n') if line]
+        if not data:
             return None, None
-        attr_type_names = ['Str'] * len(datas[0])
+        attr_type_names = ['Str'] * len(data[0])
         
         # guess types
-        for i in xrange(len(datas[0])):
+        for i in xrange(len(data[0])):
             is_int = True
-            for row in datas:
+            for row in data:
                 # noinspection PyBroadException
                 try:
                     int(row[i])
@@ -587,10 +587,10 @@ class GridBase(grid.Grid):
 
             if is_int:
                 attr_type_names[i] = 'Int'
-                for row in datas:
+                for row in data:
                     row[i] = int(row[i])
 
-        return attr_type_names, datas
+        return attr_type_names, data
 
     def _copy_as_plain_text(self):
         block = self._get_selection_block()
@@ -598,9 +598,9 @@ class GridBase(grid.Grid):
             wx.MessageBox("Invalid selection area", "Error")
             return
 
-        attr_types, datas = self.make_copy_data(block)
-        text_datas = [[attr_types[i].str(cell, self._ctx.project) for i, cell in enumerate(row)] for row in datas]
-        text = '\n'.join(['\t'.join(row) for row in text_datas])
+        attr_types, data = self.make_copy_data(block)
+        text_data = [[attr_types[i].str(cell, self._ctx.project) for i, cell in enumerate(row)] for row in data]
+        text = '\n'.join(['\t'.join(row) for row in text_data])
         self._set_plain_text_clipboard(text)
 
     # noinspection PyMethodMayBeStatic
@@ -623,13 +623,13 @@ class GridBase(grid.Grid):
         raise NotImplementedError('make_copy_data')
     
     def _paste(self):
-        attr_type_names, datas = self._get_clipboard()
+        attr_type_names, data = self._get_clipboard()
         if attr_type_names is None:
             return
         
-        self._paste_data(attr_type_names, datas)
+        self._paste_data(attr_type_names, data)
     
-    def _paste_data(self, attr_type_names, datas):
+    def _paste_data(self, attr_type_names, data):
         wx.MessageBox("Paste not supported!", "Error")
         
     def reset_to_default(self):
@@ -644,19 +644,19 @@ class GridBase(grid.Grid):
                     return
             
         tbl = self.GetTable()
-        # create default datas
-        datas = []
+        # create default data
+        data = []
         for r in xrange(top, bottom+1):
             row_data = []
             for c in xrange(left, right+1):
                 at = tbl.get_attr_type(r, c)                
                 cell_data = at.get_default(self.editor_context.project)
                 row_data.append(cell_data)
-            datas.append(row_data)
+            data.append(row_data)
                         
-        self.batch_mutate(block, datas, add_undo=True)
+        self.batch_mutate(block, data, add_undo=True)
         
-    def batch_mutate(self, block, datas, add_undo=False):
+    def batch_mutate(self, block, data, add_undo=False):
         top, left, bottom, right = block
         tbl = self.GetTable()
         old = None
@@ -668,11 +668,10 @@ class GridBase(grid.Grid):
         
         # paste data
         for i, r in enumerate(xrange(top, bottom+1)):
-            # fill repeatly
-            k = i % len(datas)
+            # fill repeatedly
+            k = i % len(data)
             for j, c in enumerate(xrange(left, right+1)):
-                # tbl.SetValue(r,c, datas[k][j])
-                tbl.set_value(r, c, copy.deepcopy(datas[k][j]))
+                tbl.set_value(r, c, copy.deepcopy(data[k][j]))
         
         if add_undo:
             _, new = self.make_copy_data(block)
@@ -684,7 +683,7 @@ class GridBase(grid.Grid):
         self.refresh_block((top, left, bottom, right))
     
     def _get_selection_block(self):
-        """Returns CONTINOUSELY selection block, or None"""
+        """Returns continuous selection block, or None"""
         max_row = self.GetNumberRows() - 1
         max_col = self.GetNumberCols() - 1
         

@@ -15,28 +15,25 @@
 # You should have received a copy of the GNU General Public License
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
-
-
 import wx
-
-#from structerui.editor.dialog import EditorDialog
-#from structerui.editor.context import EditorContext
-
 from base_editor import GridCellBaseEditor
 
-'''
-'''
+
 class GridCellEnumEditor(GridCellBaseEditor):
     def __init__(self):        
         GridCellBaseEditor.__init__(self)
-    
-    def Create(self, parent, id_, evtHandler):
-        self._ctrl = wx.ComboBox(parent, id_, style=wx.CB_READONLY|wx.TE_PROCESS_ENTER|wx.WANTS_CHARS)
+        self._ctrl = None
+        self._old_label = None
+
+    # noinspection PyMethodOverriding
+    def Create(self, parent, id_, evt_handler):
+        self._ctrl = wx.ComboBox(parent, id_, style=wx.CB_READONLY | wx.TE_PROCESS_ENTER | wx.WANTS_CHARS)
         self.SetControl(self._ctrl)
 
-        if evtHandler:
-            self._ctrl.PushEventHandler(evtHandler)
-            
+        if evt_handler:
+            self._ctrl.PushEventHandler(evt_handler)
+
+    # noinspection PyMethodOverriding
     def Clone(self):
         """
         Create a new object which is the copy of this one
@@ -44,6 +41,7 @@ class GridCellEnumEditor(GridCellBaseEditor):
         """
         return GridCellEnumEditor()
 
+    # noinspection PyMethodOverriding
     def BeginEdit(self, row, col, grid):
         """
         Fetch the value from the table and prepare the edit control
@@ -51,11 +49,11 @@ class GridCellEnumEditor(GridCellBaseEditor):
         *Must Override*
         """
         # should be an enum
-        #self._grid = grid
+        # self._grid = grid
         at = grid.GetTable().get_attr_type(row, col)
         label = grid.GetTable().GetValue(row, col)
 
-        #print at,type(at),at.name
+        # print at,type(at),at.name
         labels = at.labels
         self._ctrl.SetItems(labels)
         
@@ -65,19 +63,21 @@ class GridCellEnumEditor(GridCellBaseEditor):
 
         # select original value
         self._ctrl.SetStringSelection(label)
-        self._oldLabel = label
+        self._old_label = label
         
         self._ctrl.Popup()
         
     def get_selected_label(self, row, col, grid):
+        _ = row, col, grid
         # index = self._ctrl.GetSelection()
         sel = self._ctrl.GetStringSelection()
-        at = grid.GetTable().get_attr_type(row, col)
+        # at = grid.GetTable().get_attr_type(row, col)
 
         # empty if cancelled
         return sel
-        
-    def EndEdit(self, row, col, grid, oldVal):
+
+    # noinspection PyMethodOverriding
+    def EndEdit(self, row, col, grid, old_val):
         """
         End editing the cell.  This function must check if the current
         value of the editing control is valid and different from the
@@ -92,15 +92,15 @@ class GridCellEnumEditor(GridCellBaseEditor):
             return None
 
         val = at.enum.name_of_label(label)
-        print oldVal, val, label
-        oldVal = at.enum.name_of_label(oldVal)
+        print old_val, val, label
+        old_val = at.enum.name_of_label(old_val)
         # print '...', val, oldVal
-        if val and at.compare(val, oldVal) != 0:
+        if val and at.compare(val, old_val) != 0:
             return val
         else:
             return None
-        
 
+    # noinspection PyMethodOverriding
     def ApplyEdit(self, row, col, grid):
         """
         This function should save the value of the control into the
@@ -118,13 +118,12 @@ class GridCellEnumEditor(GridCellBaseEditor):
 
         self.Reset()
 
+    # noinspection PyMethodOverriding
     def Reset(self):
         """
         Reset the value in the control back to its starting value.
         *Must Override*
-        """                
-        #self._ctrl.SetLabel("")
-        #del self._grid
+        """
         self._ctrl.SetItems([""])
 
 #     def IsAcceptedKey(self, evt):
@@ -187,6 +186,3 @@ class GridCellEnumEditor(GridCellBaseEditor):
 #         """final cleanup"""
 #         print_("MyCellEditor: Destroy\n")
 #         super(GridCellPopupEditor, self).Destroy()
-
-
-

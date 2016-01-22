@@ -117,7 +117,7 @@ class FileSystemManager(object):
 
         yield node
 
-        if node.is_folder():
+        if isinstance(node, Folder):
             for child in node.children:
                 for grand in self.walk(child, includes_deleted):
                     yield grand
@@ -247,14 +247,6 @@ class FileSystemManager(object):
             raise
 
         self._new_event(FSEvent.MODIFY, file_)
-
-    def is_folder(self, node_or_uuid):
-        if isinstance(node_or_uuid, FSNode):
-            node = node_or_uuid
-        else:
-            node = self.get_node_by_uuid(node_or_uuid)
-
-        return node and node.is_folder()
 
     def is_recycled(self, node_or_uuid):
         if isinstance(node_or_uuid, FSNode):
@@ -422,7 +414,7 @@ class FileSystemManager(object):
         if old_parent == parent:
             return old_parent
 
-        if node.is_folder():
+        if isinstance(node, Folder):
             dup = parent.get_sub_folder_by_name(node.name)
             if dup:  # name collision
                 if strategy == FOLDER_CONFLICTION_STRATEGY_ABORT:
@@ -525,7 +517,7 @@ class FileSystemManager(object):
             raise
 
     def _destroy_tree(self, node):
-        if node.is_folder():
+        if isinstance(node, Folder):
             for child in node.children:
                 self._destroy_tree(child)
 
@@ -557,7 +549,7 @@ class FileSystemManager(object):
         if node:
             print ' '*(indent-1), node.uuid
 
-            if node.is_folder():
+            if isinstance(node, Folder):
                 for child in node.children:
                     self.dump(child, indent+2)
 
@@ -568,11 +560,11 @@ class FSNode(object):
     modify_time = 0
     original_parent_uuid = ''
     name = ''
-    
-    parent = None
     immutable = False
+    parent = None
+
+    # _parent_uuid should only be used for loading data
     _parent_uuid = None
-#     is_recycled = False    
     
     def __init__(self, uuid_):
         self.uuid = uuid_
@@ -630,10 +622,7 @@ class FSNode(object):
             
         r.update(self._dump())
         return r
-    
-    def is_folder(self):
-        return type(self) is Folder
-    
+
     def __unicode__(self):
         return u"<%s %s>" % (self.__class__.__name__, self.uuid)
     
@@ -696,7 +685,7 @@ class Folder(FSNode):
     
     def get_sub_folder_by_name(self, name):
         for c in self.children:
-            if c.is_folder() and c.name == name:
+            if isinstance(c, Folder) and c.name == name:
                 return c
     
     def __unicode__(self):

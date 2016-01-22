@@ -236,4 +236,4 @@ class FrameEditorContext(EditorContext):
         if self.is_batch():
             return 'Batch Edit %s' % self.clazz.name
         else:
-            return self._objects.name
+            return '%s - %s' % (self._objects.name, self._objects.uuid)

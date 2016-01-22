@@ -16,10 +16,10 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
 import wx
 
 from structer.util import get_relative_path
+
 
 class FolderDialog(wx.DirDialog):
     def __init__(self, parent, editor_context):
@@ -27,8 +27,8 @@ class FolderDialog(wx.DirDialog):
         
         wx.DirDialog.__init__(self, 
                               parent,
-                              message = "Choose a directory",
-                              defaultPath = self.project.path,
+                              message="Choose a directory",
+                              defaultPath=self.project.path,
                               style=wx.DD_DEFAULT_STYLE | wx.DD_NEW_DIR_BUTTON)
         
     @property

@@ -15,11 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
+# coding=utf-8
 
 
-#coding=utf-8
-'''
-Created on 2013-11-21
-
-@author: Administrator
-'''
+class StructerException(Exception):
+    pass

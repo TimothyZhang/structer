@@ -18,8 +18,13 @@
 """
 There are 4 types of nodes in explorer:
 1. FsFolder
-2. FsFile
-3. SearchResult
+2. FsFile(object)
+3. FsFile(filter)
+4. SearchResult
+
+Only 1,3 might appear in ExplorerTree.
+Only 1,3,4 might appear in address bar(as list parent).
+Only 1,2,3 might appear in ExplorerList
 """
 
 
@@ -29,7 +34,8 @@ import collections
 import traceback
 
 from structer import const, fs_util
-from structer.fs_manager import FOLDER_CONFLICTION_STRATEGY_RENAME
+from structer.exceptions import StructerException
+from structer.fs_manager import FOLDER_CONFLICTION_STRATEGY_RENAME, FSNode, Folder
 from structer.fs_manager import FOLDER_CONFLICTION_STRATEGY_MERGE
 from structer.fs_manager import FolderConflictionException
 
@@ -37,33 +43,54 @@ from structerui.util import *
 
 CLIPBOARD_DATA_FORMAT = "__structer_fs_nodes_ajfdi1209dfsdf923jsdf1f4abz__"
 
-default_filter = """\"\"\"
-Write a python function with name "choose", which accepts three parameters:
-    obj: the Object instance, all objects in current project will be tested.
-        obj.clazz
-        obj['attribute']
-    file: the File instance
-        file.modify_time: time in seconds
-        file.create_time: time in seconds
-        file.tags: a set of tags of the object
-    project: the Project instance
-\"\"\"
-def choose(obj, file, project):
-    # all monsters whose level is 10
-    if obj.clazz.name == 'Monster' and obj['level'] == 10:
-        return True
+# default_filter = """\"\"\"
+# Write a python function with name "choose", which accepts three parameters:
+#     obj: the Object instance, all objects in current project will be tested.
+#         obj.clazz
+#         obj['attribute']
+#     file: the File instance
+#         file.modify_time: time in seconds
+#         file.create_time: time in seconds
+#         file.tags: a set of tags of the object
+#     project: the Project instance
+# \"\"\"
+# def choose(obj, file, project):
+#     # all monsters whose level is 10
+#     if obj.clazz.name == 'Monster' and obj['level'] == 10:
+#         return True
+#
+#     # all objects modified in recent 24 hours, any type
+#     #import time
+#     #if time.time() - file.modify_time < 3600 * 24:
+#      #   return True
+#
+#     # all objects with tag: X'mas
+#     #if "X'mas" in file.tags:
+#     #    return True
+#
+#     return False
+# """
 
-    # all objects modified in recent 24 hours, any type
-    #import time
-    #if time.time() - file.modify_time < 3600 * 24:
-     #   return True
 
-    # all objects with tag: X'mas
-    #if "X'mas" in file.tags:
-    #    return True
+class SearchResult(FSNode):
+    """
+    A temporary FSNode to hold search result.
+    """
 
-    return False
-"""
+    immutable = True
+
+    def __init__(self, project, sql, scope, name):
+        FSNode.__init__(self, None)
+        self._sql = sql
+        self.name = name if name else 'Search Result in %s' % scope
+        self.parent = project.fs_manager.root
+
+    @property
+    def sql(self):
+        return self._sql
+
+    def _dump(self):
+        raise StructerException('could not dump a SearchResult')
 
 
 class FSNodeTool(object):
@@ -132,7 +159,7 @@ class FSNodeTool(object):
         return node.name
 
     def get_type(self, node):
-        if node.is_folder():
+        if isinstance(node, Folder):
             return 'Folder'
         
         if node.file_type == const.FILE_TYPE_FILTER:
@@ -149,7 +176,7 @@ class FSNodeTool(object):
         return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(node.modify_time))
     
     def get_icon(self, node):
-        if node.is_folder():
+        if isinstance(node, Folder):
             return ICON_FOLDER
         
         if node.file_type == const.FILE_TYPE_FILTER:
@@ -179,7 +206,7 @@ class FSNodeTool(object):
     
     def do_create_filter(self, parent):
         try:
-            node = self.project.fs_manager.create_file(parent, const.FILE_TYPE_FILTER, 'New Filter', default_filter)            
+            node = self.project.fs_manager.create_file(parent, const.FILE_TYPE_FILTER, 'New Filter', '')
         except Exception, e:
             log.alert(e, "Failed to create filter")   
             return
@@ -207,7 +234,7 @@ class FSNodeTool(object):
         node = nodes[0]
         fsm = self.project.fs_manager
         
-        return node.is_folder() and not fsm.is_recycled(node) and node != fsm.recycle
+        return isinstance(node, Folder) and not fsm.is_recycled(node) and node != fsm.recycle
     
     def can_create_object(self, nodes):
         return self.can_create(nodes)
@@ -324,7 +351,11 @@ class FSNodeTool(object):
         # copy/cut/paste/delete
         if self._add_menu_edits(menu, nodes):
             menu.AppendSeparator()
-            
+
+        # show references/referents
+        if self._add_menu_ref(menu, nodes):
+            menu.AppendSeparator()
+
         # tags
         if self._add_menu_tags(menu, nodes):
             menu.AppendSeparator()
@@ -385,7 +416,26 @@ class FSNodeTool(object):
             self._bind_menu(menu, self.do_redo, item.GetId(), nodes)
             n += 1
             
-        return n        
+        return n
+
+    def _add_menu_ref(self, menu, nodes):
+        """
+        Try to add menu: references and referents
+        :type menu: wx.Menu
+        :type nodes: list[FsNode]
+        :return: number of menu items added
+        :rtype: int
+        """
+        # all nodes must be objects
+        if not all(map(fs_util.is_object, nodes)):
+            return 0
+
+        item = menu.Append(wx.NewId(), u'References(I referenced...)')
+        self._bind_menu(menu, self.show_references, item.GetId(), nodes)
+
+        item = menu.Append(wx.NewId(), u'Referents(I am referenced by...)')
+        self._bind_menu(menu, self.show_referents, item.GetId(), nodes)
+        return 2
     
     def _add_menu_tags(self, menu, nodes):
         # Get nodes which are objects
@@ -586,7 +636,9 @@ class FSNodeTool(object):
         dlg.Destroy()
          
     def is_container(self, node):
-        return not self.project.fs_manager.is_recycled(node) and (node.is_folder() or fs_util.is_filter(node))
+        if self.project.fs_manager.is_recycled(node):
+            return False
+        return isinstance(node, (Folder, SearchResult)) or fs_util.is_filter(node)
 
     @staticmethod
     def get_chooser_from_filter_str(filter_str):
@@ -596,28 +648,35 @@ class FSNodeTool(object):
         return choose
     
     def get_children(self, node):
-        if node.is_folder():
+        fsm = self.project.fs_manager
+
+        if isinstance(node, Folder):
             return node.children
-        
+
+        if isinstance(node, SearchResult):
+            objects = self.project.object_manager.iter_all_objects(node.sql)
+            return [fsm.get_node_by_uuid(obj.uuid) for obj in objects]
+
         if fs_util.is_filter(node):
-            filter_str = node.data
-            # l = {}
-            # g = {time}
-            # noinspection PyBroadException
-            try:
-                func = self.get_chooser_from_filter_str(filter_str)
-            except:
-                traceback.print_exc()
-                log.error('invalid filter str in %s: %s', node.uuid, filter_str)
-                return []
-            
-            # func = l.get('choose')
-            if func:                
-                objects = self.project.object_manager.iter_all_objects(func)
-                fsm = self.project.fs_manager
-                return [fsm.get_node_by_uuid(obj.uuid) for obj in objects]
-            
-            return []
+            objects = self.project.object_manager.iter_all_objects(node.data)
+            return [fsm.get_node_by_uuid(obj.uuid) for obj in objects]
+
+            # # l = {}
+            # # g = {time}
+            # # noinspection PyBroadException
+            # try:
+            #     func = self.get_chooser_from_filter_str(filter_str)
+            # except:
+            #     traceback.print_exc()
+            #     log.error('invalid filter str in %s: %s', node.uuid, filter_str)
+            #     return []
+            #
+            # # func = l.get('choose')
+            # if func:
+            #     objects = self.project.object_manager.iter_all_objects(func)
+            #     return [fsm.get_node_by_uuid(obj.uuid) for obj in objects]
+            #
+            # return []
         
         raise Exception("invalid node to get children: %s" % node)
     
@@ -676,7 +735,7 @@ class FSNodeTool(object):
             return False
               
         fsm = self.project.fs_manager        
-        if not target.is_folder() or fsm.is_recycled(target):
+        if not isinstance(node, Folder) or fsm.is_recycled(target):
             return False        
         
         if target == fsm.recycle and action != 'cut':
@@ -860,3 +919,23 @@ class FSNodeTool(object):
                 self.project.fs_manager.save_file(node.uuid)
             except Exception, e:
                 log.alert(e, 'Failed to remove tag "%s" from: %s', tag, node)
+
+    def show_references(self, nodes):
+        sql = ' or '.join(["refby('%s')" % node.uuid for node in nodes])
+        node = SearchResult(self.project, sql, None, "References of %s" % self.get_name_of_object_nodes(nodes))
+        self.explorer.set_path(node)
+
+    def show_referents(self, nodes):
+        sql = ' or '.join(["ref('%s')" % node.uuid for node in nodes])
+        node = SearchResult(self.project, sql, None, "Referents of %s" % self.get_name_of_object_nodes(nodes))
+        self.explorer.set_path(node)
+
+    def get_name_of_object_nodes(self, nodes):
+        if not nodes:
+            return ''
+
+        obj = self._get_object_by_node(nodes[0])
+        if len(nodes) == 1:
+            return obj.name
+
+        return '%s...' % object[0].name

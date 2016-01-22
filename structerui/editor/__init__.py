@@ -16,8 +16,7 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
-'''All editing features here.
+"""All editing features here.
 
 There're 3 types of editor:
     In-place editor for single object in Explorer
@@ -37,4 +36,4 @@ frame:   edit an object, of a list of objects
 dialog:  recusively edit complicated attributes
 panel:   editor any kind of complicated attributes. can be put into frame or dialog
 grid:    view and edit each attribute, by different editors/renderers
-'''
+"""

@@ -16,20 +16,23 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
 import string
 
 import wx
 
 from structer.stype import attr_types 
-#from structerui.editor.dialog import EditorDialog
 from structerui import hotkey
 
 from base_editor import GridCellBaseEditor
 
-'''
-'''
+
+# noinspection PyMethodOverriding
 class GridCellStrEditor(GridCellBaseEditor):
+    _ctrl = None
+    _default_bg_color = None
+    _grid = None
+    _attr_type = None
+
     def __init__(self):        
         GridCellBaseEditor.__init__(self)
         
@@ -38,15 +41,15 @@ class GridCellStrEditor(GridCellBaseEditor):
         # I don't know how to correct this behavior, so I just hooked ESC key event.
         self._canceled = False
         
-    def Create(self, parent, id_, evtHandler):
+    def Create(self, parent, id_, evt_handler):
         self._ctrl = wx.TextCtrl(parent, -1)
         self._default_bg_color = self._ctrl.GetBackgroundColour()
         self._ctrl.Bind(wx.EVT_TEXT, self.OnCtrlText)
         self._ctrl.Bind(wx.EVT_CHAR_HOOK, self.OnCtrlCharHook)
         self.SetControl(self._ctrl)
 
-        if evtHandler:
-            self._ctrl.PushEventHandler(evtHandler)
+        if evt_handler:
+            self._ctrl.PushEventHandler(evt_handler)
             
     def Clone(self):
         """
@@ -75,7 +78,7 @@ class GridCellStrEditor(GridCellBaseEditor):
         
         if not vlog.has_error():
             # got an int value, verify it        
-            self._attr_type.verify(val, self._grid.editor_context.project, vlog = vlog)
+            self._attr_type.verify(val, self._grid.editor_context.project, vlog=vlog)
         
         if vlog.has_error():    # has error.  might be eval error, or verify error            
             new_color = wx.RED
@@ -85,11 +88,10 @@ class GridCellStrEditor(GridCellBaseEditor):
             new_color = self._default_bg_color
         
         # set background color
-        cur_color = self._ctrl.GetBackgroundColour();
+        cur_color = self._ctrl.GetBackgroundColour()
         if cur_color != new_color:
-            self._ctrl.SetBackgroundColour( new_color )
+            self._ctrl.SetBackgroundColour(new_color)
             self._ctrl.Refresh(True)
-                
 
     def BeginEdit(self, row, col, grid):
         """
@@ -98,7 +100,7 @@ class GridCellStrEditor(GridCellBaseEditor):
         *Must Override*
         """
         # should be an enum        
-        #at = grid.GetTable().get_attr_type(row, col)
+        # at = grid.GetTable().get_attr_type(row, col)
         self._canceled = False
         self._grid = grid
         self._attr_type = self._grid.GetTable().get_attr_type(row, col)
@@ -113,7 +115,7 @@ class GridCellStrEditor(GridCellBaseEditor):
         val = self._ctrl.GetValue()
         return val        
     
-    def EndEdit(self, row, col, grid, oldVal):
+    def EndEdit(self, row, col, grid, old_val):
         """
         End editing the cell.  This function must check if the current
         value of the editing control is valid and different from the
@@ -130,11 +132,10 @@ class GridCellStrEditor(GridCellBaseEditor):
             return None
             
         at = grid.GetTable().get_attr_type(row, col)                                
-        if at.compare(val, oldVal) != 0:
+        if at.compare(val, old_val) != 0:
             return val
         else:
             return None
-        
 
     def ApplyEdit(self, row, col, grid):
         """
@@ -143,7 +144,7 @@ class GridCellStrEditor(GridCellBaseEditor):
         a non-None value.
         *Must Override*
         """        
-        grid.GetTable().SetValue(row, col, self.get_value() )                        
+        grid.GetTable().SetValue(row, col, self.get_value())
         self.Reset()
 
     def Reset(self):
@@ -156,7 +157,7 @@ class GridCellStrEditor(GridCellBaseEditor):
                 
         # change value won't fire a TEXT event
         self._ctrl.ChangeValue("")   
-        self._ctrl.SetBackgroundColour( self._default_bg_color )
+        self._ctrl.SetBackgroundColour(self._default_bg_color)
 #     def IsAcceptedKey(self, evt):
 #         """
 #         Return True to allow the given key to start editing: the base class
@@ -173,6 +174,7 @@ class GridCellStrEditor(GridCellBaseEditor):
 #                 evt.GetKeyCode() != wx.WXK_SHIFT)
 # 
 # 
+
     def StartingKey(self, evt):
         """
         If the editor is enabled by pressing keys on the grid, this will be
@@ -198,7 +200,7 @@ class GridCellStrEditor(GridCellBaseEditor):
             evt.Skip()
         else:
             key = evt.GetKeyCode()
-            if 0<=key<=255:
+            if 0 <= key <= 255:
                 ch = chr(key)
                 if evt.ShiftDown():
                     ch = ch.upper()
@@ -223,4 +225,3 @@ class GridCellStrEditor(GridCellBaseEditor):
 #         """final cleanup"""
 #         print_("MyCellEditor: Destroy\n")
 #         super(GridCellPopupEditor, self).Destroy()
-

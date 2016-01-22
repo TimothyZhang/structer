@@ -161,9 +161,9 @@ class StructGrid(GridBase):
     def _copy(self):
         block = self._get_selection_block()       
        
-        attr_types, datas = self.make_copy_data(block)
+        attr_types, data = self.make_copy_data(block)
         if attr_types:
-            self._set_clipboard(attr_types, datas)
+            self._set_clipboard(attr_types, data)
     
     def make_copy_data(self, block):
         if not block:
@@ -177,12 +177,12 @@ class StructGrid(GridBase):
         
         tbl = self.GetTable()
         attr_types = [tbl.get_attr_type(row, 2) for row in xrange(top, bottom+1)]
-        datas = [[tbl.get_value_of_col2(row) for row in xrange(top, bottom+1)]]
-        return attr_types, datas
+        data = [[tbl.get_value_of_col2(row) for row in xrange(top, bottom+1)]]
+        return attr_types, data
 
-    def _paste_data(self, attr_type_names, datas):
+    def _paste_data(self, attr_type_names, data):
         # I can only accept 1 data row
-        if len(datas) > 1:
+        if len(data) > 1:
             wx.MessageBox("Too many rows to paste", "Error")
             return
         
@@ -206,14 +206,6 @@ class StructGrid(GridBase):
                 wx.MessageBox("type not match: %s %s %s" % (i, need, got), "Error")
                 return
         
-        datas = zip(*datas)
-        block = (row, 2, row+len(datas)-1, 2)
-        self.batch_mutate(block, datas, True)
-
-#         # OK, paste
-#         data = datas[0]
-#         for i in xrange(len(data)):
-#             tbl.SetValue(row+i, 2, data[i])
-#         
-#         self.refresh_block(  )
-#         
+        data = zip(*data)
+        block = (row, 2, row+len(data)-1, 2)
+        self.batch_mutate(block, data, True)

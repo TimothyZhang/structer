@@ -27,6 +27,7 @@ from structerui.editor.ull_mapper import UnionListListMapper
 from structerui.editor.undo import OpenULLDialogAction, CloseULLDialogAction
 
 
+# noinspection PyMethodOverriding
 class ListTable(TableBase):
     def __init__(self, ctx):
         TableBase.__init__(self, ctx)
@@ -65,41 +66,41 @@ class ListTable(TableBase):
     def _create_default(self):
         return self.attr_type.element_type.get_default(self._ctx.project)
     
-    def InsertRows(self, pos, numRows):
-        self._insert_row_datas(pos, numRows)
+    def InsertRows(self, pos, num_rows):
+        self._insert_row_datas(pos, num_rows)
                     
-        msg = grid.GridTableMessage(self,          # The table
-           grid.GRIDTABLE_NOTIFY_ROWS_INSERTED,    # what we did to it
-           pos,                                      # from which row
-           numRows                                       # how many
-        )
+        msg = grid.GridTableMessage(self,                                   # The table
+                                    grid.GRIDTABLE_NOTIFY_ROWS_INSERTED,    # what we did to it
+                                    pos,                                    # from which row
+                                    num_rows                                # how many
+                                    )
                 
         cc = self.GetView().GetGridCursorCol()
         if cc == -1: 
             cc = 0
         
         self.GetView().ProcessTableMessage(msg)        
-        #self.GetView().SetGridCursor(pos, cc)
+        # self.GetView().SetGridCursor(pos, cc)
         self.GetView().GoToCell(pos, cc)
         
         # Scrollbar might appear after new rows inserted
         # todo: is there an event for scrollbar showing/hidding?
         self.GetView().auto_size()
 
-    def _insert_row_datas(self, pos, numRows):
-        for i in xrange(numRows):        
+    def _insert_row_datas(self, pos, num_rows):
+        for i in xrange(num_rows):
             item = self.attr_type.element_type.get_default(self._ctx.project)        
             self.attr_data.insert(pos, item)
     
-    def DeleteRows(self, pos, numRows):
-        for i in xrange(numRows):
+    def DeleteRows(self, pos, num_rows):
+        for i in xrange(num_rows):
             self.attr_data.pop(pos)
         
-        msg = grid.GridTableMessage(self,          # The table
-           grid.GRIDTABLE_NOTIFY_ROWS_DELETED,    # what we did to it
-           pos,                                      # from which row
-           numRows                                       # how many
-        )
+        msg = grid.GridTableMessage(self,                                   # The table
+                                    grid.GRIDTABLE_NOTIFY_ROWS_DELETED,     # what we did to it
+                                    pos,                                    # from which row
+                                    num_rows                                # how many
+                                    )
                 
         cc = self.GetView().GetGridCursorCol()
         if cc == -1: 
@@ -113,7 +114,7 @@ class ListTable(TableBase):
 
 
 class ListGrid(GridBase):
-    def __init__(self, parent, editor_context, table = None):
+    def __init__(self, parent, editor_context, table=None):
         """
         :param parent:
         :param structerui.editor.context.EditorContext editor_context:
@@ -163,7 +164,8 @@ class ListGrid(GridBase):
             _ = evt
             ctx.undo_manager.add(CloseULLDialogAction())
             evt.Skip()
-
+        
+        ull_data = None
         while 1:
             ull_dlg = EditorDialog(self, ctx)
             ctx.undo_manager.add(OpenULLDialogAction())
@@ -183,7 +185,7 @@ class ListGrid(GridBase):
                 continue
             break
 
-        # NOTE: DialogEditor of composited types should modify the original value, not set a new one,
+        # NOTE: DialogEditor of composit types should modify the original value, not set a new one,
         # to keep UndoManager work properly.
         self.editor_context.attr_data[:] = ull_data
 
@@ -204,11 +206,11 @@ class ListGrid(GridBase):
         self.insert_copied(self.GetNumberRows())
     
     def insert(self, pos=-1, rows=1, add_undo=False):
-        '''
+        """
         Args:
             pos: -1 means cursor row
-        '''
-        if pos==-1:
+        """
+        if pos == -1:
             pos = self.GetGridCursorRow()
         if pos == -1:
             pos = 0
@@ -216,8 +218,8 @@ class ListGrid(GridBase):
         
         if add_undo:
             from structerui.editor.undo import ListInsertAction            
-            attr_type_names, datas = self.make_copy_data( (pos, 0, pos+rows-1, self.GetNumberCols()-1))
-            self._ctx.undo_manager.add( ListInsertAction(pos, attr_type_names, datas) )            
+            attr_type_names, data = self.make_copy_data((pos, 0, pos+rows-1, self.GetNumberCols()-1))
+            self._ctx.undo_manager.add(ListInsertAction(pos, attr_type_names, data))
     
     def _append(self, rows=1, add_undo=False):
         # append a new row
@@ -225,12 +227,13 @@ class ListGrid(GridBase):
         self.insert(pos, rows, add_undo)
         
     def insert_copied(self, pos=-1):
-        attr_type_names, datas = self._get_clipboard()
+        attr_type_names, data = self._get_clipboard()
         if attr_type_names is None:
             return        
         
         if len(attr_type_names) != self.GetNumberCols():
-            wx.MessageBox(u"data column count mismatch: expeteced=%s, got=%s" %(self.GetNumberCols(), len(attr_type_names) ))
+            wx.MessageBox(u"data column count mismatch: expected=%s, got=%s" %
+                          (self.GetNumberCols(), len(attr_type_names)))
             return
         
         tbl = self.GetTable()
@@ -238,17 +241,17 @@ class ListGrid(GridBase):
             if tbl.get_attr_type(0, i).name != attr_type_names[i]:
                 wx.MessageBox(u"data type to insert mismatch: col=%s, expected=%s, got=%s" % 
                               (tbl.GetColLabelValue(i), 
-                              tbl.get_attr_type(0, i).name, 
-                              attr_type_names[i]))
+                               tbl.get_attr_type(0, i).name,
+                               attr_type_names[i]))
                 return
                 
-        self.insert_datas(attr_type_names, datas, pos)   
+        self.insert_data(attr_type_names, data, pos)
         
         from structerui.editor.undo import ListInsertAction            
-        attr_type_names, datas = self.make_copy_data( (pos, 0, pos+len(datas)-1, self.GetNumberCols()-1))
-        self._ctx.undo_manager.add( ListInsertAction(pos, attr_type_names, datas) )      
+        attr_type_names, data = self.make_copy_data((pos, 0, pos+len(data)-1, self.GetNumberCols()-1))
+        self._ctx.undo_manager.add(ListInsertAction(pos, attr_type_names, data))
         
-    def insert_datas(self, attr_type_names, datas, pos=-1):
+    def insert_data(self, attr_type_names, datas, pos=-1):
         self.insert(pos, len(datas))
         
         cursor_row = self.GetGridCursorRow()
@@ -268,7 +271,7 @@ class ListGrid(GridBase):
 #             wx.MessageBox("Invalid selection area", "Error")
 #             return
         
-        top,_,bottom,_ = block
+        top, _, bottom, _ = block
         
         self.SelectRow(top, False)
         for r in xrange(top+1, bottom+1):
@@ -282,22 +285,22 @@ class ListGrid(GridBase):
                 wx.MessageBox("Invalid selection area", "Error")
                 return
             
-            top,left,bottom,right = block
+            top, left, bottom, right = block
             
             pos = top
             rows = bottom - top + 1
             
         tbl = self.GetTable()
         
-        #if (left!=right) and (left>0 or right<self.GetNumberCols()-1):
+        # if (left!=right) and (left>0 or right<self.GetNumberCols()-1):
         #    wx.MessageBox("Can only delete entire rows", "Error")
         #    return
         
         # undo
         if add_undo:
             from structerui.editor.undo import ListDeleteAction            
-            attr_type_names, datas = self.make_copy_data( (pos, 0, pos+rows-1, self.GetNumberCols()-1))
-            self._ctx.undo_manager.add( ListDeleteAction(pos, attr_type_names, datas) )             
+            attr_type_names, datas = self.make_copy_data((pos, 0, pos+rows-1, self.GetNumberCols()-1))
+            self._ctx.undo_manager.add(ListDeleteAction(pos, attr_type_names, datas))
         
         tbl.DeleteRows(pos, rows)
     
@@ -313,11 +316,11 @@ class ListGrid(GridBase):
         self._set_clipboard(attr_types, datas)
         
     def make_copy_data(self, block):
-        top,left,bottom,right = block
+        top, left, bottom, right = block
         tbl = self.GetTable()
         # create clip board data        
         attr_types = [tbl.get_attr_type(top, c) for c in xrange(left, right+1)]
-        datas = [[tbl.get_value(r,c) for c in xrange(left, right+1)] for r in xrange(top, bottom+1)]
+        datas = [[tbl.get_value(r, c) for c in xrange(left, right+1)] for r in xrange(top, bottom+1)]
         return attr_types, datas
     
     def _cut(self):
@@ -327,13 +330,12 @@ class ListGrid(GridBase):
             wx.MessageBox("Invalid selection area", "Error")
             return
                 
-        #tbl = self.GetTable()
-        
-        #if (left!=right) and (left>0 or right<self.GetNumberCols()-1):
+        # tbl = self.GetTable()
+        # if (left!=right) and (left>0 or right<self.GetNumberCols()-1):
         #    wx.MessageBox("Can only cut entire rows", "Error")
         #    return
-        top,left,bottom,right = block
-        self._copy( (top, 0, bottom, self.GetNumberCols()-1) )
+        top, left, bottom, right = block
+        self._copy((top, 0, bottom, self.GetNumberCols()-1))
         
         self.delete()    
 
@@ -354,7 +356,7 @@ class ListGrid(GridBase):
                 top, left, bottom, right = block
             
             # only selected 1 cell, expand the area to exaclty match the data size
-            if top==bottom and left==right:
+            if top == bottom and left == right:
                 # calc target area
                 top, left = self.GetGridCursorRow(), self.GetGridCursorCol()
                 rows = len(datas)
@@ -377,7 +379,7 @@ class ListGrid(GridBase):
                 return
         
         block = (top, left, bottom, right)
-        self.batch_mutate( block, datas, add_undo=add_undo)
+        self.batch_mutate(block, datas, add_undo=add_undo)
                 
     
 if __name__ == '__main__':

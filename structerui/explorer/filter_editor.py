@@ -16,14 +16,13 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
-'''Frome wxPython demos'''
-import  keyword
-
-import  wx
-import  wx.stc  as  stc
+""" Frome wxPython demos """
+import keyword
+import wx
+import wx.stc as stc
 
 from filter_editor_xrc import xrcFilterEditorDialog, get_resources
+
 
 class FilterEditorDialog(xrcFilterEditorDialog):
     def __init__(self, parent):
@@ -50,38 +49,39 @@ class FilterEditorDialog(xrcFilterEditorDialog):
         return self.text_ctrl.SetText(text)
 
 if wx.Platform == '__WXMSW__':
-    faces = { 'times': 'Times New Roman',
-              'mono' : 'Courier New',
-              'helv' : 'Arial',
-              'other': 'Comic Sans MS',
-              'size' : 10,
-              'size2': 8,
+    faces = {'times': 'Times New Roman',
+             'mono': 'Courier New',
+             'helv': 'Arial',
+             'other': 'Comic Sans MS',
+             'size': 10,
+             'size2': 8,
              }
 elif wx.Platform == '__WXMAC__':
-    faces = { 'times': 'Times New Roman',
-              'mono' : 'Monaco',
-              'helv' : 'Arial',
-              'other': 'Comic Sans MS',
-              'size' : 12,
-              'size2': 10,
+    faces = {'times': 'Times New Roman',
+             'mono': 'Monaco',
+             'helv': 'Arial',
+             'other': 'Comic Sans MS',
+             'size': 12,
+             'size2': 10,
              }
 else:
-    faces = { 'times': 'Times',
-              'mono' : 'Courier',
-              'helv' : 'Helvetica',
-              'other': 'new century schoolbook',
-              'size' : 12,
-              'size2': 10,
+    faces = {'times': 'Times',
+             'mono': 'Courier',
+             'helv': 'Helvetica',
+             'other': 'new century schoolbook',
+             'size': 12,
+             'size2': 10,
              }
 
+
 class PythonSTC(stc.StyledTextCtrl):
-    def __init__(self, parent, ID=-1,
+    def __init__(self, parent, id_=-1,
                  pos=wx.DefaultPosition, size=wx.DefaultSize,
                  style=0):
-        stc.StyledTextCtrl.__init__(self, parent, ID, pos, size, style)
+        stc.StyledTextCtrl.__init__(self, parent, id_, pos, size, style)
 
-        #self.CmdKeyAssign(ord('B'), stc.STC_SCMOD_CTRL, stc.STC_CMD_ZOOMIN)
-        #self.CmdKeyAssign(ord('N'), stc.STC_SCMOD_CTRL, stc.STC_CMD_ZOOMOUT)
+        # self.CmdKeyAssign(ord('B'), stc.STC_SCMOD_CTRL, stc.STC_CMD_ZOOMIN)
+        # self.CmdKeyAssign(ord('N'), stc.STC_SCMOD_CTRL, stc.STC_CMD_ZOOMOUT)
 
         self.SetLexer(stc.STC_LEX_PYTHON)
         self.SetKeyWords(0, " ".join(keyword.kwlist))
@@ -92,27 +92,27 @@ class PythonSTC(stc.StyledTextCtrl):
         self.SetTabWidth(4)
         self.SetTabIndents(1)
         
-        self.SetMargins(0,0)
+        self.SetMargins(0, 0)
 
         self.SetViewWhiteSpace(True)
-        #self.SetBufferedDraw(False)
-        #self.SetViewEOL(True)
-        #self.SetEOLMode(stc.STC_EOL_CRLF)
-        #self.SetUseAntiAliasing(True)
+        # self.SetBufferedDraw(False)
+        # self.SetViewEOL(True)
+        # self.SetEOLMode(stc.STC_EOL_CRLF)
+        # self.SetUseAntiAliasing(True)
         
         self.SetEdgeMode(stc.STC_EDGE_BACKGROUND)
         self.SetEdgeColumn(78)
 
         # Setup a margin to hold fold markers
-        #self.SetFoldFlags(16)  ###  WHAT IS THIS VALUE?  WHAT ARE THE OTHER FLAGS?  DOES IT MATTER?
+        # self.SetFoldFlags(16)  ###  WHAT IS THIS VALUE?  WHAT ARE THE OTHER FLAGS?  DOES IT MATTER?
         self.SetMarginType(2, stc.STC_MARGIN_SYMBOL)
-        #self.SetMarginMask(2, stc.STC_MASK_FOLDERS)
+        # self.SetMarginMask(2, stc.STC_MASK_FOLDERS)
         self.SetMarginSensitive(2, True)
         self.SetMarginWidth(2, 12)        
 
         self.Bind(stc.EVT_STC_UPDATEUI, self.OnUpdateUI)
-        #self.Bind(stc.EVT_STC_MARGINCLICK, self.OnMarginClick)
-        #self.Bind(wx.EVT_KEY_DOWN, self.OnKeyPressed)
+        # self.Bind(stc.EVT_STC_MARGINCLICK, self.OnMarginClick)
+        # self.Bind(wx.EVT_KEY_DOWN, self.OnKeyPressed)
 
         # Make some styles,  The lexer defines what each style is used for, we
         # just have to define what each style looks like.  This set is adapted from
@@ -161,14 +161,12 @@ class PythonSTC(stc.StyledTextCtrl):
 
         self.SetCaretForeground("BLUE")
 
-
         # register some images for use in the AutoComplete box.
 #         self.RegisterImage(1, images.Smiles.GetBitmap())
 #         self.RegisterImage(2, 
 #             wx.ArtProvider.GetBitmap(wx.ART_NEW, size=(16,16)))
 #         self.RegisterImage(3, 
 #             wx.ArtProvider.GetBitmap(wx.ART_COPY, size=(16,16)))
-
 
     def OnKeyPressed(self, event):
         if self.CallTipActive():
@@ -186,13 +184,6 @@ class PythonSTC(stc.StyledTextCtrl):
                                  'fubar(param1, param2)')
             # Code completion
             else:
-                #lst = []
-                #for x in range(50000):
-                #    lst.append('%05d' % x)
-                #st = " ".join(lst)
-                #print len(st)
-                #self.AutoCompShow(0, st)
-
                 kw = keyword.kwlist[:]
                 kw.append("zzzzzz?2")
                 kw.append("aaaaa?2")
@@ -200,7 +191,7 @@ class PythonSTC(stc.StyledTextCtrl):
                 kw.append("zzaaaaa?2")
                 kw.append("zzbaaaa?2")
                 kw.append("this_is_a_longer_value")
-                #kw.append("this_is_a_much_much_much_much_much_much_much_longer_value")
+                # kw.append("this_is_a_much_much_much_much_much_much_much_longer_value")
 
                 kw.sort()  # Python sorts are case sensitive
                 self.AutoCompSetIgnoreCase(False)  # so this needs to match
@@ -208,20 +199,22 @@ class PythonSTC(stc.StyledTextCtrl):
                 # Images are specified with a appended "?type"
                 for i in range(len(kw)):
                     if kw[i] in keyword.kwlist:
-                        kw[i] = kw[i] + "?1"
+                        kw[i] += "?1"
 
                 self.AutoCompShow(0, " ".join(kw))
                 return
         
         event.Skip()
 
-
+    # noinspection PyPep8Naming
     def OnUpdateUI(self, evt):
+        _ = evt
         # check for matching braces
         braceAtCaret = -1
         braceOpposite = -1
         charBefore = None
         caretPos = self.GetCurrentPos()
+        styleBefore = None
 
         if caretPos > 0:
             charBefore = self.GetCharAt(caretPos - 1)
@@ -242,13 +235,7 @@ class PythonSTC(stc.StyledTextCtrl):
         if braceAtCaret >= 0:
             braceOpposite = self.BraceMatch(braceAtCaret)
 
-        if braceAtCaret != -1  and braceOpposite == -1:
+        if braceAtCaret != -1 and braceOpposite == -1:
             self.BraceBadLight(braceAtCaret)
         else:
             self.BraceHighlight(braceAtCaret, braceOpposite)
-            #pt = self.PointFromPosition(braceOpposite)
-            #self.Refresh(True, wxRect(pt.x, pt.y, 5,5))
-            #print pt
-            #self.Refresh(False)
-            
-            

@@ -19,8 +19,6 @@
 import wx
 
 from dialog import EditorDialog
-# from structerui.editor.context import EditorContext
-
 from base_editor import GridCellBaseEditor
 
 

@@ -92,9 +92,10 @@ class Enum(object):
     
     def label_of(self, name):
         l = self.__name2labels.get(name)
+        v = self.__name2values.get(name)
         if not l:
-            l = u'Invalid: %s'%name
-        return l
+            return u'Invalid: %s' % name
+        return '%s(%s)' % (l, v)
     
     def name_of_label(self, label):
         n = self.__label2names.get(label)

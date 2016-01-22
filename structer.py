@@ -28,13 +28,15 @@ def export(project_path, dst_path):
         raise Exception('All errors must be fixed before exporting.')
     
     from structer.exporter import DefaultObjectExporter
-    exp = DefaultObjectExporter()
+    exp = DefaultObjectExporter(p)
     
     from zipfile import ZipFile
     zf = None
     try:
         zf = ZipFile(dst_path, 'w')
-        exp.export(p, zf.writestr)
+        files = exp.export()
+        for fn, data in files:
+            zf.writestr(fn, data)
     finally:
         if zf:
             zf.close()

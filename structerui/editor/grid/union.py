@@ -16,21 +16,20 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
 import wx.grid as grid
 
 from structer.stype.composite_types import Attr
 
 from struct import StructGrid, StructTable
 
-'''Union editor is much like a Struct editor, except its "struct attributes" are dynamicly
+"""Union editor is much like a Struct editor, except its "struct attributes" are dynamicly
 created according to union key.
 
 The first row is union key, 
 The second and belowing rows refers to attributes of the struct of that key.  
 
 Once the first row(union key) changed, all the other rows are changed.
-'''
+"""
 
 class UnionTable(StructTable):
     def __init__(self, ctx):
@@ -94,25 +93,24 @@ class UnionTable(StructTable):
             self._ctx.attr_data[1][attr.name] = value        
 
     def _clear_rows(self):
-        #self.GetView().ForceRefresh()
-        msg = grid.GridTableMessage(self,          # The table
-           grid.GRIDTABLE_NOTIFY_ROWS_DELETED,     # what we did to it
-           1,                                      # from which row
-           self.GetRowsCount()-1                   # how many
-        )
+        # self.GetView().ForceRefresh()
+        msg = grid.GridTableMessage(self,                                   # The table
+                                    grid.GRIDTABLE_NOTIFY_ROWS_DELETED,     # what we did to it
+                                    1,                                      # from which row
+                                    self.GetRowsCount()-1                   # how many
+                                    )
                 
         self.GetView().ProcessTableMessage(msg)
     
     def _add_rows(self):
-        msg = grid.GridTableMessage(self,          # The table
-           grid.GRIDTABLE_NOTIFY_ROWS_INSERTED,     # what we did to it
-           1,                                      # from which row
-           self.GetRowsCount()-1                   # how many
-        )
+        msg = grid.GridTableMessage(self,                                   # The table
+                                    grid.GRIDTABLE_NOTIFY_ROWS_INSERTED,    # what we did to it
+                                    1,                                      # from which row
+                                    self.GetRowsCount()-1                   # how many
+                                    )
                 
         self.GetView().ProcessTableMessage(msg)
-        
-    #--------------------------------------------------
+
     # Some optional methods
     # Called when the grid needs to display labels
     def GetColLabelValue(self, col):
@@ -123,4 +121,3 @@ class UnionTable(StructTable):
 class UnionGrid(StructGrid):
     def __init__(self, parent, editor_context):
         StructGrid.__init__(self, parent, editor_context, UnionTable(editor_context))
-

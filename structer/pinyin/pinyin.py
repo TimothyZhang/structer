@@ -58,7 +58,7 @@ class Pinyin(object):
 
     def _load_pinyin_data(self):
         """
-        Loads pinyin datas for each chinese characters
+        Loads pinyin data for each chinese characters
         """
 
         # {chinese char: [FLP, ...]}

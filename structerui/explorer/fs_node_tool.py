@@ -31,7 +31,6 @@ Only 1,2,3 might appear in ExplorerList
 import time
 import json
 import collections
-import traceback
 
 from structer import const, fs_util
 from structer.exceptions import StructerException
@@ -735,7 +734,7 @@ class FSNodeTool(object):
             return False
               
         fsm = self.project.fs_manager        
-        if not isinstance(node, Folder) or fsm.is_recycled(target):
+        if not isinstance(target, Folder) or fsm.is_recycled(target):
             return False        
         
         if target == fsm.recycle and action != 'cut':
@@ -831,9 +830,19 @@ class FSNodeTool(object):
             delete = fsm.destroy
         else:
             ret = wx.MessageBox("Move %s to recycle bin?" % self.get_readable_node_names(nodes),
+                                caption='Warning',
                                 style=wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
             if ret == wx.NO:
                 return
+
+            # if the objects to be deleted are referenced by other objects, give a warning
+            if not self.check_reference_before_delete(nodes):
+                ret = wx.MessageBox("Some of the nodes are referenced, are you sure to delete?",
+                                    caption='Warning',
+                                    style=wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
+                if ret == wx.NO:
+                    return
+
             delete = fsm.delete
                 
         for node in nodes:
@@ -841,6 +850,38 @@ class FSNodeTool(object):
                 delete(node.uuid)
             except Exception, e:
                 log.alert(e, 'Failed to delete: %s', node)
+
+    def check_reference_before_delete(self, nodes):
+        """
+        Checks if any of the objects, which reside in nodes, is referenced by any node that does not reside in nodes.
+
+        :type nodes: list[FSNode]
+        :return: True if it's safe to delete
+        :rtype: bool
+        """
+        objects = self.get_objects_within_nodes(nodes)
+        uuids = set([obj.uuid for obj in objects])
+        referents = set(sum([list(self.project.ref_manager.get_referents(obj.uuid)) for obj in objects], []))
+        if referents.difference(uuids):
+            return False
+        return True
+
+    def get_objects_within_nodes(self, nodes):
+        """
+        Returns all the objects, which is one of the nodes, or is the descendant of one of the nodes.
+
+        :type nodes: list[FSNode]
+        :rtype: list[Object]
+        """
+        objects = []
+        for node in nodes:
+            if fs_util.is_object(node):
+                objects.append(self._get_object_by_node(node))
+            elif isinstance(node, Folder):
+                for child in self.project.fs_manager.walk(node, False):
+                    if fs_util.is_object(child):
+                        objects.append(self._get_object_by_node(child))
+        return objects
 
     def get_readable_node_names(self, nodes):        
         names = ', '.join('"%s"' % self.get_name(node) for node in nodes[:3])
@@ -938,4 +979,4 @@ class FSNodeTool(object):
         if len(nodes) == 1:
             return obj.name
 
-        return '%s...' % object[0].name
+        return '%s...' % obj.name

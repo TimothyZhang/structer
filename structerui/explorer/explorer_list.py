@@ -27,6 +27,10 @@ from structerui import hotkey, util
 
 from fs_node_tool import FSNodeTool
 
+LIST_MODE_ICON = 0
+LIST_MODE_REPORT = 1
+LIST_MODES = {LIST_MODE_ICON, LIST_MODE_REPORT}
+
 
 class ExplorerList(wx.ListCtrl, wx.DropTarget):
     def __init__(self, parent, explorer):
@@ -53,14 +57,15 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
         # 'id', 'name', 'time'
         self._sort_by = 'name'
         self._ascending = True
-        
-        if util.is_mac():
-            style = wx.LC_REPORT | wx.BORDER_NONE | wx.LC_EDIT_LABELS | wx.LC_VIRTUAL
-        else: 
-            style = wx.LC_ICON | wx.BORDER_NONE | wx.LC_EDIT_LABELS | wx.LC_VIRTUAL
+        self._list_mode = None
+
+        mode = get_default_list_mode()
+        style = get_list_style(mode)
 
         # | wx.LC_SORT_ASCENDING#| wx.LC_NO_HEADER#| wx.LC_VRULES#| wx.LC_HRULES#| wx.LC_SINGLE_SEL
         wx.ListCtrl.__init__(self, parent, -1, style=style)
+        self.set_list_mode(mode)
+
         self._init_image_list()        
         self._init_list_columns()
         self._init_list_item_attrs()        
@@ -70,13 +75,34 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
         self._init_drop_target()
         self.SetDropTarget(self)
 
+    @property
+    def list_mode(self):
+        return self._list_mode
+
+    def set_list_mode(self, mode):
+        assert mode in LIST_MODES
+        self._list_mode = mode
+        self.SetWindowStyle(get_list_style(mode))
+
+        if mode == LIST_MODE_REPORT:
+            self._reset_column_width()
+
+        self.Refresh()
+
     def _init_list_columns(self):
         self.InsertColumn(0, u"Name")
         self.InsertColumn(1, u"Type")
-        self.InsertColumn(2, u"Modified")
-        self.SetColumnWidth(0, 200)
-        self.SetColumnWidth(1, 100)
-        self.SetColumnWidth(2, 200)
+        self.InsertColumn(2, u"Last Modified")
+        self.InsertColumn(3, u"UUID")
+
+    def _reset_column_width(self):
+        self.SetColumnWidth(1, wx.LIST_AUTOSIZE)
+        self.SetColumnWidth(2, wx.LIST_AUTOSIZE)
+        self.SetColumnWidth(3, wx.LIST_AUTOSIZE)
+
+        w = self.GetColumnWidth(1) + self.GetColumnWidth(2) + self.GetColumnWidth(3)
+        ww, _ = self.GetSize()
+        self.SetColumnWidth(0, ww - w)
         
     def _init_list_item_attrs(self):
         self.attr_normal = wx.ListItemAttr()
@@ -323,6 +349,8 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
             return self.node_tool.get_type(fs_node)
         elif col == 2:
             return self.node_tool.get_modify_time(fs_node)
+        elif col == 3:
+            return fs_node.uuid
 
     def OnGetItemImage(self, item):
         fs_node = self._fs_nodes[item]
@@ -578,3 +606,28 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
         # with the original data (move, copy, etc.)  In this
         # case we just return the suggested value given to us.
         return d  
+
+
+def supports_list_mode(mode):
+    if mode == LIST_MODE_REPORT:
+        return True
+    elif mode == LIST_MODE_ICON:
+        return not util.is_mac()
+
+
+def get_list_style(mode):
+    if mode == LIST_MODE_REPORT:
+        return wx.LC_REPORT | wx.BORDER_NONE | wx.LC_EDIT_LABELS | wx.LC_VIRTUAL
+    elif mode == LIST_MODE_ICON:
+        return wx.LC_ICON | wx.BORDER_NONE | wx.LC_EDIT_LABELS | wx.LC_VIRTUAL
+
+
+def get_supported_list_modes():
+    return [m for m in LIST_MODES if supports_list_mode(m)]
+
+
+def get_default_list_mode():
+    if supports_list_mode(LIST_MODE_ICON):
+        return LIST_MODE_ICON
+
+    return LIST_MODE_REPORT

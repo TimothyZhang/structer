@@ -18,7 +18,9 @@
 
 import wx
 import wx.grid as grid
+import wx.lib.gridmovers as gridmovers
 
+from structer.stype.attr_types import ATList
 
 from structerui import hotkey
 from base_grid import GridBase, TableBase, GridAction
@@ -91,6 +93,28 @@ class ListTable(TableBase):
         for i in xrange(num_rows):
             item = self.attr_type.element_type.get_default(self._ctx.project)        
             self.attr_data.insert(pos, item)
+
+    def move_row(self, from_, to):
+        assert 0 <= from_ <= self.GetRowsCount()
+        assert 0 <= to <= self.GetRowsCount()
+        if from_ + 1 == to:
+            return
+
+        row = self.attr_data.pop(from_)
+        if to > from_:
+            self.attr_data.insert(to-1, row)
+        else:
+            self.attr_data.insert(to, row)
+
+        # Notify the grid
+        view = self.GetView()
+        view.BeginBatch()
+        msg = grid.GridTableMessage(self, grid.GRIDTABLE_NOTIFY_ROWS_DELETED, from_, 1)
+        view.ProcessTableMessage(msg)
+        msg = grid.GridTableMessage(self, grid.GRIDTABLE_NOTIFY_ROWS_INSERTED, to, 1)
+        view.ProcessTableMessage(msg)
+        view.EndBatch()
+        view.UnsetSortingColumn()
     
     def DeleteRows(self, pos, num_rows):
         for i in xrange(num_rows):
@@ -125,6 +149,9 @@ class ListGrid(GridBase):
             table = ListTable(editor_context)
 
         GridBase.__init__(self, parent, table)
+
+        gridmovers.GridRowMover(self)
+        self.Bind(gridmovers.EVT_GRID_ROW_MOVE, self.__OnRowMove, self)
         
     def get_actions(self):
         """
@@ -141,20 +168,50 @@ class ListGrid(GridBase):
                    GridAction(hotkey.LIST_CUT, self._cut, "Cut Rows", "icons/cut_rows.png"),
                    GridAction(hotkey.LIST_INSERT_COPIED, self.insert_copied, "Insert Rows", "icons/insert_rows.png"),
                    GridAction(hotkey.LIST_APPEND_COPIED_TAIL, self.append_copied, "Append Rows",
-                              "icons/append_rows.png")
+                              "icons/append_rows.png"),
+                   GridAction(hotkey.LIST_ULL_EDITOR, self.show_ull_editor, "Super ULL Editor", "icons/ull_editor.png",
+                              self.check_ull_editor)
                    ]
 
-        # ull mapper
-        if UnionListListMapper.check_ull_type(self.editor_context.attr_type):
-            actions.append(GridAction(hotkey.LIST_ULL_EDITOR, self.show_ull_editor, "Super ULL Editor",
-                                      "icons/ull_editor.png"))
         return GridBase.get_actions(self) + actions
 
+    def __OnRowMove(self, evt):
+        frm = evt.GetMoveRow()          # Row being moved
+        to = evt.GetBeforeRow()         # Before which row to insert
+        self.GetTable().move_row(frm, to)
+
+    def check_ull_editor(self):
+        block = self._get_selection_block()
+        if not block:
+            return False
+
+        top, left, bottom, right = block
+        # should select only 1 column
+        if left < right:
+            return False
+
+        # should select at least 2 rows
+        if top == bottom:
+            return False
+
+        tbl = self.GetTable()
+        attr_type = tbl.get_attr_type(top, left)
+        return UnionListListMapper.check_element_type(attr_type)
+
     def show_ull_editor(self):
-        ull_mapper = UnionListListMapper.create(self.editor_context.project,
-                                                self.editor_context.attr_type,
-                                                self.editor_context.attr_data)
+        if not self.check_ull_editor():
+            wx.MessageBox("Invalid type for ull_editor")
+            return
+
+        top, left, bottom, right = self._get_selection_block()
+        tbl = self.GetTable()
+        ul_type = tbl.get_attr_type(top, left)
+        ull_type = ATList(ul_type)
+        ull_data = [tbl.get_value(r, left) for r in xrange(top, bottom+1)]
+
+        ull_mapper = UnionListListMapper.create(self.editor_context.project, ull_type, ull_data)
         if not ull_mapper:
+            wx.MessageBox("Failed to create ull_editor")
             return
 
         ctx = self.editor_context.create_sub_context(ull_mapper.get_sl_type(), ull_mapper.get_sl_data())
@@ -185,9 +242,12 @@ class ListGrid(GridBase):
                 continue
             break
 
+        # Write back modified data
         # NOTE: DialogEditor of composite types should modify the original value, not set a new one,
         # to keep UndoManager work properly.
-        self.editor_context.attr_data[:] = ull_data
+        # self.editor_context.attr_data[:] = ull_data
+        for i, r in enumerate(xrange(top, bottom+1)):
+            tbl.SetValue(r, left, ull_data[i])
 
         # close current dialog
         p = self

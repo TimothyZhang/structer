@@ -852,24 +852,24 @@ class ATStruct(AttrType):
         """
         AttrType.__init__(self, '%s@' % struct.name, **kwargs)
 
-        self.__strut = struct
+        self.__struct = struct
         self._str_template = string.Template(str_template) if str_template else None
 
     @property
     def str_template(self):
         if self._str_template:
             return self._str_template
-        return self.__strut.str_template
+        return self.__struct.str_template
 
     @property
     def struct(self):
-        return self.__strut
+        return self.__struct
 
     def has_attr(self, name):
-        return self.__strut.has_attr(name)
+        return self.__struct.has_attr(name)
 
     def get_attr(self, name):
-        return self.__strut.get_attr_by_name(name)
+        return self.__struct.get_attr_by_name(name)
 
     def get_attr_value(self, name, val, project):
         """Get the attribute value"""

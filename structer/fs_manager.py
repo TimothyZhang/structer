@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
-
 import os
 import json
 import uuid
@@ -44,13 +43,13 @@ class FolderConflictionException(Exception):
     pass
 
 
-class FileSystemManager(object):  
+class FileSystemManager(object):
     """Simulates a virtual file system.
 
     (The main reason not using native file system is, subversion puts a ".svn" folder in each native folder, and it's
-    complicated to manage that correctly if we want to move/rename folders. Althoulgh Latest subversion client
+    complicated to manage that correctly if we want to move/rename folders. Although Latest subversion client
     fixed this problem by putting only one larger ".svn" at the root of working directory, we won't change this
-    design unless there're enough reasons)
+    design unless there are enough reasons)
 
     VFS contains 2 types of nodes: File and Folder. Each of them has an unique uuid, and is stored in a
     separate file on native file system, the file name is its uuid.
@@ -152,7 +151,6 @@ class FileSystemManager(object):
 
                 # read data
                 data = json.load(open(fp, 'rb'))
-                modify_time = os.path.getmtime(fp)
 
                 # get type
                 node_type = data['type']
@@ -163,7 +161,7 @@ class FileSystemManager(object):
                 node = node_class(uuid_)
 
                 # init node
-                node.load(data, modify_time)
+                node.load(data)
 
                 # manage node
                 self._nodes[uuid_] = node
@@ -209,12 +207,12 @@ class FileSystemManager(object):
     def _new_event(self, action, *args):
         self.project.event_manager.process(FSEvent(action, *args))
 
-    def create_file(self, parent, filetype, name, data):
+    def create_file(self, parent, file_type, name, data):
         """Returns new file"""
         if parent == self._recycle:
             raise Exception(u'Can not create file in Recycle')
 
-        file_ = File(self._create_uuid(), filetype, name, data)
+        file_ = File(self._create_uuid(), file_type, name, data)
         assert file_.uuid not in self._nodes
 
         self._nodes[file_.uuid] = file_
@@ -233,16 +231,16 @@ class FileSystemManager(object):
 
     def save_file(self, uuid_, data=None):
         file_ = self._nodes.get(uuid_)
-
         old_data = None
+        
         if data is not None:
             old_data = file_.data
             file_.data = data
-
+            
         try:
             self._save(file_)
         except:
-            if old_data is not None:
+            if data is not None:
                 file_.data = old_data
             raise
 
@@ -344,7 +342,7 @@ class FileSystemManager(object):
         # Only folder
         # assert type(node) is Folder
 
-        # no imuutable
+        # not immutable
         if node.immutable:
             raise Exception("%s is immutable" % node)
 
@@ -371,7 +369,7 @@ class FileSystemManager(object):
     def copy(self, node, parent, strategy=FOLDER_CONFLICTION_STRATEGY_ABORT):
         """
         Args:
-            stratege: FOLDER_CONFLICTION_STRATEGY_*. what to do if a folder with the same name already exists?
+            strategy: FOLDER_CONFLICTION_STRATEGY_*. what to do if a folder with the same name already exists?
         """
         assert node != self._root
         assert node != self._recycle
@@ -422,8 +420,7 @@ class FileSystemManager(object):
 
                 if strategy == FOLDER_CONFLICTION_STRATEGY_RENAME:
                     # auto rename
-                    i = 0
-                    name = None
+                    i, name = 0, None                    
                     while 1:
                         name = '%s (%s)' % (node.name, i)
                         if not parent.get_sub_folder_by_name(name):
@@ -460,7 +457,7 @@ class FileSystemManager(object):
         return old_parent
 
     def delete(self, uuid_):
-        """"Delete" a FSNode.
+        """Delete a FSNode.
 
         Deleted nodes are marked as "deleted", native files will not be removed physically
         """
@@ -472,10 +469,10 @@ class FileSystemManager(object):
 
         p = node.parent
         try:
-            node.orginal_parent_uuid = p.uuid
+            node.original_parent_uuid = p.uuid
             self.move(node, self._recycle, FOLDER_CONFLICTION_STRATEGY_IGNORE)
         except:
-            node.orginal_parent_uuid = ''
+            node.original_parent_uuid = ''
             raise
 
         for n in self.walk(node, True):
@@ -500,7 +497,7 @@ class FileSystemManager(object):
 
         for n in self.walk(node, True):
             self._new_event(FSEvent.RESTORE, n)
-        node.orginal_parent_uuid = ''
+        node.original_parent_uuid = ''
 
     def destroy(self, uuid_):
         node = self.get_node_by_uuid(uuid_)
@@ -562,30 +559,25 @@ class FSNode(object):
     name = ''
     immutable = False
     parent = None
+    # _parent_uuid should only be used for loading data!
+    parent_uuid = None
 
-    # _parent_uuid should only be used for loading data
-    _parent_uuid = None
-    
     def __init__(self, uuid_):
         self.uuid = uuid_
-        self.create_time = self.modify_time = time.time()
-
-    @property
-    def parent_uuid(self):
-        return self._parent_uuid
+        self.create_time = self.modify_time = time.time()      
         
-    def load(self, data, modify_time):
+    def load(self, data):
         """Loads from native file
         
         Args:
             data: dict
         """
-        self._parent_uuid = data.get('parent', '')
-#         self.is_recycled = data.get('is_recycled', 0)
+        self.parent_uuid = data.get('parent', '')
+        # self.is_recycled = data.get('is_recycled', 0)
+        # typo, but keep it for compatibility
         self.original_parent_uuid = data.get('orginal_parent_uuid', '')
-        # self.modify_time = data.get('modify_time', time.time())
+        self.modify_time = data.get('modify_time', time.time())
         self.create_time = data.get('create_time', time.time())
-        self.modify_time = modify_time
         self.name = data.get('name', '')
         
         self._load(data)
@@ -610,7 +602,7 @@ class FSNode(object):
         """
         r = {'type': self.__class__.__name__,
              'name': self.name, 
-             # 'modify_time': self.modify_time,
+             'modify_time': self.modify_time, 
              'create_time': self.create_time}
         
         if self.parent:

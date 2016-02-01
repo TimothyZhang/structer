@@ -28,7 +28,7 @@ from structerui.util import ICON_FOLDER, ICON_FILTER, FRAME_ICON_SIZE
 from frame_xrc import xrcExplorerFrame
 from list_toolbar_xrc import xrcListToolbar
 from explorer_tree import ExplorerTree
-from explorer_list import ExplorerList
+from explorer_list import ExplorerList, LIST_MODE_ICON
 
 SAMPLE_DIR = 'samples'
 
@@ -134,6 +134,9 @@ class ExplorerFrame(xrcExplorerFrame):
         tb.SetToolNormalBitmap(tb.sort_by_time.GetId(), get_bitmap('icons/time.png', tbsize, self.project))
         tb.SetToolNormalBitmap(tb.sort_by_name.GetId(), get_bitmap('icons/name.png', tbsize, self.project))
         tb.SetToolNormalBitmap(tb.list_icon.GetId(), get_bitmap('icons/icon_view.png', tbsize, self.project))
+
+        if self._list.list_mode == LIST_MODE_ICON:
+            tb.ToggleTool(tb.list_icon.GetId(), True)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(tb, 0, wx.EXPAND)

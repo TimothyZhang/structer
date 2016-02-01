@@ -31,12 +31,14 @@ Only 1,2,3 might appear in ExplorerList
 import time
 import json
 import collections
+import subprocess
 
 from structer import const, fs_util
 from structer.exceptions import StructerException
 from structer.fs_manager import FOLDER_CONFLICTION_STRATEGY_RENAME, FSNode, Folder
 from structer.fs_manager import FOLDER_CONFLICTION_STRATEGY_MERGE
 from structer.fs_manager import FolderConflictionException
+from structerui import util
 
 from structerui.util import *
 
@@ -364,8 +366,30 @@ class FSNodeTool(object):
             submenu = wx.Menu()
             self.add_create_menu(submenu, nodes, menu)
             menu.AppendSubMenu(submenu, "&New")
-                                                                    
+
+        # explore to
+        self._add_menu_explore(menu, nodes)
+
         return menu
+
+    def _add_menu_explore(self, menu, nodes):
+        if len(nodes) == 1:
+            if util.is_mac():
+                label = u"Show in finder..."
+            else:
+                label = u"Explore to..."
+            item = menu.Append(wx.NewId(), label)
+            self._bind_menu(menu, self.explore_to, item.GetId(), nodes[0])
+            return 1
+
+        return 0
+
+    def explore_to(self, node):
+        path = self.project.fs_manager.get_real_path(node.uuid)
+        if util.is_mac():
+            subprocess.call(["open", "-R", path])
+        else:
+            subprocess.Popen(r'explorer /select,"%s"' % path)
     
     def add_create_menu(self, menu, nodes, event_menu):
         """todo: the name "menu" and "event_menu" should be more clarified"""

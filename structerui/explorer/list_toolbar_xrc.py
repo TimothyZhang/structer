@@ -123,25 +123,29 @@ class xrcListToolbar(wx.ToolBar):
 #!XRCED:begin-block:xrcListToolbar.OnTool_list_list
     def OnTool_list_list(self, evt):
         # Replace with event handler code
-        print "OnTool_list_list()"
+        from explorer_list import LIST_MODE_REPORT
+        self.list.set_list_mode(LIST_MODE_REPORT)
 #!XRCED:end-block:xrcListToolbar.OnTool_list_list        
 
 #!XRCED:begin-block:xrcListToolbar.OnUpdate_ui_list_list
     def OnUpdate_ui_list_list(self, evt):
         # Replace with event handler code
-        evt.Enable(False)
+        from explorer_list import get_supported_list_modes
+        evt.Enable(len(get_supported_list_modes())>0)
 #!XRCED:end-block:xrcListToolbar.OnUpdate_ui_list_list        
 
 #!XRCED:begin-block:xrcListToolbar.OnTool_list_icon
     def OnTool_list_icon(self, evt):
         # Replace with event handler code
-        print "OnTool_list_icon()"
+        from explorer_list import LIST_MODE_ICON
+        self.list.set_list_mode(LIST_MODE_ICON)
 #!XRCED:end-block:xrcListToolbar.OnTool_list_icon        
 
 #!XRCED:begin-block:xrcListToolbar.OnUpdate_ui_list_icon
     def OnUpdate_ui_list_icon(self, evt):
         # Replace with event handler code
-        evt.Enable(False)
+        from explorer_list import get_supported_list_modes
+        evt.Enable(len(get_supported_list_modes())>0)
 #!XRCED:end-block:xrcListToolbar.OnUpdate_ui_list_icon        
 
 

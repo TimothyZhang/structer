@@ -216,15 +216,14 @@ class Project(object):
             return
                 
         next_id = self._next_ids.get(clazz.name)
-        if next_id is None:            
-            next_id = at.min                
-            for obj2 in self.object_manager.iter_objects(clazz):
-                id2 = obj2.get_attr_value('id')
-                if id2 >= next_id:
-                    next_id = id2+1
-            self._next_ids[clazz.name] = next_id
-                
-        self._next_ids[clazz.name] += 1        
+        # if next_id is None:
+        next_id = max(next_id, at.min)
+        for obj2 in self.object_manager.iter_objects(clazz):
+            id2 = obj2.get_attr_value('id')
+            if id2 >= next_id:
+                next_id = id2+1
+
+        self._next_ids[clazz.name] = next_id + 1
         return next_id            
     
     def save_object(self, obj):

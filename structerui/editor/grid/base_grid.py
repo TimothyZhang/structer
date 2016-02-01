@@ -145,7 +145,7 @@ class TableBase(grid.PyGridTableBase):
 #             return attr_type.str(val, self._ctx.project)
 #         
 #         return val
-    
+
     def GetValue(self, row, col):
         at = self.get_attr_type(row, col) 
         val = self.get_attr_value(row, col)
@@ -226,7 +226,13 @@ class TableBase(grid.PyGridTableBase):
     # natively by the editor/renderer if they know how to convert.
     def GetTypeName(self, row, col):
         return self.get_cell_typename_by_attrtype(self.get_attr_type(row, col))
-    
+
+    def can_sort_by_col(self, col):
+        pass
+
+    def sort_by_col(self, col, ascending):
+        pass
+
     
 class GridBase(grid.Grid):
     def __init__(self, parent, table):
@@ -252,6 +258,8 @@ class GridBase(grid.Grid):
         # reset tip position if cell size/position changed
         self.Bind(wx.EVT_SET_FOCUS, self.__OnSetFocus)
         self.Bind(wx.EVT_KILL_FOCUS, self.__OnKillFocus)
+        # self.Bind(grid.EVT_GRID_LABEL_LEFT_CLICK, self.__OnGirdLabelLeftClicked)
+        self.Bind(grid.EVT_GRID_COL_SORT, self.__OnSortCol)
         
         self.Bind(wx.EVT_SIZE, self.__OnPositionTip)
         p = self
@@ -260,7 +268,8 @@ class GridBase(grid.Grid):
         p.Bind(wx.EVT_SIZE, self.__OnSize)
         p.Bind(wx.EVT_MOVE, self.__OnPositionTip)
         
-        self.Bind(grid.EVT_GRID_EDITOR_HIDDEN, self.__OnEditorHidden)                        
+        self.Bind(grid.EVT_GRID_EDITOR_HIDDEN, self.__OnEditorHidden)
+        self.UseNativeColHeader(True)
         
         # str_renderer = grid.GridCellAutoWrapStringRenderer
         str_renderer = grid.GridCellStringRenderer
@@ -440,6 +449,38 @@ class GridBase(grid.Grid):
         
     def __OnKillFocus(self, evt):
         self._hide_tip_window()        
+        evt.Skip()
+
+    # def __OnGirdLabelLeftClicked(self, evt):
+    #     if evt.GetRow() == -1:
+    #         col = evt.GetCol()
+    #         tbl = self.GetTable()
+    #         if tbl.can_sort_by_col(col):
+    #             tbl.sort_by_col(col)
+    #             self.Refresh()
+    #     evt.Skip()
+
+    def __OnSortCol(self, evt):
+        col = evt.GetCol()
+        sorting_col = self.GetSortingColumn()
+        sorting_asc = self.IsSortOrderAscending()
+        tbl = self.GetTable()
+
+        if tbl.can_sort_by_col(col):
+            # DO NOT sort while editing a cell!
+            if self.IsCellEditControlShown():
+                evt.Veto()
+                return
+
+            if col == sorting_col:
+                asc = not sorting_asc
+            else:
+                asc = True
+
+            tbl.sort_by_col(col, asc)
+            # self.SetSortingColumn(col, asc)
+            return
+
         evt.Skip()
     
     def __OnEnterWindow(self, evt):        

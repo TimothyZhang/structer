@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
-
-
-import os, json, uuid, time
+import os
+import json
+import uuid
+import time
 
 from structer import log
 from structer.event_manager import Event
@@ -26,27 +27,29 @@ from structer.event_manager import Event
 RECYCLE = 'Recycle'
 
 # Abort the action
-FOLDER_CONFLICTION_STRATEGY_ABORT   = 0
+FOLDER_CONFLICTION_STRATEGY_ABORT = 0
 # Choose an available name automatically
-FOLDER_CONFLICTION_STRATEGY_RENAME  = 1
+FOLDER_CONFLICTION_STRATEGY_RENAME = 1
 # Continue with duplicated name, that we will get 2 folders with the same name!
 # This is ONLY used while moving to Recycle
-FOLDER_CONFLICTION_STRATEGY_IGNORE  = 2
+FOLDER_CONFLICTION_STRATEGY_IGNORE = 2
 # Merge two directories
-FOLDER_CONFLICTION_STRATEGY_MERGE   = 3
+FOLDER_CONFLICTION_STRATEGY_MERGE = 3
 # Replace old folder
 FOLDER_CONFLICTION_STRATEGY_REPLACE = 4
+
 
 class FolderConflictionException(Exception):
     pass
 
-class FileSystemManager(object):  
+
+class FileSystemManager(object):
     """Simulates a virtual file system.
 
     (The main reason not using native file system is, subversion puts a ".svn" folder in each native folder, and it's
-    complicated to manage that correctly if we want to move/rename folders. Althoulgh Latest subversion client
+    complicated to manage that correctly if we want to move/rename folders. Although Latest subversion client
     fixed this problem by putting only one larger ".svn" at the root of working directory, we won't change this
-    design unless there're enough reasons)
+    design unless there are enough reasons)
 
     VFS contains 2 types of nodes: File and Folder. Each of them has an unique uuid, and is stored in a
     separate file on native file system, the file name is its uuid.
@@ -98,7 +101,8 @@ class FileSystemManager(object):
     @property
     def recycle(self):
         return self._recycle
-    
+
+    # noinspection PyMethodMayBeStatic
     def _create_uuid(self):
         return unicode(uuid.uuid4().hex)
 
@@ -106,7 +110,7 @@ class FileSystemManager(object):
         return self.walk(self._root, includes_deleted)
 
     def walk_parent_first(self, node, includes_deleted):
-        '''Iterates all nodes'''
+        """Iterates all nodes"""
         if node is self._recycle and not includes_deleted:
             return
 
@@ -120,7 +124,7 @@ class FileSystemManager(object):
     walk = walk_parent_first
 
     def load(self):
-        '''Returns True if it's a new FS, otherwise False'''
+        """Returns True if it's a new FS, otherwise False"""
         self._root = None
         is_new = False
 
@@ -130,11 +134,11 @@ class FileSystemManager(object):
             is_new = True
 
         # read all files in 256 sub folders
-        for dir in os.listdir(self._native_path):
-            if dir == '.svn':
+        for dir_ in os.listdir(self._native_path):
+            if dir_ == '.svn':
                 continue
 
-            dp = os.path.join(self._native_path, dir)
+            dp = os.path.join(self._native_path, dir_)
 
             if not os.path.isdir(dp):
                 continue
@@ -153,20 +157,20 @@ class FileSystemManager(object):
                 node_class = globals()[node_type]
 
                 # create node
-                uuid = fn   # fn is uuid
-                node = node_class(uuid)
+                uuid_ = fn   # fn is uuid
+                node = node_class(uuid_)
 
                 # init node
                 node.load(data)
 
                 # manage node
-                self._nodes[uuid] = node
+                self._nodes[uuid_] = node
 
         # fix parent/children of nodes
         for node in self._nodes.itervalues():
-            if node._parent_uuid:                
-                p = self.get_node_by_uuid(node._parent_uuid)
-                assert p, 'parent node of %s not found: %s' % (node.uuid, node._parent_uuid)
+            if node.parent_uuid:
+                p = self.get_node_by_uuid(node.parent_uuid)
+                assert p, 'parent node of %s not found: %s' % (node.uuid, node.parent_uuid)
                 p.add_child(node)
             else:
                 assert self._root is None, 'multiple roots: %s %s' % (self._root.uuid, node.uuid)
@@ -188,8 +192,8 @@ class FileSystemManager(object):
 
         return is_new
 
-    def get_node_by_uuid(self, uuid):
-        return self._nodes.get(uuid)
+    def get_node_by_uuid(self, uuid_):
+        return self._nodes.get(uuid_)
 
 #     def get_node_by_path(self, path):
 #         if path == '/':
@@ -203,12 +207,12 @@ class FileSystemManager(object):
     def _new_event(self, action, *args):
         self.project.event_manager.process(FSEvent(action, *args))
 
-    def create_file(self, parent, filetype, name, data):
-        '''Returns new file'''
+    def create_file(self, parent, file_type, name, data):
+        """Returns new file"""
         if parent == self._recycle:
             raise Exception(u'Can not create file in Recycle')
 
-        file_ = File(self._create_uuid(), filetype, name, data)
+        file_ = File(self._create_uuid(), file_type, name, data)
         assert file_.uuid not in self._nodes
 
         self._nodes[file_.uuid] = file_
@@ -225,20 +229,22 @@ class FileSystemManager(object):
         self._new_event(FSEvent.CREATE, file_)
         return file_
 
-    def save_file(self, uuid, data=None):
-        file = self._nodes.get(uuid)
+    def save_file(self, uuid_, data=None):
+        file_ = self._nodes.get(uuid_)
+        old_data = None
         
         if data is not None:
-            old_data = file.data
-            file.data = data
+            old_data = file_.data
+            file_.data = data
+            
         try:
-            self._save(file)
+            self._save(file_)
         except:
             if data is not None:
-                file.data = old_data
+                file_.data = old_data
             raise
 
-        self._new_event(FSEvent.MODIFY, file)
+        self._new_event(FSEvent.MODIFY, file_)
 
     def is_recycled(self, node_or_uuid):
         if isinstance(node_or_uuid, FSNode):
@@ -275,7 +281,7 @@ class FileSystemManager(object):
 #         return node == self._recycle
 
     def create_folder(self, parent, name, strategy=FOLDER_CONFLICTION_STRATEGY_ABORT):
-        '''Creates a new folder under given parent folder
+        """Creates a new folder under given parent folder
 
         Args:
             parent: parent folder
@@ -285,7 +291,7 @@ class FileSystemManager(object):
 
         Returns
             new folder
-        '''
+        """
 
         # not in Recycle
         if parent is self.recycle:
@@ -336,7 +342,7 @@ class FileSystemManager(object):
         # Only folder
         # assert type(node) is Folder
 
-        # no imuutable
+        # not immutable
         if node.immutable:
             raise Exception("%s is immutable" % node)
 
@@ -361,10 +367,10 @@ class FileSystemManager(object):
         return node
 
     def copy(self, node, parent, strategy=FOLDER_CONFLICTION_STRATEGY_ABORT):
-        '''
+        """
         Args:
-            stratege: FOLDER_CONFLICTION_STRATEGY_*. what to do if a folder with the same name already exists?
-        '''
+            strategy: FOLDER_CONFLICTION_STRATEGY_*. what to do if a folder with the same name already exists?
+        """
         assert node != self._root
         assert node != self._recycle
         assert parent != self._recycle
@@ -389,14 +395,14 @@ class FileSystemManager(object):
             raise Exception('invalid node type: %s' % type(node))
 
     def move(self, node, parent, strategy=FOLDER_CONFLICTION_STRATEGY_ABORT):
-        '''Moves a file/folder to another location
+        """Moves a file/folder to another location
 
         Args:
             node: file/folder to move
             parent: target location
             strategy: FOLDER_CONFLICTION_STRATEGY_*. what to do if a folder with the same name already exists?
 
-        '''
+        """
         assert not node.immutable
 
         if self.is_ancestor(node, parent):
@@ -414,7 +420,7 @@ class FileSystemManager(object):
 
                 if strategy == FOLDER_CONFLICTION_STRATEGY_RENAME:
                     # auto rename
-                    i = 0
+                    i, name = 0, None                    
                     while 1:
                         name = '%s (%s)' % (node.name, i)
                         if not parent.get_sub_folder_by_name(name):
@@ -463,10 +469,10 @@ class FileSystemManager(object):
 
         p = node.parent
         try:
-            node.orginal_parent_uuid = p.uuid
+            node.original_parent_uuid = p.uuid
             self.move(node, self._recycle, FOLDER_CONFLICTION_STRATEGY_IGNORE)
         except:
-            node.orginal_parent_uuid = ''
+            node.original_parent_uuid = ''
             raise
 
         for n in self.walk(node, True):
@@ -491,7 +497,7 @@ class FileSystemManager(object):
 
         for n in self.walk(node, True):
             self._new_event(FSEvent.RESTORE, n)
-        node.orginal_parent_uuid = ''
+        node.original_parent_uuid = ''
 
     def destroy(self, uuid_):
         node = self.get_node_by_uuid(uuid_)
@@ -549,26 +555,27 @@ class FSNode(object):
     uuid = ''        
     create_time = 0
     modify_time = 0
-    orginal_parent_uuid = ''
+    original_parent_uuid = ''
     name = ''
     immutable = False
     parent = None
+    # _parent_uuid should only be used for loading data!
+    parent_uuid = None
 
-    # _parent_uuid should only be used for loading data
-    
     def __init__(self, uuid_):
         self.uuid = uuid_
         self.create_time = self.modify_time = time.time()      
         
     def load(self, data):
-        '''Loads from native file
+        """Loads from native file
         
         Args:
             data: dict
-        '''
-        self._parent_uuid = data.get('parent', '')
-#         self.is_recycled = data.get('is_recycled', 0)
-        self.orginal_parent_uuid = data.get('orginal_parent_uuid', '')
+        """
+        self.parent_uuid = data.get('parent', '')
+        # self.is_recycled = data.get('is_recycled', 0)
+        # typo, but keep it for compatibility
+        self.original_parent_uuid = data.get('orginal_parent_uuid', '')
         self.modify_time = data.get('modify_time', time.time())
         self.create_time = data.get('create_time', time.time())
         self.name = data.get('name', '')
@@ -588,11 +595,11 @@ class FSNode(object):
     #     self.modify_time = time.time()
     
     def dump(self):
-        '''dump node to native file
+        """dump node to native file
         
         Returns:
             dict
-        '''
+        """
         r = {'type': self.__class__.__name__,
              'name': self.name, 
              'modify_time': self.modify_time, 
@@ -602,10 +609,10 @@ class FSNode(object):
             r['parent'] = self.parent.uuid
 #         if self.is_recycled:
 #             r['is_recycled'] = True
-        if self.orginal_parent_uuid:
-            r['orginal_parent_uuid'] = self.orginal_parent_uuid
+        if self.original_parent_uuid:
+            r['orginal_parent_uuid'] = self.original_parent_uuid
             
-        r.update( self._dump() )
+        r.update(self._dump())
         return r
 
     def __unicode__(self):
@@ -705,7 +712,7 @@ class FSEvent(Event):
     
     @property
     def original_parent(self):
-        '''Valid in FSEvent.DELETE'''
+        """Valid in FSEvent.DELETE"""
         return self._original_parent
 
     def get_keys(self):
@@ -718,6 +725,7 @@ class FSEvent(Event):
         return action,
         
 if __name__ == '__main__':
-    fm = FileSystemManager('../../test/data')
-    fm.load()
-    fm.dump()
+    # fm = FileSystemManager('../../test/data')
+    # fm.load()
+    # fm.dump()
+    pass

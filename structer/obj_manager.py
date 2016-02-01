@@ -157,6 +157,8 @@ class ObjectManager(object):
             
         Throws:
             KeyError: if clazz_or_name not exists.
+
+        :rtype: Object
         """        
         if clazz_or_name is None:
             for objects in self._obj_map.itervalues():

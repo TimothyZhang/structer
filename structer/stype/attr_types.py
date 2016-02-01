@@ -873,9 +873,9 @@ class ATStruct(AttrType):
 
     def get_attr_value(self, name, val, project):
         """Get the attribute value"""
-        #NOTE: DO NOT recurse, it would be slow, and returned data structer might be unexpected
-        #attr = self.get_attr(name)
-        #return attr.get_value(val[name], project)  
+        # NOTE: DO NOT recurse, it would be slow, and returned data structer might be unexpected
+        # attr = self.get_attr(name)
+        # return attr.get_value(val[name], project)
         r = val.get(name)
         # if r is None:
         #     attr = self.get_attr(name)

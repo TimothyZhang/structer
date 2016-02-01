@@ -25,7 +25,7 @@ from structerui.editor.context import FrameEditorContext
 class StructListTable(ListTable):
     def __init__(self, ctx):
         ListTable.__init__(self, ctx)
-    
+
     @property
     def atstruct(self):    
         return self.attr_type.element_type
@@ -53,14 +53,30 @@ class StructListTable(ListTable):
         attr = self.struct.get_attr_by_index(col)        
         return attr.name    
 
+    def can_sort_by_col(self, col):
+        return type(self.editor_context) is FrameEditorContext
+
+    def sort_by_col(self, col, ascending):
+        assert self.can_sort_by_col(col)
+
+        col_attr = self.struct.get_attr_by_index(col)
+        print 'sort by', col_attr.name, ascending
+
+        def cmp_(row1, row2):
+            v1 = self.atstruct.get_attr_value(col_attr.name, row1, self._ctx.project)
+            v2 = self.atstruct.get_attr_value(col_attr.name, row2, self._ctx.project)
+            return col_attr.type.compare(v1, v2)
+
+        self._ctx.attr_data.sort(cmp_, reverse=not ascending)
+
 
 class StructListGrid(ListGrid):
     def __init__(self, parent, editor_context):
-        ListGrid.__init__(self, parent, editor_context, StructListTable(editor_context))        
-    
+        ListGrid.__init__(self, parent, editor_context, StructListTable(editor_context))
+
     def is_editing_objects(self):
         return type(self.editor_context) is FrameEditorContext
-    
+
     def _cut(self):
         if self.is_editing_objects():
             wx.MessageBox("Operation not supported!")

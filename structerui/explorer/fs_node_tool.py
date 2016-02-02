@@ -38,7 +38,6 @@ from structer.exceptions import StructerException
 from structer.fs_manager import FOLDER_CONFLICTION_STRATEGY_RENAME, FSNode, Folder
 from structer.fs_manager import FOLDER_CONFLICTION_STRATEGY_MERGE
 from structer.fs_manager import FolderConflictionException
-from structerui import util
 from structerui.util import *
 
 CLIPBOARD_DATA_FORMAT = "__structer_fs_nodes_ajfdi1209dfsdf923jsdf1f4abz__"
@@ -373,7 +372,7 @@ class FSNodeTool(object):
 
     def _add_menu_explore(self, menu, nodes):
         if len(nodes) == 1:
-            if util.is_mac():
+            if is_mac():
                 label = u"Show in finder..."
             else:
                 label = u"Explore to..."
@@ -385,7 +384,7 @@ class FSNodeTool(object):
 
     def explore_to(self, node):
         path = self.project.fs_manager.get_real_path(node.uuid)
-        if util.is_mac():
+        if is_mac():
             subprocess.call(["open", "-R", path])
         else:
             subprocess.Popen(r'explorer /select,"%s"' % path)

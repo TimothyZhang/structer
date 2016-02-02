@@ -286,7 +286,11 @@ class ExplorerFrame(xrcExplorerFrame):
         def get_callback(plugin_):
             def callback(evt):
                 _ = evt
-                plugin_.execute(self.project)
+                try:
+                    plugin_.execute(self.project)
+                except Exception, e:
+                    log.error('PluginError: %s', e)
+                    wx.MessageBox('PluginError: %s' % e)
             return callback
 
         # add all        

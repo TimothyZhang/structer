@@ -188,7 +188,9 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
             history: 0:new entry, -1:prev 1:next
         """
         assert self.node_tool.is_container(fs_node)
-        
+        if self._fs_parent == fs_node:
+            return
+
         self._fs_parent = fs_node        
         self.refresh()
 
@@ -206,14 +208,21 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
 
         # print self._history
         # print self._history_index
+        self.explorer.set_path(fs_node)
+
+    def can_go_back(self):
+        return self._history_index > 0
+
+    def can_go_forward(self):
+        return self._history_index < len(self._history) - 1
 
     def history_prev(self):
-        if self._history_index > 0:
+        if self.can_go_back():
             self.set_parent(self._history[self._history_index - 1], -1)
             return True
 
     def history_next(self):
-        if self._history_index < len(self._history) - 1:
+        if self.can_go_forward():
             self.set_parent(self._history[self._history_index + 1], 1)
             return True
 
@@ -243,7 +252,7 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
         return r
 
     def refresh(self):
-        print '>>>refresh'
+        # print '>>>refresh'
         if self._fs_parent is None:
             self.SetItemCount(0)
             self.Refresh()

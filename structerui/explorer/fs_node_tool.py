@@ -38,8 +38,6 @@ from structer.exceptions import StructerException
 from structer.fs_manager import FOLDER_CONFLICTION_STRATEGY_RENAME, FSNode, Folder
 from structer.fs_manager import FOLDER_CONFLICTION_STRATEGY_MERGE
 from structer.fs_manager import FolderConflictionException
-from structerui import util
-
 from structerui.util import *
 
 CLIPBOARD_DATA_FORMAT = "__structer_fs_nodes_ajfdi1209dfsdf923jsdf1f4abz__"
@@ -987,12 +985,14 @@ class FSNodeTool(object):
 
     def show_references(self, nodes):
         sql = ' or '.join(["refby('%s')" % node.uuid for node in nodes])
-        node = SearchResult(self.project, sql, None, "References of %s" % self.get_name_of_object_nodes(nodes))
+        msg = 'Referenced by "%s"' % self.get_name_of_object_nodes(nodes)
+        node = SearchResult(self.project, sql, None, msg)
         self.explorer.set_path(node)
 
     def show_referents(self, nodes):
         sql = ' or '.join(["ref('%s')" % node.uuid for node in nodes])
-        node = SearchResult(self.project, sql, None, "Referents of %s" % self.get_name_of_object_nodes(nodes))
+        msg = 'References to "%s"' % self.get_name_of_object_nodes(nodes)
+        node = SearchResult(self.project, sql, None, msg)
         self.explorer.set_path(node)
 
     def get_name_of_object_nodes(self, nodes):
@@ -1004,3 +1004,12 @@ class FSNodeTool(object):
             return obj.name
 
         return '%s...' % obj.name
+
+    def get_node_path(self, node):
+        names = []
+        while node:
+            names.append(self.get_name(node))
+            node = node.parent
+
+        path = '/'.join(reversed(names))
+        return path or '/'

@@ -372,7 +372,7 @@ class FSNodeTool(object):
 
     def _add_menu_explore(self, menu, nodes):
         if len(nodes) == 1:
-            if util.is_mac():
+            if is_mac():
                 label = u"Show in finder..."
             else:
                 label = u"Explore to..."
@@ -384,7 +384,7 @@ class FSNodeTool(object):
 
     def explore_to(self, node):
         path = self.project.fs_manager.get_real_path(node.uuid)
-        if util.is_mac():
+        if is_mac():
             subprocess.call(["open", "-R", path])
         else:
             subprocess.Popen(r'explorer /select,"%s"' % path)

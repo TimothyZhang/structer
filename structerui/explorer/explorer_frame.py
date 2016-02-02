@@ -107,10 +107,15 @@ class ExplorerFrame(xrcExplorerFrame):
         # self.tool_bar.SetToolNormalBitmap(self.tool_create_folder.GetId(), get_bitmap(ICON_FOLDER, size, project))
         # self.tool_bar.SetToolNormalBitmap(self.tool_create_filter.GetId(), get_bitmap(ICON_FILTER, size, project))
 
-        self.tool_bar.Bind(wx.EVT_SIZE, self._on_toolbar_size_changed)
+        self.Bind(wx.EVT_SIZE, self._on_size_changed)
 
-    def _on_toolbar_size_changed(self, evt):
-        print '_on_toolbar_size_changed'
+    def _on_size_changed(self, evt):
+        print '>>>', evt.GetSize(), self.tool_bar.GetSize(), self.address_box.GetSize(), self.address_box.GetPosition()
+        tb_size = self.tool_bar.GetSize()
+        ab_size = self.address_box.GetSize()
+        ab_pos = self.address_box.GetPosition()
+        self.address_box.SetSize((tb_size[0] - ab_pos[0], ab_size[1]))
+        # evt.Veto()
 
     def _create_tree(self):
         self._tree_panel = scrolled.ScrolledPanel(self.main_panel, -1,

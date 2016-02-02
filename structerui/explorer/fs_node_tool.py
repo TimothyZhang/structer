@@ -38,6 +38,7 @@ from structer.exceptions import StructerException
 from structer.fs_manager import FOLDER_CONFLICTION_STRATEGY_RENAME, FSNode, Folder
 from structer.fs_manager import FOLDER_CONFLICTION_STRATEGY_MERGE
 from structer.fs_manager import FolderConflictionException
+from structerui import util
 from structerui.util import *
 
 CLIPBOARD_DATA_FORMAT = "__structer_fs_nodes_ajfdi1209dfsdf923jsdf1f4abz__"

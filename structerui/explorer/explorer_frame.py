@@ -110,7 +110,8 @@ class ExplorerFrame(xrcExplorerFrame):
         self.Bind(wx.EVT_SIZE, self._on_size_changed)
 
     def _on_size_changed(self, evt):
-        print '>>>', evt.GetSize(), self.tool_bar.GetSize(), self.address_box.GetSize(), self.address_box.GetPosition()
+
+        # adjust the width of address_box
         tb_size = self.tool_bar.GetSize()
         ab_size = self.address_box.GetSize()
         ab_pos = self.address_box.GetPosition()

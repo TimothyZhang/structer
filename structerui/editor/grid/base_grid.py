@@ -609,11 +609,21 @@ class GridBase(grid.Grid):
             wx.TheClipboard.Close()
         else:
             return None, None
-        
+
+        # get text from clipboard
         text = do.GetText()
-        data = [line.split('\t') for line in text.split('\n') if line]
-        if not data:
+        # each line represents a row
+        lines = text.split('\n')
+        # remove trailing empty lines
+        while lines and not lines[-1]:
+            lines.pop()
+
+        if not lines:
             return None, None
+
+        # split each line with "\t" (columns are separated by \t)
+        data = [line.split('\t') for line in lines]
+
         attr_type_names = ['Str'] * len(data[0])
         
         # guess types

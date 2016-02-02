@@ -207,13 +207,19 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
         # print self._history
         # print self._history_index
 
+    def can_go_back(self):
+        return self._history_index > 0
+
+    def can_go_forward(self):
+        return self._history_index < len(self._history) - 1
+
     def history_prev(self):
-        if self._history_index > 0:
+        if self.can_go_back():
             self.set_parent(self._history[self._history_index - 1], -1)
             return True
 
     def history_next(self):
-        if self._history_index < len(self._history) - 1:
+        if self.can_go_forward():
             self.set_parent(self._history[self._history_index + 1], 1)
             return True
 

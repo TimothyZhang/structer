@@ -1004,3 +1004,12 @@ class FSNodeTool(object):
             return obj.name
 
         return '%s...' % obj.name
+
+    def get_node_path(self, node):
+        names = []
+        while node:
+            names.append(self.get_name(node))
+            node = node.parent
+
+        path = '/'.join(reversed(names))
+        return path or '/'

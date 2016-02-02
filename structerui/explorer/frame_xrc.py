@@ -43,10 +43,11 @@ class xrcExplorerFrame(wx.Frame):
         self.tool_bar = xrc.XRCCTRL(self, "tool_bar")
         self.tool_open = self.GetToolBar().FindById(xrc.XRCID("tool_open"))
         self.tool_setting = self.GetToolBar().FindById(xrc.XRCID("tool_setting"))
-        self.tool_repair = self.GetToolBar().FindById(xrc.XRCID("tool_repair"))
         self.tool_export = self.GetToolBar().FindById(xrc.XRCID("tool_export"))
-        self.tool_create_folder = self.GetToolBar().FindById(xrc.XRCID("tool_create_folder"))
-        self.tool_create_filter = self.GetToolBar().FindById(xrc.XRCID("tool_create_filter"))
+        self.tool_up = self.GetToolBar().FindById(xrc.XRCID("tool_up"))
+        self.tool_back = self.GetToolBar().FindById(xrc.XRCID("tool_back"))
+        self.tool_forward = self.GetToolBar().FindById(xrc.XRCID("tool_forward"))
+        self.address_box = xrc.XRCCTRL(self, "address_box")
         self.status_bar = xrc.XRCCTRL(self, "status_bar")
         self.main_panel = xrc.XRCCTRL(self, "main_panel")
 
@@ -84,14 +85,18 @@ class xrcExplorerFrame(wx.Frame):
         self.Bind(wx.EVT_UPDATE_UI, self.OnUpdate_ui_tool_open, self.tool_open)
         self.Bind(wx.EVT_TOOL, self.OnTool_tool_setting, self.tool_setting)
         self.Bind(wx.EVT_UPDATE_UI, self.OnUpdate_ui_tool_setting, self.tool_setting)
-        self.Bind(wx.EVT_TOOL, self.OnTool_tool_repair, self.tool_repair)
-        self.Bind(wx.EVT_UPDATE_UI, self.OnUpdate_ui_tool_repair, self.tool_repair)
         self.Bind(wx.EVT_TOOL, self.OnTool_tool_export, self.tool_export)
         self.Bind(wx.EVT_UPDATE_UI, self.OnUpdate_ui_tool_export, self.tool_export)
-        self.Bind(wx.EVT_TOOL, self.OnTool_tool_create_folder, self.tool_create_folder)
-        self.Bind(wx.EVT_UPDATE_UI, self.OnUpdate_ui_tool_create_folder, self.tool_create_folder)
-        self.Bind(wx.EVT_TOOL, self.OnTool_tool_create_filter, self.tool_create_filter)
-        self.Bind(wx.EVT_UPDATE_UI, self.OnUpdate_ui_tool_create_filter, self.tool_create_filter)
+        self.Bind(wx.EVT_TOOL, self.OnTool_tool_up, self.tool_up)
+        self.Bind(wx.EVT_UPDATE_UI, self.OnUpdate_ui_tool_up, self.tool_up)
+        self.Bind(wx.EVT_TOOL, self.OnTool_tool_back, self.tool_back)
+        self.Bind(wx.EVT_UPDATE_UI, self.OnUpdate_ui_tool_back, self.tool_back)
+        self.Bind(wx.EVT_TOOL, self.OnTool_tool_forward, self.tool_forward)
+        self.Bind(wx.EVT_UPDATE_UI, self.OnUpdate_ui_tool_forward, self.tool_forward)
+        self.Bind(wx.EVT_COMBOBOX, self.OnCombobox_address_box, self.address_box)
+        self.Bind(wx.EVT_TEXT, self.OnText_address_box, self.address_box)
+        self.Bind(wx.EVT_TEXT_ENTER, self.OnText_enter_address_box, self.address_box)
+        self.Bind(wx.EVT_UPDATE_UI, self.OnUpdate_ui_address_box, self.address_box)
         self.Bind(wx.EVT_CLOSE, self.OnClose)
 
 #!XRCED:begin-block:xrcExplorerFrame.OnMenu_menu_open
@@ -328,17 +333,6 @@ class xrcExplorerFrame(wx.Frame):
         evt.Enable( bool(self.project and not self.is_type_editor) )
 #!XRCED:end-block:xrcExplorerFrame.OnUpdate_ui_tool_setting        
 
-#!XRCED:begin-block:xrcExplorerFrame.OnTool_tool_repair
-    def OnTool_tool_repair(self, evt):
-        self._repair()
-#!XRCED:end-block:xrcExplorerFrame.OnTool_tool_repair        
-
-#!XRCED:begin-block:xrcExplorerFrame.OnUpdate_ui_tool_repair
-    def OnUpdate_ui_tool_repair(self, evt):
-        # Replace with event handler code
-        evt.Enable(bool(self.project))
-#!XRCED:end-block:xrcExplorerFrame.OnUpdate_ui_tool_repair        
-
 #!XRCED:begin-block:xrcExplorerFrame.OnTool_tool_export
     def OnTool_tool_export(self, evt):
         # Replace with event handler code
@@ -352,29 +346,63 @@ class xrcExplorerFrame(wx.Frame):
         evt.Enable( self._can_export() )
 #!XRCED:end-block:xrcExplorerFrame.OnUpdate_ui_tool_export        
 
-#!XRCED:begin-block:xrcExplorerFrame.OnTool_tool_create_folder
-    def OnTool_tool_create_folder(self, evt):
+#!XRCED:begin-block:xrcExplorerFrame.OnTool_tool_up
+    def OnTool_tool_up(self, evt):
         # Replace with event handler code
-        self._list.node_tool.do_create_folder( self._list.fs_parent )
-#!XRCED:end-block:xrcExplorerFrame.OnTool_tool_create_folder        
+        self.go_up()
+#!XRCED:end-block:xrcExplorerFrame.OnTool_tool_up        
 
-#!XRCED:begin-block:xrcExplorerFrame.OnUpdate_ui_tool_create_folder
-    def OnUpdate_ui_tool_create_folder(self, evt):
+#!XRCED:begin-block:xrcExplorerFrame.OnUpdate_ui_tool_up
+    def OnUpdate_ui_tool_up(self, evt):
         # Replace with event handler code
-        self._on_updateui_evt_create(evt)
-#!XRCED:end-block:xrcExplorerFrame.OnUpdate_ui_tool_create_folder        
+        evt.Enable(self.can_go_up())
+#!XRCED:end-block:xrcExplorerFrame.OnUpdate_ui_tool_up        
 
-#!XRCED:begin-block:xrcExplorerFrame.OnTool_tool_create_filter
-    def OnTool_tool_create_filter(self, evt):
-        # Replace with event handler code
-        self._list.node_tool.do_create_filter( self._list.fs_parent )
-#!XRCED:end-block:xrcExplorerFrame.OnTool_tool_create_filter        
+#!XRCED:begin-block:xrcExplorerFrame.OnTool_tool_back
+    def OnTool_tool_back(self, evt):
+        self.list.history_prev()
+#!XRCED:end-block:xrcExplorerFrame.OnTool_tool_back        
 
-#!XRCED:begin-block:xrcExplorerFrame.OnUpdate_ui_tool_create_filter
-    def OnUpdate_ui_tool_create_filter(self, evt):
+#!XRCED:begin-block:xrcExplorerFrame.OnUpdate_ui_tool_back
+    def OnUpdate_ui_tool_back(self, evt):
+        evt.Enable(self.can_go_back())
+#!XRCED:end-block:xrcExplorerFrame.OnUpdate_ui_tool_back        
+
+#!XRCED:begin-block:xrcExplorerFrame.OnTool_tool_forward
+    def OnTool_tool_forward(self, evt):
+        self.list.history_next()
+#!XRCED:end-block:xrcExplorerFrame.OnTool_tool_forward        
+
+#!XRCED:begin-block:xrcExplorerFrame.OnUpdate_ui_tool_forward
+    def OnUpdate_ui_tool_forward(self, evt):
+        evt.Enable(self.can_go_forward())
+#!XRCED:end-block:xrcExplorerFrame.OnUpdate_ui_tool_forward        
+
+#!XRCED:begin-block:xrcExplorerFrame.OnCombobox_address_box
+    def OnCombobox_address_box(self, evt):
         # Replace with event handler code
-        self._on_updateui_evt_create(evt)
-#!XRCED:end-block:xrcExplorerFrame.OnUpdate_ui_tool_create_filter        
+        print "OnCombobox_address_box()"
+#!XRCED:end-block:xrcExplorerFrame.OnCombobox_address_box        
+
+#!XRCED:begin-block:xrcExplorerFrame.OnText_address_box
+    def OnText_address_box(self, evt):
+        # Replace with event handler code
+        # print "OnText_address_box()"
+        pass
+#!XRCED:end-block:xrcExplorerFrame.OnText_address_box        
+
+#!XRCED:begin-block:xrcExplorerFrame.OnText_enter_address_box
+    def OnText_enter_address_box(self, evt):
+        # Replace with event handler code
+        print "OnText_enter_address_box()"
+#!XRCED:end-block:xrcExplorerFrame.OnText_enter_address_box        
+
+#!XRCED:begin-block:xrcExplorerFrame.OnUpdate_ui_address_box
+    def OnUpdate_ui_address_box(self, evt):
+        # Replace with event handler code
+        # print "OnUpdate_ui_address_box()"
+        pass
+#!XRCED:end-block:xrcExplorerFrame.OnUpdate_ui_address_box        
 
 #!XRCED:begin-block:xrcExplorerFrame.OnClose
     def OnClose(self, evt):
@@ -570,14 +598,6 @@ def __init_resources():
           <assign_var>1</assign_var>
         </XRCED>
       </object>
-      <object class="tool" name="tool_repair">
-        <bitmap stock_id="wxART_MISSING_IMAGE"/>
-        <tooltip>open repair dialog</tooltip>
-        <XRCED>
-          <events>EVT_TOOL|EVT_UPDATE_UI</events>
-          <assign_var>1</assign_var>
-        </XRCED>
-      </object>
       <object class="tool" name="tool_export">
         <bitmap stock_id="wxART_MISSING_IMAGE"/>
         <tooltip>export project...</tooltip>
@@ -587,25 +607,55 @@ def __init_resources():
         </XRCED>
       </object>
       <object class="separator"/>
-      <object class="wxStaticText">
-        <label>Create: </label>
-      </object>
-      <object class="tool" name="tool_create_folder">
-        <bitmap stock_id="wxART_MISSING_IMAGE"/>
-        <tooltip>create a folder</tooltip>
+      <object class="tool" name="tool_up">
+        <bitmap stock_id="wxART_GO_UP"/>
+        <tooltip>Go Up</tooltip>
         <XRCED>
           <events>EVT_TOOL|EVT_UPDATE_UI</events>
           <assign_var>1</assign_var>
         </XRCED>
       </object>
-      <object class="tool" name="tool_create_filter">
-        <bitmap stock_id="wxART_MISSING_IMAGE"/>
-        <tooltip>create a filter</tooltip>
+      <object class="tool" name="tool_back">
+        <bitmap stock_id="wxART_GO_BACK"/>
+        <tooltip>Go Back</tooltip>
         <XRCED>
           <events>EVT_TOOL|EVT_UPDATE_UI</events>
           <assign_var>1</assign_var>
         </XRCED>
       </object>
+      <object class="tool" name="tool_forward">
+        <bitmap stock_id="wxART_GO_FORWARD"/>
+        <tooltip>Go Forward</tooltip>
+        <XRCED>
+          <events>EVT_TOOL|EVT_UPDATE_UI</events>
+          <assign_var>1</assign_var>
+        </XRCED>
+      </object>
+      <object class="separator" name="status_bar"/>
+      <object class="wxComboBox" name="address_box">
+        <size>300</size>
+        <content>
+          <item>/</item>
+        </content>
+        <font>
+          <size>15</size>
+          <style>normal</style>
+          <weight>normal</weight>
+          <underlined>0</underlined>
+          <family>swiss</family>
+          <face>Microsoft YaHei UI</face>
+          <encoding>WINDOWS-936</encoding>
+        </font>
+        <enabled>0</enabled>
+        <XRCED>
+          <events>EVT_COMBOBOX|EVT_TEXT|EVT_TEXT_ENTER|EVT_UPDATE_UI</events>
+          <assign_var>1</assign_var>
+        </XRCED>
+      </object>
+      
+      
+      
+      
       <bitmapsize>32,32</bitmapsize>
       <style>wxTB_FLAT</style>
       <XRCED>

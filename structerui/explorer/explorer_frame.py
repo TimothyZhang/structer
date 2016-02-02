@@ -22,8 +22,8 @@ import wx.lib.agw.aui as aui
 import wx.lib.scrolledpanel as scrolled
 
 from structerui import log, hotkey
-from structerui.util import get_bitmap, get_icon, get_clazz_bitmap, get_app_data_path 
-from structerui.util import ICON_FOLDER, ICON_FILTER, FRAME_ICON_SIZE
+from structerui.util import get_bitmap, get_icon, get_app_data_path
+from structerui.util import FRAME_ICON_SIZE
 
 from frame_xrc import xrcExplorerFrame
 from list_toolbar_xrc import xrcListToolbar
@@ -63,7 +63,7 @@ class ExplorerFrame(xrcExplorerFrame):
         self.SetIcon(icon)
         
         # Replace tool icons
-        self._update_tool_icons()
+        self._initialized_toolbar()
 
         # XRCed can't assign variable for wxMenu correctly        
         self.menu_windows = self.menu_close_all.GetMenu()
@@ -95,17 +95,22 @@ class ExplorerFrame(xrcExplorerFrame):
     def list(self):
         return self._list
 
-    def _update_tool_icons(self):
+    def _initialized_toolbar(self):
         project = self.project
         tbsize = self.tool_bar.GetToolBitmapSize()
         size = (tbsize.width, tbsize.height)
         self.tool_bar.SetToolNormalBitmap(self.tool_open.GetId(), get_bitmap('icons/open.png', size, project))
         self.tool_bar.SetToolNormalBitmap(self.tool_setting.GetId(), get_bitmap('icons/setting.png', size, project))
-        self.tool_bar.SetToolNormalBitmap(self.tool_repair.GetId(), get_bitmap('icons/repair.png', size, project))
+        # self.tool_bar.SetToolNormalBitmap(self.tool_repair.GetId(), get_bitmap('icons/repair.png', size, project))
         self.tool_bar.SetToolNormalBitmap(self.tool_export.GetId(), get_bitmap('icons/export.png', size, project))
 
-        self.tool_bar.SetToolNormalBitmap(self.tool_create_folder.GetId(), get_bitmap(ICON_FOLDER, size, project))
-        self.tool_bar.SetToolNormalBitmap(self.tool_create_filter.GetId(), get_bitmap(ICON_FILTER, size, project))
+        # self.tool_bar.SetToolNormalBitmap(self.tool_create_folder.GetId(), get_bitmap(ICON_FOLDER, size, project))
+        # self.tool_bar.SetToolNormalBitmap(self.tool_create_filter.GetId(), get_bitmap(ICON_FILTER, size, project))
+
+        self.tool_bar.Bind(wx.EVT_SIZE, self._on_toolbar_size_changed)
+
+    def _on_toolbar_size_changed(self, evt):
+        print '_on_toolbar_size_changed'
 
     def _create_tree(self):
         self._tree_panel = scrolled.ScrolledPanel(self.main_panel, -1,
@@ -188,19 +193,16 @@ class ExplorerFrame(xrcExplorerFrame):
         keystr = hotkey.build_keystr(evt)
         
         if hotkey.check(hotkey.EXPLORER_UP_LEVEL, keystr):
-            fs_node = self._list.fs_parent
-            if fs_node.parent:                
-                self.set_path(fs_node.parent)
-                self._list.single_select_node(fs_node)
-                return
+            self.go_up()
+            return
         
         if hotkey.check(hotkey.EXPLORER_HISTORY_PREV, keystr):
-            if self.list.history_prev():
-                return
+            self.go_back()
+            return
 
         if hotkey.check(hotkey.EXPLORER_HISTORY_NEXT, keystr):
-            if self.list.history_next():
-                return
+            self.go_forward()
+            return
 
         evt.Skip()
 
@@ -238,15 +240,16 @@ class ExplorerFrame(xrcExplorerFrame):
         for tid in self._create_obj_tool_ids:
             self.tool_bar.DeleteTool(tid)
             
-        tbsize = self.tool_bar.GetToolBitmapSize()
-        size = (tbsize.width, tbsize.height)
-        clazzes = project.type_manager.get_clazzes()
-        clazzes.sort(key=lambda x: x.name)
-        for clazz in clazzes:
-            tool = self.tool_bar.AddTool(wx.NewId(), get_clazz_bitmap(clazz, size, project), shortHelpString=clazz.name)
-            self._bind_tool_create(clazz, tool.GetId())
-            self._create_obj_tool_ids.append(tool.GetId())
-        self.tool_bar.Realize()            
+        # tbsize = self.tool_bar.GetToolBitmapSize()
+        # size = (tbsize.width, tbsize.height)
+        # clazzes = project.type_manager.get_clazzes()
+        # clazzes.sort(key=lambda x: x.name)
+        # for clazz in clazzes:
+        #     tool = self.tool_bar.AddTool(wx.NewId(), get_clazz_bitmap(clazz, size, project),
+        # shortHelpString=clazz.name)
+        #     self._bind_tool_create(clazz, tool.GetId())
+        #     self._create_obj_tool_ids.append(tool.GetId())
+        # self.tool_bar.Realize()
                 
         self.set_path(project.fs_manager.root)
         
@@ -323,6 +326,8 @@ class ExplorerFrame(xrcExplorerFrame):
         if file:
             self._list.single_select_node(fs_file)
             self._list.SetFocus()
+
+        self.address_box.SetValue(self.get_node_tool().get_node_path(fs_parent))
     
     def show_editor(self, objects):
         """create and show a new editor
@@ -628,3 +633,24 @@ class ExplorerFrame(xrcExplorerFrame):
         nodes = self.tree.get_selected_nodes()
         if nodes:
             self.tree.node_tool.do_search(nodes[0])        
+
+    def can_go_up(self):
+        return bool(self.list.fs_parent and self.list.fs_parent.parent)
+
+    def can_go_back(self):
+        return self.list.can_go_back()
+
+    def can_go_forward(self):
+        return self.list.can_go_forward()
+
+    def go_up(self):
+        fs_node = self._list.fs_parent
+        if fs_node.parent:
+            self.set_path(fs_node.parent)
+            self._list.single_select_node(fs_node)
+
+    def go_back(self):
+        return self.list.history_prev()
+
+    def go_forward(self):
+        return self.list.history_next()

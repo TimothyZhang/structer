@@ -20,20 +20,17 @@ import copy
 
 from structer import log
 from attr_types import AttrVerifyLogger, verify_list_unique_attrs
-from collections import Counter
 
-#from composite_types import Struct
-#from attr_types import ATStruct
 
 class Clazz(object):
-    '''Holds all the informations of the type of an object.
+    """Holds all the information of the type of an object.
     
     Attributes:
-        uique_attrs: list of str, attribute names. These attribute values must be unique among all instances.
+        unique_attrs: list of str, attribute names. These attribute values must be unique among all instances.
         name_attr: attribute name. This attribute value if used to be the display name of an object. default is "name"
         max_number: max number of objects of this Clazz. default is 0x7FFFFFFF        
         min_number: min number of objects of this Clazz. default is 0
-    '''
+    """
     def __init__(self, atstruct):
         self.__atstruct = atstruct
                 
@@ -51,9 +48,9 @@ class Clazz(object):
     def name(self):
         return self.__atstruct.struct.name
     
-    def verify(self, project, vlog = None):
-        if vlog==None:
-            vlog = AttrVerifyLogger('/Clazz/%s'%self.name)
+    def verify(self, project, vlog=None):
+        if vlog is None:
+            vlog = AttrVerifyLogger('/Clazz/%s' % self.name)
             
         objects = project.object_manager.get_objects(self)
         
@@ -71,12 +68,12 @@ class Clazz(object):
 
 class Object(object):
     def __init__(self, project, clazz, uuid, data=None):
-        '''clazz: type of this object
+        """clazz: type of this object
            data:  holds all attributes of this object, or None if it's a new object
-        '''
+        """
         self.__project = project
-        self.__clazz   = clazz
-        self.__uuid    = uuid
+        self.__clazz = clazz
+        self.__uuid = uuid
         
         # How many errors this object has? Should be refreshed when this object changes or any objects referenced
         # by this object changes 
@@ -87,7 +84,7 @@ class Object(object):
         else:             # load value
             # assert type(data) is dict
             self.__data = data
-            #self.raw_data = data            
+            # self.raw_data = data
         
     def has_error(self):
         return self.__error_count > 0
@@ -176,14 +173,14 @@ class Object(object):
         self._check_data()
         
         if prev != self.__error_count:
-            #todo: post an change event
+            # todo: post an change event
             pass               
     
     def has_attr(self, name):
         return self.atstruct.has_attr(name)
     
     def get_attr(self, name):
-        '''return Attr'''
+        """return Attr"""
         return self.atstruct.get_attr(name)
     
     def get_attr_value(self, name, default=None):
@@ -196,7 +193,7 @@ class Object(object):
         return self.get_attr_value(name)
     
     def set_attr_value(self, name, val):
-        #todo: need to call atstruct.set_attr_value ?
+        # todo: need to call atstruct.set_attr_value ?
         self.__data[name] = val
         
     def __setitem__(self, name, val):
@@ -214,13 +211,12 @@ class Object(object):
             log.info('fixed: %s', self.name) 
         
 #     def iter_attrs(self):
-#         '''yield [Attr, value]'''
+#         """yield [Attr, value]"""
 #         for attr in self.__clazz.iterate():
 #             yield attr, self.__data[attr.name]
 #             
 #     def get_value(self, name):
 #         return self.__data[name]
-    
-    
-if __name__=='__main__':
-    Object(None,None,'123',{})    
+
+if __name__ == '__main__':
+    Object(None, None, '123', {})

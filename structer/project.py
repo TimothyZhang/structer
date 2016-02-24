@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2014 Timothy Zhang(zt@live.cn).
 #
 # This file is part of Structer.
@@ -16,15 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
+# coding=utf-8
 
 import os
 import traceback
-import json
 
 import const
 from stype import editor_types
 from stype.type_manager import TypeManager
-from stype.attr_types import ATInt, ATUnion
+from stype.attr_types import ATInt
 
 from fs_manager import FileSystemManager
 import fs_util
@@ -42,7 +41,7 @@ class Project(object):
     Attributes:
         path: Path of project root.
         is_type_editor: bool. True if the project is used by type editor, load types from editor_types.py
-        auto_create_clazz_folder: automaticaly creates a folder for each clazz under root
+        auto_create_clazz_folder: automaticly creates a folder for each clazz under root
          
         type_manager: An instance of TypeManager, which holds all Clazz infos.
         fs_manager: An instance of FileSystemManager
@@ -67,20 +66,21 @@ class Project(object):
         # should after object_manager
         self.ref_manager = RefManager()        
         
-        # self._languages = ('en', )
+        # self._langauges = ('en', )
         self._default_language = 'en'
         self._translations = {}
         
         self.tags = set()
-
-        self._editor_project = None
+        
         self._next_ids = {}  # {clazz_name: next_id}
         self._has_error = False
         self._loaded = False
+        self._editor_project = None
     
     @property
     def name(self):
-        return os.path.split(self.path)[-1]
+        p = os.path.split(self.path)
+        return p[-1]
         
     def load(self):
         """ Load the project 
@@ -95,18 +95,19 @@ class Project(object):
             self.type_manager.load_editor_types()
                         
         else:
-            self._editor_project = editor_project = Project(os.path.join(self.path, const.PROJECT_FOLDER_TYPE), True)
-            editor_project.load()
+            self._editor_project = p = Project(os.path.join(self.path, const.PROJECT_FOLDER_TYPE), True)
+            p.load()
 
             # noinspection PyBroadException
             try:
-                self.type_manager.load_types(editor_project)
+                self.type_manager.load_types(p)
             except:
+                # todo log this error!
                 traceback.print_exc()
                 self._has_error = True
                                         
             # load setting
-            setting_objs = editor_project.object_manager.get_objects(editor_types.CLAZZ_NAME_SETTING)
+            setting_objs = p.object_manager.get_objects(editor_types.CLAZZ_NAME_SETTING)        
             if len(setting_objs) == 1:
                 setting_obj = setting_objs[0]                
                 self._translations = dict(setting_obj.get_attr_value('translations'))
@@ -128,11 +129,6 @@ class Project(object):
             for clazz in self.type_manager.get_clazzes():
                 if not self.fs_manager.root.get_sub_folder_by_name(clazz.name):                    
                     self.fs_manager.create_folder(self.fs_manager.root, clazz.name)
-
-        # Creates project file
-        if is_new and not self.is_type_editor:
-            proj = {'version': 2}
-            open(os.path.join(self.path, const.PROJECT_FILE), 'wb').write(json.dumps(proj))
                 
         return is_new
         
@@ -179,15 +175,12 @@ class Project(object):
         return self.get_object(fs_file.uuid, fs_util.get_object_clazz_name(fs_file))
 
     def create_object(self, folder, clazz, data=None):
-        """Creates a new object.
-        
-        Args:
-            folder: where the new object should be
-            clazz: type of new object
-            data: data of new object, NOT node!. default values will be used if it's None
-            
-        Returns:
-            Object
+        """
+        Creates a new object.
+        :param Folder folder: where the new object should be
+        :param Clazz clazz: type of new object
+        :param dict data: data of new object, NOT node!. default values will be used if it's None
+        :rtype: Object
         """
         
         # number limit      
@@ -202,11 +195,16 @@ class Project(object):
         # auto increase id if need
         next_id = self.next_object_id(clazz)
         if next_id is not None:
-            obj.set_attr_value('id', next_id)
-            self.save_object(obj)
+            attr_id = clazz.atstruct.get_attr('id')
+            if attr_id:
+                default = attr_id.type.get_default(self)
+                # only if id is the default value
+                if obj.get_attr_value('id') == default:
+                    obj.set_attr_value('id', next_id)
+                    self.save_object(obj)
         return obj
         # return self.object_manager.create_object(clazz, file_.uuid)
-        
+
     def next_object_id(self, clazz):
         """return next available id, or None if default value is Okay. """
         struct = clazz.atstruct.struct
@@ -218,15 +216,14 @@ class Project(object):
             return
                 
         next_id = self._next_ids.get(clazz.name)
-        if next_id is None:            
-            next_id = at.min                
-            for obj2 in self.object_manager.iter_objects(clazz):
-                id2 = obj2.get_attr_value('id')
-                if id2 >= next_id:
-                    next_id = id2+1
-            self._next_ids[clazz.name] = next_id
-                
-        self._next_ids[clazz.name] += 1        
+        # if next_id is None:
+        next_id = max(next_id, at.min)
+        for obj2 in self.object_manager.iter_objects(clazz):
+            id2 = obj2.get_attr_value('id')
+            if id2 >= next_id:
+                next_id = id2+1
+
+        self._next_ids[clazz.name] = next_id + 1
         return next_id            
     
     def save_object(self, obj):
@@ -255,6 +252,7 @@ class Project(object):
                             val[attr.name] = attr.type.get_default(project)
                     
             return val
+        
         self.fix_all(fixer)
         
     def fix_struct_reset(self, struct_name, attr_name):
@@ -274,8 +272,8 @@ class Project(object):
         from stype.attr_types import ATStruct
         struct_name = '%s@' % struct_name
 
-        # noinspection PyUnusedLocal
         def fixer(at, val, project):
+            _ = project
             if type(at) is ATStruct and (at.name == struct_name):                
                 if val.get(new_name) is None and old_name in val:
                     val[new_name] = val[old_name]
@@ -298,18 +296,8 @@ class Project(object):
             return val
         
         self.fix_all(fixer)
-
-    def fix_union_dict(self):
-        # noinspection PyUnusedLocal
-        def fixer(at, val, project):
-            if isinstance(at, ATUnion) and isinstance(val, list):
-                r = dict({'key': val[0]})
-                r[val[0]] = val[1]
-                return r
-            return val
-
-        self.fix_all(fixer)
                 
 if __name__ == '__main__':
-    p = Project("c:\\test", False)
-    p.load()
+    # p = Project("c:\\test", False)
+    # p.load()
+    pass

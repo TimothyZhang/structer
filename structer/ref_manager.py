@@ -16,9 +16,6 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
-
-
 class RefManager(object):
     """Manages referencs between objects.
     
@@ -34,54 +31,52 @@ class RefManager(object):
         self.__refby = {}
     
     def get_references(self, referent):
-        '''Gets all objects referenced by "referent"
+        """Gets all objects referenced by "referent"
         
         Args:
             referent: uuid
             
         Returns:
             set of uuids, which are referenced by "referent".
-        '''
+        """
         return self.__ref.get(referent, set())
     
     def get_referents(self, reference):
-        '''Gets all objects referenced to "reference"
+        """Gets all objects referenced to "reference"
         
         Args:
             referent: uuid
             
         Returns:
             set of uuids, which referenced to "refernece"
-        '''
+        """
         return self.__refby.get(reference, set())
     
     def update_references(self, referent, refs):
-        '''Updates references of an object.
+        """Updates references of an object.
         
         Should be called whenever an object changes: create, modify, or delete.        
-        Any existing references of referent will be breaked, and then new referneces will be inserted.
+        Any existing references of referent will be break, and then new references will be inserted.
         
-        Args:
-            referent: uuid of the object to be updated
-            refs:     list of uuids of the objects referenced by referent
+        :param referent: the object changed
+        :type referent: Object
+        :param refs: referenced by referent
+        :type refs: list[structer.stype.attr_types.Ref]
+        """
         
-        Returns:
-            None
-        '''
-        
-        # remove old references, if exists
-        if referent in self.__ref:
-            for ref in self.__ref[referent]:
-                self.__refby[ref].remove(referent)
-            del self.__ref[referent]        
+        # break old references, if exists
+        uuid = referent.uuid
+        if uuid in self.__ref:
+            for ref_uuid in self.__ref[uuid]:
+                self.__refby[ref_uuid].remove(uuid)
+            del self.__ref[uuid]
         
         # add new references, if any
         if refs:
-            for ref in refs:
-                if ref in self.__refby:
-                    self.__refby[ref].add( referent )
+            ref_uuids = [ref.uuid for ref in refs]
+            for ref_uuid in ref_uuids:
+                if ref_uuid in self.__refby:
+                    self.__refby[ref_uuid].add(uuid)
                 else:
-                    self.__refby[ref] = set([ referent ])
-            self.__ref[referent] = refs
-    
-        
+                    self.__refby[ref_uuid] = {uuid}
+            self.__ref[uuid] = ref_uuids

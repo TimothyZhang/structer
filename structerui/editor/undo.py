@@ -16,9 +16,9 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
 import wx
 from structer import log
+
 
 class UndoManager(object):
     def __init__(self):
@@ -53,7 +53,7 @@ class UndoManager(object):
                 self._history.pop()            
             # close then open
             elif type(action) is OpenDialogAction and type(last) is CloseDialogAction and \
-                action.row == last.row and action.col == last.col:
+                    action.row == last.row and action.col == last.col:
                 self._history.pop()
             elif type(action) is CloseULLDialogAction and type(last) is OpenULLDialogAction:
                 self._history.pop()
@@ -66,7 +66,7 @@ class UndoManager(object):
             self._history.append(action)
             
         self._index = len(self._history)-1
-        #print '   history: ', len(self._history), self._index
+        # print '   history: ', len(self._history), self._index
     
     def _reset(self):
         self._history = []
@@ -89,7 +89,7 @@ class UndoManager(object):
             act.undo(grid)
         except Exception, e:
             log.error(e, 'undo failed')
-            wx.MessageBox("Undo failed, reset history: %s\n"%e)
+            wx.MessageBox("Undo failed, reset history: %s\n" % e)
             self._reset()
         
         self._lock = False
@@ -107,7 +107,7 @@ class UndoManager(object):
             act.redo(grid)
         except Exception, e:
             log.error(e, 'redo failed')
-            wx.MessageBox("Redo failed, reset history: %s\n"%e)
+            wx.MessageBox("Redo failed, reset history: %s\n" % e)
             self._reset()
             
         self._lock = False
@@ -136,8 +136,8 @@ class MutateAction(Action):
         assert cur == cur2, str((self.row, self.col, cur, cur2, new))
         grid.GetTable().set_value(self.row, self.col, new)
         
-        grid.refresh_block( (self.row, self.col, self.row, self.col) )
-        grid.GoToCell( self.row, self.col )
+        grid.refresh_block((self.row, self.col, self.row, self.col))
+        grid.GoToCell(self.row, self.col)
         
     def redo(self, grid):
         self._set_value(grid, self.old, self.new)
@@ -150,17 +150,17 @@ class BatchMutateAction(Action):
         assert len(old[0]) > 0
         assert len(new[0]) > 0
         
-        #self.attr_type_names = attr_type_names
+        # self.attr_type_names = attr_type_names
         self.old = old
         self.new = new
         
         self.block = (row, col, row+len(old)-1, col+len(old[0])-1)        
         
     def undo(self, grid):
-        grid.batch_mutate( self.block, self.old )
+        grid.batch_mutate(self.block, self.old)
     
     def redo(self, grid):
-        grid.batch_mutate( self.block, self.new )
+        grid.batch_mutate(self.block, self.new)
 
 
 class OpenDialogAction(Action):
@@ -177,7 +177,7 @@ class OpenDialogAction(Action):
         # grid.GoToCell( self.row, self.col )
         
     def redo(self, grid):
-        grid.GoToCell( self.row, self.col )
+        grid.GoToCell(self.row, self.col)
         grid.EnableCellEditControl()
 
 
@@ -219,7 +219,7 @@ class ListInsertAction(Action):
         grid.delete(self.pos, len(self.data), False)
     
     def redo(self, grid):        
-        grid.insert_datas(self.attr_type_names, self.data, self.pos)
+        grid.insert_data(self.attr_type_names, self.data, self.pos)
 
 
 class ListDeleteAction(ListInsertAction):
@@ -228,4 +228,3 @@ class ListDeleteAction(ListInsertAction):
         
     def redo(self, grid):
         ListInsertAction.undo(self, grid)
-

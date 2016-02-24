@@ -64,18 +64,18 @@ class EditorFrame(wx.Frame):
         return title
     
     def OnKeyDown(self, evt):
-        keystr = hotkey.build_keystr(evt)
+        key_str = hotkey.build_keystr(evt)
         
-        if hotkey.check(hotkey.CLOSE_EDITOR_FRAME, keystr):
+        if hotkey.check(hotkey.CLOSE_EDITOR_FRAME, key_str):
             if not self.editor_panel.grid.IsCellEditControlEnabled():
                 self.Close()
                 return
             
-        if hotkey.check(hotkey.SAVE, keystr):
+        if hotkey.check(hotkey.SAVE, key_str):
             self.save()
             return
         
-        if hotkey.check(hotkey.SHOW_EXPLORER, keystr):
+        if hotkey.check(hotkey.SHOW_EXPLORER, key_str):
             self.editor_context.project.explorer.Raise()
             return
                 

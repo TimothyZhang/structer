@@ -16,18 +16,18 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
 import wx
 
 from structer.stype.attr_types import ATFile
 from structer.util import get_relative_path
 
-#wildcard = "Python source (*.py)|*.py|"     \
+# wildcard = "Python source (*.py)|*.py|"     \
 #           "Compiled Python (*.pyc)|*.pyc|" \
 #           "SPAM files (*.spam)|*.spam|"    \
 #           "Egg file (*.egg)|*.egg|"        \
 #           "All files (*.*)|*.*"
            
+
 class FileDialog(wx.FileDialog):
     def __init__(self, parent, editor_context):
         self.editor_context = editor_context
@@ -38,7 +38,7 @@ class FileDialog(wx.FileDialog):
         if not at.extensions:
             wildcard = "All files (*.*)|*.*"
         else:
-            tmp = ','.join(['*%s'%ext for ext in at.extensions])
+            tmp = ','.join(['*%s' % ext for ext in at.extensions])
             wildcard = "Files (%s)|%s" % (tmp, tmp)
         
         wx.FileDialog.__init__(self, 
@@ -47,11 +47,11 @@ class FileDialog(wx.FileDialog):
                                defaultDir=self.project.path, 
                                defaultFile="",
                                wildcard=wildcard,
-                               style=wx.OPEN | wx.FD_FILE_MUST_EXIST #wx.CHANGE_DIR
+                               style=wx.OPEN | wx.FD_FILE_MUST_EXIST  # wx.CHANGE_DIR
                                )
         self.SetPath(self.editor_context.attr_data)
-        #It's not working....
-        #self.Bind(wx.EVT_CLOSE, self._on_close)
+        # It's not working....
+        # self.Bind(wx.EVT_CLOSE, self._on_close)
 
     @property
     def project(self):

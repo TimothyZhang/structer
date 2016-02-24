@@ -16,73 +16,109 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
 import copy
 
 import wx
 
 from structer import fs_util
-from structer.fs_manager import FSEvent
+from structer.fs_manager import FSEvent, Folder
 
-from structerui import log, hotkey, util
+from structerui import hotkey, util
 
 from fs_node_tool import FSNodeTool
 
+LIST_MODE_ICON = 0
+LIST_MODE_REPORT = 1
+LIST_MODES = {LIST_MODE_ICON, LIST_MODE_REPORT}
+
+
 class ExplorerList(wx.ListCtrl, wx.DropTarget):
     def __init__(self, parent, explorer):
+        """
+        :type parent: wx.Panel
+        :type explorer: ExplorerFrame
+        """
         self._explorer = explorer
         self._node_tool = FSNodeTool(explorer, self)
-        self._name_to_image_id = {}
 
-        self._fs_parent = None      # Folder or Filter
+        self._name_to_image_id = {}
+        """:type: dict[str, int]"""
+
+        # current location of explorer (the address in address bar)
+        self._fs_parent = None
+        """:type: FsNode"""
+
+        """:type: FsNode"""
         self._fs_nodes = []
+        """:type: list[FsNode]"""
         self._history = []          # navigation history
-        self._history_index = -1;
+        """:type: list[FsNode]"""
+        self._history_index = -1
         # 'id', 'name', 'time'
         self._sort_by = 'name'
         self._ascending = True
-        
-        if util.is_mac():
-            style = wx.LC_REPORT | wx.BORDER_NONE | wx.LC_EDIT_LABELS | wx.LC_VIRTUAL
-        else: 
-            style = wx.LC_ICON | wx.BORDER_NONE | wx.LC_EDIT_LABELS | wx.LC_VIRTUAL
+        self._list_mode = None
 
-        #| wx.LC_SORT_ASCENDING#| wx.LC_NO_HEADER#| wx.LC_VRULES#| wx.LC_HRULES#| wx.LC_SINGLE_SEL
+        mode = get_default_list_mode()
+        style = get_list_style(mode)
+
+        # | wx.LC_SORT_ASCENDING#| wx.LC_NO_HEADER#| wx.LC_VRULES#| wx.LC_HRULES#| wx.LC_SINGLE_SEL
         wx.ListCtrl.__init__(self, parent, -1, style=style)
+        self.set_list_mode(mode)
+
         self._init_image_list()        
         self._init_list_columns()
         self._init_list_item_attrs()        
         self._bind_list_events()
-        
+
+        self._drop_selected = None
         self._init_drop_target()
         self.SetDropTarget(self)
-        
-    
+
+    @property
+    def list_mode(self):
+        return self._list_mode
+
+    def set_list_mode(self, mode):
+        assert mode in LIST_MODES
+        self._list_mode = mode
+        self.SetWindowStyle(get_list_style(mode))
+
+        if mode == LIST_MODE_REPORT:
+            self._reset_column_width()
+
+        self.Refresh()
+
     def _init_list_columns(self):
         self.InsertColumn(0, u"Name")
         self.InsertColumn(1, u"Type")
-        self.InsertColumn(2, u"Modified")
-        self.SetColumnWidth(0, 200)
-        self.SetColumnWidth(1, 100)
-        self.SetColumnWidth(2, 200)
-        
+        self.InsertColumn(2, u"Last Modified")
+        self.InsertColumn(3, u"UUID")
+
+    def _reset_column_width(self):
+        self.SetColumnWidth(1, wx.LIST_AUTOSIZE)
+        self.SetColumnWidth(2, wx.LIST_AUTOSIZE)
+        self.SetColumnWidth(3, wx.LIST_AUTOSIZE)
+
+        w = self.GetColumnWidth(1) + self.GetColumnWidth(2) + self.GetColumnWidth(3)
+        ww, _ = self.GetSize()
+        self.SetColumnWidth(0, ww - w)
         
     def _init_list_item_attrs(self):
         self.attr_normal = wx.ListItemAttr()
         
         self.attr_error = wx.ListItemAttr()
-        self.attr_error.SetBackgroundColour( wx.Colour(0xFF, 0x88, 0x88, 0xFF) )
-        #self.attr_error.SetTextColour( wx.Colour(0xFF, 0x88, 0x88, 0xFF) )
-    
-    
+        self.attr_error.SetBackgroundColour(wx.Colour(0xFF, 0x88, 0x88, 0xFF))
+        self.attr_error.SetTextColour(wx.Colour(0xFF, 0x88, 0x88, 0xFF))
+
     def _init_image_list(self):
         image_list, mapping = self.node_tool.create_image_list()
         self.SetImageList(image_list, wx.IMAGE_LIST_SMALL)
         
         if not util.is_mac():
-            image_list, mapping = self.node_tool.create_image_list(size=(64,64))
+            image_list, mapping = self.node_tool.create_image_list(size=(64, 64))
             self.SetImageList(image_list, wx.IMAGE_LIST_NORMAL)
-        #self.SetImageList(image_list, wx.IMAGE_LIST_NORMAL)
+        # self.SetImageList(image_list, wx.IMAGE_LIST_NORMAL)
         self._image_list = image_list
         self._name_to_image_id = mapping  
     
@@ -94,7 +130,7 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
         self.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self._on_item_right_clicked)        
         self.Bind(wx.EVT_RIGHT_DOWN, self._on_right_down)   
         
-        #self.Bind(wx.EVT_LIST_KEY_DOWN, self._on_key_down)
+        # self.Bind(wx.EVT_LIST_KEY_DOWN, self._on_key_down)
         self.Bind(wx.EVT_CHAR_HOOK, self._on_char_hook)
         self.Bind(wx.EVT_LEFT_DCLICK, self._on_left_dclick)
         
@@ -112,6 +148,10 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
     def node_tool(self):
         return self._node_tool
     
+    # @property
+    # def fs_parent(self):
+    #     return self._fs_parent
+
     @property
     def fs_parent(self):
         return self._fs_parent
@@ -141,14 +181,16 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
         self._init_image_list()
     
     def set_parent(self, fs_node, history=0):
-        '''Sets the parent node, whose children will be added to current list
+        """Sets the parent node, whose children will be added to current list
         
         Args:
             fs_node: Folder, or a filter
             history: 0:new entry, -1:prev 1:next
-        '''
+        """
         assert self.node_tool.is_container(fs_node)
-        
+        if self._fs_parent == fs_node:
+            return
+
         self._fs_parent = fs_node        
         self.refresh()
 
@@ -166,14 +208,21 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
 
         # print self._history
         # print self._history_index
+        self.explorer.set_path(fs_node)
+
+    def can_go_back(self):
+        return self._history_index > 0
+
+    def can_go_forward(self):
+        return self._history_index < len(self._history) - 1
 
     def history_prev(self):
-        if self._history_index > 0:
+        if self.can_go_back():
             self.set_parent(self._history[self._history_index - 1], -1)
             return True
 
     def history_next(self):
-        if self._history_index < len(self._history) - 1:
+        if self.can_go_forward():
             self.set_parent(self._history[self._history_index + 1], 1)
             return True
 
@@ -203,7 +252,7 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
         return r
 
     def refresh(self):
-        print '>>>refresh'
+        # print '>>>refresh'
         if self._fs_parent is None:
             self.SetItemCount(0)
             self.Refresh()
@@ -213,13 +262,13 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
         focused_item = self.GetFocusedItem()
         focused_node = self._fs_nodes[focused_item] if focused_item != -1 else None
 
-        #print 'item count:', len(self._fs_nodes) 
-        self._fs_nodes = copy.copy( self.node_tool.get_children(self._fs_parent) )
+        # print 'item count:', len(self._fs_nodes)
+        self._fs_nodes = copy.copy(self.node_tool.get_children(self._fs_parent))
 
         self._fs_nodes.sort(self._node_cmp)
 
         self.SetItemCount(len(self._fs_nodes))
-        #self.sort()
+        # self.sort()
         self.Refresh()       
         
         self.clear_selection()
@@ -233,15 +282,16 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
             
         if focused_node and self.GetItemCount() > 0:
             index = self.get_index_by_node(focused_node)
-            self.Focus(index)
+            if index >= 0:
+                self.Focus(index)
 
     def get_selected_nodes(self):
         nodes = []
         
-        for i in xrange( self.GetItemCount() ):
+        for i in xrange(self.GetItemCount()):
             list_item_state = self.GetItemState(i, wx.LIST_STATE_SELECTED)            
             if (list_item_state & wx.LIST_STATE_SELECTED) != 0:
-                nodes.append( self._fs_nodes[i] )
+                nodes.append(self._fs_nodes[i])
         
         return nodes
     
@@ -266,15 +316,15 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
         
     def single_select_node(self, fs_node):
         index = self.get_index_by_node(fs_node)
-        if index!=-1:
+        if index != -1:
             self.single_select(index)
         
     def select_all(self):
-        for i in xrange( self.GetItemCount() ):
+        for i in xrange(self.GetItemCount()):
             self.Select(i, True)
     
     def inverse_select(self):
-        for i in xrange( self.GetItemCount() ):
+        for i in xrange(self.GetItemCount()):
             list_item_state = self.GetItemState(i, wx.LIST_STATE_SELECTED)            
             if (list_item_state & wx.LIST_STATE_SELECTED) != 0:
                 self.Select(i, False)
@@ -297,19 +347,19 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
             self._sort_by = key
             self._ascending = ascending
             self.refresh()
-        
-    ################################################################################
+
     # ListCtrl "virtualness"
-    ################################################################################    
     def OnGetItemText(self, item, col):
-        #print 'OnGetItemText', item, col
+        # print 'OnGetItemText', item, col
         fs_node = self._fs_nodes[item]
-        if col==0:
+        if col == 0:
             return self.node_tool.get_name(fs_node)
-        elif col==1:
+        elif col == 1:
             return self.node_tool.get_type(fs_node)
-        elif col==2:
+        elif col == 2:
             return self.node_tool.get_modify_time(fs_node)
+        elif col == 3:
+            return fs_node.uuid
 
     def OnGetItemImage(self, item):
         fs_node = self._fs_nodes[item]
@@ -351,12 +401,14 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
             return
         
         evt.Skip()
-    
+
+    # noinspection PyMethodMayBeStatic
     def _on_item_selected(self, evt):
-        #print '_on_item_selected'
+        # print '_on_item_selected'
         evt.Skip()
     
     def _on_item_right_clicked(self, evt):
+        _ = evt
         print '_on_item_right_clicked'
         nodes = self.get_selected_nodes()
         menu = self.node_tool.get_menu(nodes)
@@ -368,9 +420,9 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
         self.SetFocus()
         
         x, y = evt.GetX(), evt.GetY()
-        item,_ = self.HitTest(wx.Point(x, y))
+        item, _ = self.HitTest(wx.Point(x, y))
         
-        if not 0<=item<=self.GetItemCount():
+        if not 0 <= item <= self.GetItemCount():
             nodes = [self._fs_parent]
             menu = self.node_tool.get_menu(nodes)
             if menu:
@@ -390,7 +442,7 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
         
         if hotkey.check(hotkey.EXPLORER_OPEN, keystr):        
             fs_nodes = self.get_selected_nodes()
-            if len(fs_nodes)==1:
+            if len(fs_nodes) == 1:
                 fs_nodes = fs_nodes[0]
             if self.node_tool.can_open(fs_nodes):
                 self.node_tool.open(fs_nodes)
@@ -406,17 +458,18 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
     
     def _on_left_dclick(self, evt):        
         x, y = evt.GetX(), evt.GetY()
-        item,_ = self.HitTest(wx.Point(x, y))
+        item, _ = self.HitTest(wx.Point(x, y))
         
-        if 0<=item<=self.GetItemCount():
-            node = self._fs_nodes[ item ]
-            if self.node_tool.can_open( node ):
-                self.node_tool.open( node )
+        if 0 <= item <= self.GetItemCount():
+            node = self._fs_nodes[item]
+            if self.node_tool.can_open(node):
+                self.node_tool.open(node)
             return
         
         evt.Skip()
     
     def _on_begin_drag(self, evt):
+        _ = evt
         nodes = self.get_selected_nodes()                
         self.node_tool.begin_drag(nodes, self)
         
@@ -447,13 +500,13 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
             return
         
         i = self.get_index_by_node(fs_node)
-        if i!=-1:
+        if i != -1:
             self.refresh()
             # self.RefreshItem(i)
             
     def _on_fs_move(self, evt):       
         fs_node = evt.fs_node
-        #original_parent = evt.original_parent
+        # original_parent = evt.original_parent
         
         # moved out
         if fs_node in self._fs_nodes:
@@ -466,7 +519,7 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
             return        
         
     def _on_fs_delete(self, evt):
-        #print 'list._on_fs_delete'
+        # print 'list._on_fs_delete'
         fs_node = evt.fs_node
         
         if fs_node == self._fs_parent:
@@ -479,7 +532,7 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
             self.refresh()
             return
             
-            #todo: try to select the same item
+            # todo: try to select the same item
           
     ################################################################################
     # DropTarget
@@ -495,38 +548,34 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
         self._drop_selected = -1
         
     # some virtual methods that track the progress of the drag
+    # noinspection PyMethodOverriding
     def OnEnter(self, x, y, d):
         return self.OnDragOver(x, y, d)
 
+    # noinspection PyMethodOverriding
     def OnLeave(self):
         if self._drop_selected != -1:
             self.Select(self._drop_selected, False)
 
+    # noinspection PyMethodOverriding
     def OnDrop(self, x, y):
-#         index, _ = self.HitTest(wx.Point(x, y))
-#         if 0<= index < self.GetItemCount():
-#             fs_node = self._fs_nodes[index]
-#             if not fs_node.is_folder():
-#                 return False
-#             
-#             #self.node_tool.can_paste_data(fs_node,)
-#                 
         return True
 
+    # noinspection PyMethodOverriding
     def OnDragOver(self, x, y, d):
         index, _ = self.HitTest(wx.Point(x, y))
         
         if index != self._drop_selected:
             self.Select(self._drop_selected, False)
             
-        if 0<= index < self.GetItemCount():            
+        if 0 <= index < self.GetItemCount():
             list_item_state = self.GetItemState(index, wx.LIST_STATE_SELECTED)            
             if (list_item_state & wx.LIST_STATE_SELECTED) == 0:
                 self._drop_selected = index
                 self.Select(index, True)
                 
             target = self._fs_nodes[index]            
-            if not target.is_folder():
+            if not isinstance(target, Folder):
                 return wx.DragNone
         else:
             target = self.fs_parent                        
@@ -548,12 +597,12 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
         if self.GetData():
             # convert it back to a list of lines and give it to the viewer            
             uuids, _ = self.node_tool.parse_clipboard_data(self.data)
-            #nodes = [self.project.fs_manager.get_node_by_uuid(uuid) for uuid in uuids]
+            # nodes = [self.project.fs_manager.get_node_by_uuid(uuid) for uuid in uuids]
             
             index, _ = self.HitTest(wx.Point(x, y))
             if 0 <= index < self.GetItemCount():
                 target = self._fs_nodes[index]
-                assert target.is_folder()
+                assert isinstance(target, Folder)
             else:
                 target = self.fs_parent 
                             
@@ -566,3 +615,28 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
         # with the original data (move, copy, etc.)  In this
         # case we just return the suggested value given to us.
         return d  
+
+
+def supports_list_mode(mode):
+    if mode == LIST_MODE_REPORT:
+        return True
+    elif mode == LIST_MODE_ICON:
+        return not util.is_mac()
+
+
+def get_list_style(mode):
+    if mode == LIST_MODE_REPORT:
+        return wx.LC_REPORT | wx.BORDER_NONE | wx.LC_EDIT_LABELS | wx.LC_VIRTUAL
+    elif mode == LIST_MODE_ICON:
+        return wx.LC_ICON | wx.BORDER_NONE | wx.LC_EDIT_LABELS | wx.LC_VIRTUAL
+
+
+def get_supported_list_modes():
+    return [m for m in LIST_MODES if supports_list_mode(m)]
+
+
+def get_default_list_mode():
+    if supports_list_mode(LIST_MODE_ICON):
+        return LIST_MODE_ICON
+
+    return LIST_MODE_REPORT

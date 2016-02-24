@@ -16,35 +16,34 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
-import os, platform
+import os
+import platform
 
 import wx
-
 from structer.util import get_absolute_path
-
 import log
 
 ICON_FOLDER = 'icons/folder.png'
 ICON_OBJECT = 'icons/object.png'
-ICON_FILTER =  'icons/filter.png'
-#ICON_TRASH_EMPTY = 'icons/trash_empty64.png'
-#ICON_TRASH_FULL = 'icons/trash_full64.png'
+ICON_FILTER = 'icons/filter.png'
 
 FRAME_ICON_SIZE = (16, 16)
 
-class __WXID(object):
+
+class __Wxid(object):
     def __init__(self):        
         self.__dict = {}
     
     def __getattr__(self, name):
+        # noinspection PyBroadException
         try:
             return self.__dict[name]
         except:            
             self.__dict[name] = new_id = wx.NewId()
             return new_id
         
-_bmp_cache ={}
+_bmp_cache = {}
+
 
 def get_image_path(filename, project):    
     # current
@@ -68,8 +67,9 @@ def get_image_path(filename, project):
     
     return None
 
+
 def get_bitmap(pathname, size, project):
-    '''
+    """
     Args:
         pathname: path of image
         size: (w,h), or None if use original image size
@@ -77,8 +77,7 @@ def get_bitmap(pathname, size, project):
         
     Returns:
         bitmap, or None
-    '''
-    #size = tuple(size)    
+    """
     path = get_image_path(pathname, project)
     if not path:
         log.warn('icon file not found: %s', pathname)
@@ -87,17 +86,18 @@ def get_bitmap(pathname, size, project):
     if path in _bmp_cache:
         return _bmp_cache[(path, size)]
     else:        
-        #http://trac.wxwidgets.org/ticket/15331
+        # http://trac.wxwidgets.org/ticket/15331
         prev = wx.Log.GetLogLevel()
         wx.Log.SetLogLevel(wx.LOG_Error)
-        img = wx.Image( path )
+        img = wx.Image(path)
         wx.Log.SetLogLevel(prev)
         
         if size:
             img = img.Scale(size[0], size[1], wx.IMAGE_QUALITY_HIGH)
         _bmp_cache[(path, size)] = img.ConvertToBitmap()
-    #print bmp_cache
+    # print bmp_cache
     return _bmp_cache[(path, size)]
+
 
 def get_icon(name, size, project):
     bmp = get_bitmap('icons/%s' % name, size, project)
@@ -106,23 +106,28 @@ def get_icon(name, size, project):
         icon.CopyFromBitmap(bmp)
         return icon
 
+
 def get_clazz_bitmap(clazz, size, project):
     bmp = get_bitmap(clazz.icon, size, project)
     if not bmp:
         bmp = get_bitmap('icons/object.png', size, project)
     return bmp
 
+
 def get_app_data_path():
     from os.path import expanduser
     user_home = expanduser("~")
     app_data_path = os.path.join(user_home, '.structer')
     if not os.path.exists(app_data_path):
+        # noinspection PyBroadException
         try:
             os.makedirs(app_data_path)
-        except: pass
+        except:
+            pass
     return app_data_path
 
-wxid = __WXID()
+wxid = __Wxid()
+
 
 def is_mac():
-    return len(platform.mac_ver()[0])>0
+    return len(platform.mac_ver()[0]) > 0

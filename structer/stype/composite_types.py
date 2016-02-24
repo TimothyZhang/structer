@@ -28,9 +28,9 @@ class Attr(object):
 
 class Enum(object):
     def __init__(self, name, items, export_names=False, convert_to_int=False):
-        ''' item: [[name(str), value(int), label(str)], ...] or [[name(str), value(int)], ...]'''
+        """ item: [[name(str), value(int), label(str)], ...] or [[name(str), value(int)], ...]"""
         self.name = name
-        assert len(items)>0, u'Enum %s has no item'%name
+        assert len(items) > 0, u'Enum %s has no item' % name
                 
         self.__names = [item[0] for item in items]
         
@@ -51,11 +51,12 @@ class Enum(object):
             l = n
         else:
             n, v, l = item
-            
+
         self.__name2values[n] = v
         self.__value2names[v] = n
-        self.__name2labels[n] = l
-        self.__label2names[l] = n
+        label = '%s(%s)' % (l, v)
+        self.__name2labels[n] = label
+        self.__label2names[label] = n
     
     @property
     def convert_to_int(self):
@@ -91,24 +92,21 @@ class Enum(object):
         return value
     
     def label_of(self, name):
-        l = self.__name2labels.get(name)
-        if not l:
-            l = u'Invalid: %s' % name
-        return l
+        label = self.__name2labels.get(name)
+        if label is None:
+            label = 'Invalid: %s' % name
+        return label
     
     def name_of_label(self, label):
-        n = self.__label2names.get(label)
-        if not n:
-            n = ''
-        return n
+        return self.__label2names.get(label, None)
     
     def get_name_by_index(self, index):
         return self.__names[index]
        
                 
 class Struct(object):
-    def __init__(self, name, attrs, str_template=u"", label=u'', exporter= u'', verifier=u''):
-        ''' attrs: [Attr, ...] '''
+    def __init__(self, name, attrs, str_template=u"", label=u'', exporter=u'', verifier=u''):
+        """ attrs: [Attr, ...] """
         self.name = name
         self.label = label if label else name
 
@@ -178,25 +176,19 @@ class Union(object):
         for atstruct, value in structs:
             assert atstruct.struct.name not in self.__structs_map
             self.__structs_map[atstruct.struct.name] = atstruct
-            enum_items.append( [atstruct.struct.name, value, atstruct.struct.label] )
+            enum_items.append([atstruct.struct.name, value, atstruct.struct.label])
             
         from attr_types import ATEnum
-        self.enum = Enum('%s_keys'%self.name, enum_items, export_names=self.export_names, convert_to_int=self.convert_to_int)
+        self.enum = Enum('%s_keys' % self.name, enum_items, export_names=self.export_names,
+                         convert_to_int=self.convert_to_int)
         self.__at_enum = ATEnum(self.enum) 
     
     @property
     def atenum(self):
         return self.__at_enum
-    
-    #@property
-    #def atstructs(self):
-        #return self.__structs
-    
+
     def get_atstruct(self, name):
         return self.__structs_map.get(name)
         
     def names(self):
         return self.__structs_map.keys()
-    
-    #def value_of(self, name):
-    #    return self.__at_enum.enum.value_of(name) 

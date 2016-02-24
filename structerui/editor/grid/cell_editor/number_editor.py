@@ -16,19 +16,10 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
-import string
-
-import wx
-
-from structer import log
-#from structerui.editor.dialog import EditorDialog
 from structerui import hotkey
-
 from str_editor import GridCellStrEditor
 
-'''
-'''
+
 class GridCellIntEditor(GridCellStrEditor):
     def __init__(self):        
         GridCellStrEditor.__init__(self)
@@ -56,20 +47,20 @@ class GridCellIntEditor(GridCellStrEditor):
             return None
             
         return ret
-    
-    
+
     def StartingKey(self, evt):
-        keystr = hotkey.build_keystr(evt)        
-        if hotkey.check(hotkey.INCREASE, keystr):            
+        key_str = hotkey.build_keystr(evt)
+        if hotkey.check(hotkey.INCREASE, key_str):
             val = self.get_value() + 1
             self._ctrl.SetValue(unicode(val))
             self._grid.DisableCellEditControl()
-        elif hotkey.check(hotkey.DECREASE, keystr):
+        elif hotkey.check(hotkey.DECREASE, key_str):
             val = self.get_value() - 1
             self._ctrl.SetValue(unicode(val))
             self._grid.DisableCellEditControl()
         
         GridCellStrEditor.StartingKey(self, evt)
+
 
 class GridCellFloatEditor(GridCellIntEditor):
     def __init__(self):
@@ -94,4 +85,3 @@ class GridCellFloatEditor(GridCellIntEditor):
             return None
             
         return float(ret)
-    

@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
-
-
 import os
 
 import wx
@@ -24,13 +22,15 @@ import wx.lib.agw.aui as aui
 import wx.lib.scrolledpanel as scrolled
 
 from structerui import log, hotkey
-from structerui.util import get_bitmap, get_icon, get_clazz_bitmap, get_app_data_path 
-from structerui.util import ICON_FOLDER, ICON_FILTER, FRAME_ICON_SIZE
+from structerui.util import get_bitmap, get_icon, get_app_data_path
+from structerui.util import FRAME_ICON_SIZE
 
 from frame_xrc import xrcExplorerFrame
 from list_toolbar_xrc import xrcListToolbar
 from explorer_tree import ExplorerTree
-from explorer_list import ExplorerList
+from explorer_list import ExplorerList, LIST_MODE_ICON
+
+SAMPLE_DIR = 'samples'
 
        
 class ExplorerFrame(xrcExplorerFrame):
@@ -39,7 +39,7 @@ class ExplorerFrame(xrcExplorerFrame):
     At most 2 instances of ExplorerFrame might exists, while only one is enabled  at the same time.  
     """
     
-    def __init__(self, parent, project = None):   
+    def __init__(self, parent, project=None):
         self._project = None            
         # [EditorFrame, ...]
         self._editor_frames = []   
@@ -59,20 +59,12 @@ class ExplorerFrame(xrcExplorerFrame):
         # icon
         icon = wx.EmptyIcon()
         icon_name = 'icons/setting.png' if (project and project.is_type_editor) else 'icons/table.png'
-        icon.CopyFromBitmap( get_bitmap(icon_name,(64,64), project) )
-        self.SetIcon( icon )
+        icon.CopyFromBitmap(get_bitmap(icon_name, (64, 64), project))
+        self.SetIcon(icon)
         
         # Replace tool icons
-        tbsize = self.tool_bar.GetToolBitmapSize()
-        size = (tbsize.width, tbsize.height)
-        self.tool_bar.SetToolNormalBitmap(self.tool_open.GetId(), get_bitmap('icons/open.png', size, project))
-        self.tool_bar.SetToolNormalBitmap(self.tool_setting.GetId(), get_bitmap('icons/setting.png', size, project))
-        self.tool_bar.SetToolNormalBitmap(self.tool_repair.GetId(), get_bitmap('icons/repair.png', size, project))
-        self.tool_bar.SetToolNormalBitmap(self.tool_export.GetId(), get_bitmap('icons/export.png', size, project))
-        
-        self.tool_bar.SetToolNormalBitmap(self.tool_create_folder.GetId(), get_bitmap(ICON_FOLDER, size, project))
-        self.tool_bar.SetToolNormalBitmap(self.tool_create_filter.GetId(), get_bitmap(ICON_FILTER, size, project))
-                
+        self._initialized_toolbar()
+
         # XRCed can't assign variable for wxMenu correctly        
         self.menu_windows = self.menu_close_all.GetMenu()
         self.menu_new = self.menu_new_dummy.GetMenu()
@@ -84,8 +76,8 @@ class ExplorerFrame(xrcExplorerFrame):
         self.SetMinSize((640, 480))        
         self._create_tree()
         self._create_list()
-        #self._create_status_view()
-        #self._create_log_view()
+        # self._create_status_view()
+        # self._create_log_view()
         self._layout()
         
         self.Bind(wx.EVT_CHAR_HOOK, self._on_char_hook)
@@ -98,10 +90,37 @@ class ExplorerFrame(xrcExplorerFrame):
     #     b = event.GetSkipped()
     #     print 'ProcessEvent:', event, a, b
     #     return a
-    
+
+    @property
+    def list(self):
+        return self._list
+
+    def _initialized_toolbar(self):
+        project = self.project
+        tbsize = self.tool_bar.GetToolBitmapSize()
+        size = (tbsize.width, tbsize.height)
+        self.tool_bar.SetToolNormalBitmap(self.tool_open.GetId(), get_bitmap('icons/open.png', size, project))
+        self.tool_bar.SetToolNormalBitmap(self.tool_setting.GetId(), get_bitmap('icons/setting.png', size, project))
+        # self.tool_bar.SetToolNormalBitmap(self.tool_repair.GetId(), get_bitmap('icons/repair.png', size, project))
+        self.tool_bar.SetToolNormalBitmap(self.tool_export.GetId(), get_bitmap('icons/export.png', size, project))
+
+        # self.tool_bar.SetToolNormalBitmap(self.tool_create_folder.GetId(), get_bitmap(ICON_FOLDER, size, project))
+        # self.tool_bar.SetToolNormalBitmap(self.tool_create_filter.GetId(), get_bitmap(ICON_FILTER, size, project))
+
+        self.Bind(wx.EVT_SIZE, self._on_size_changed)
+
+    def _on_size_changed(self, evt):
+
+        # adjust the width of address_box
+        tb_size = self.tool_bar.GetSize()
+        ab_size = self.address_box.GetSize()
+        ab_pos = self.address_box.GetPosition()
+        self.address_box.SetSize((tb_size[0] - ab_pos[0], ab_size[1]))
+        # evt.Veto()
+
     def _create_tree(self):
         self._tree_panel = scrolled.ScrolledPanel(self.main_panel, -1,
-                                 style = wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER, name="TreePanel" )
+                                                  style=wx.TAB_TRAVERSAL | wx.SUNKEN_BORDER, name="TreePanel")
         
         self._tree = ExplorerTree(self._tree_panel, self)  
               
@@ -114,8 +133,8 @@ class ExplorerFrame(xrcExplorerFrame):
         self._tree_panel.SetInitialSize()        
     
     def _create_list(self):        
-        self._list_panel = scrolled.ScrolledPanel(self.main_panel, -1,                                                   
-                                 style = wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER, name="ListPanel" )
+        self._list_panel = scrolled.ScrolledPanel(self.main_panel, -1,
+                                                  style=wx.TAB_TRAVERSAL | wx.SUNKEN_BORDER, name="ListPanel")
         
         self._list = ExplorerList(self._list_panel, self)
 
@@ -126,6 +145,9 @@ class ExplorerFrame(xrcExplorerFrame):
         tb.SetToolNormalBitmap(tb.sort_by_time.GetId(), get_bitmap('icons/time.png', tbsize, self.project))
         tb.SetToolNormalBitmap(tb.sort_by_name.GetId(), get_bitmap('icons/name.png', tbsize, self.project))
         tb.SetToolNormalBitmap(tb.list_icon.GetId(), get_bitmap('icons/icon_view.png', tbsize, self.project))
+
+        if self._list.list_mode == LIST_MODE_ICON:
+            tb.ToggleTool(tb.list_icon.GetId(), True)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(tb, 0, wx.EXPAND)
@@ -141,7 +163,7 @@ class ExplorerFrame(xrcExplorerFrame):
     
     def _create_log_view(self):
         self._log = wx.TextCtrl(self.main_panel, -1,
-                              style=wx.TE_MULTILINE | wx.TE_READONLY | wx.HSCROLL)        
+                                style=wx.TE_MULTILINE | wx.TE_READONLY | wx.HSCROLL)
         wx.Log_SetActiveTarget(wx.LogTextCtrl(self._log))        
         pass
     
@@ -150,51 +172,46 @@ class ExplorerFrame(xrcExplorerFrame):
         self._aui_manager.SetManagedWindow(self.main_panel)
                 
         # Use the aui manager to set up everything
-        ALLOW_AUI_FLOATING = False
+        allow_aui_floating = False
         
 #         self.SetToolBar(None)        
 #         self._aui_manager.AddPane(self.tool_bar, aui.AuiPaneInfo().
 #                       Name("Toolbar").Caption("Toolbar").
-#                       ToolbarPane().Top().Floatable(ALLOW_AUI_FLOATING).
+#                       ToolbarPane().Top().Floatable(allow_aui_floating).
 #                       LeftDockable(False).RightDockable(False))        
 
         self._aui_manager.AddPane(self._tree_panel,
-                         aui.AuiPaneInfo().
-                         Left().Layer(2).BestSize((240, -1)).
-                         MinSize((160, -1)).
-                         Floatable(ALLOW_AUI_FLOATING).FloatingSize((240, 700)).
-                         Caption(u"Object Explorer").
-                         CloseButton(False).
-                         Name("ResourceTree"))
+                                  aui.AuiPaneInfo().
+                                  Left().Layer(2).BestSize((240, -1)).
+                                  MinSize((160, -1)).
+                                  Floatable(allow_aui_floating).FloatingSize((240, 700)).
+                                  Caption(u"Object Explorer").
+                                  CloseButton(False).
+                                  Name("ResourceTree"))
         self._aui_manager.AddPane(self._list_panel, aui.AuiPaneInfo().CenterPane().Name("FileList"))
 #         self._aui_manager.AddPane(self._log,
 #                          aui.AuiPaneInfo().
 #                          Bottom().BestSize((-1, 60)).
 #                          MinSize((-1, 60)).Name("Log").Caption("Log") )
-        #self._aui_cfgs[DEFAULT_PERSPECTIVE] = self._aui_manager.SavePerspective()
+        # self._aui_cfgs[DEFAULT_PERSPECTIVE] = self._aui_manager.SavePerspective()
         self._aui_manager.Update()
-        #self._aui_manager.SetFlags(self._aui_manager.GetFlags() ^ aui.AUI_MGR_TRANSPARENT_DRAG)
+        # self._aui_manager.SetFlags(self._aui_manager.GetFlags() ^ aui.AUI_MGR_TRANSPARENT_DRAG)
         pass
     
     def _on_char_hook(self, evt):
         keystr = hotkey.build_keystr(evt)
         
         if hotkey.check(hotkey.EXPLORER_UP_LEVEL, keystr):
-            fs_node = self._list.fs_parent
-            if fs_node.parent:                
-                self.set_path(fs_node.parent)
-                self._list.single_select_node(fs_node)
-                return
+            self.go_up()
+            return
         
         if hotkey.check(hotkey.EXPLORER_HISTORY_PREV, keystr):
-            print 'prev'
-            if self.list.history_prev():
-                return
+            self.go_back()
+            return
 
         if hotkey.check(hotkey.EXPLORER_HISTORY_NEXT, keystr):
-            print 'next'
-            if self.list.history_next():
-                return
+            self.go_forward()
+            return
 
         evt.Skip()
 
@@ -212,7 +229,7 @@ class ExplorerFrame(xrcExplorerFrame):
     
     @property
     def is_type_editor(self):
-        return bool( self._project and self._project.is_type_editor )
+        return bool(self._project and self._project.is_type_editor)
     
     def update_project(self, project): 
         # Less elegant but more convenience than ExplorerFrame.get_frame(project)        
@@ -232,28 +249,30 @@ class ExplorerFrame(xrcExplorerFrame):
         for tid in self._create_obj_tool_ids:
             self.tool_bar.DeleteTool(tid)
             
-        tbsize = self.tool_bar.GetToolBitmapSize()
-        size = (tbsize.width, tbsize.height)
-        clazzes = project.type_manager.get_clazzes()
-        clazzes.sort(key=lambda x: x.name)
-        for clazz in clazzes:
-            tool = self.tool_bar.AddTool(wx.NewId(), get_clazz_bitmap(clazz, size, project), shortHelpString=clazz.name)
-            self._bind_tool_create(clazz, tool.GetId())
-            self._create_obj_tool_ids.append( tool.GetId() )
-        self.tool_bar.Realize()            
+        # tbsize = self.tool_bar.GetToolBitmapSize()
+        # size = (tbsize.width, tbsize.height)
+        # clazzes = project.type_manager.get_clazzes()
+        # clazzes.sort(key=lambda x: x.name)
+        # for clazz in clazzes:
+        #     tool = self.tool_bar.AddTool(wx.NewId(), get_clazz_bitmap(clazz, size, project),
+        # shortHelpString=clazz.name)
+        #     self._bind_tool_create(clazz, tool.GetId())
+        #     self._create_obj_tool_ids.append(tool.GetId())
+        # self.tool_bar.Realize()
                 
         self.set_path(project.fs_manager.root)
         
         # Update frame icon
         icon = get_icon('table.png', FRAME_ICON_SIZE, project)
         if icon:
-            self.SetIcon( icon )
+            self.SetIcon(icon)
             
         self.init_plugins()
     
     def init_plugins(self):
         # Remove current plugins
         while 1:
+            # noinspection PyBroadException
             try:
                 item = self.menu_plugins.FindItemByPosition(0)                
                 self.menu_plugins.Remove(item.GetId())
@@ -263,17 +282,22 @@ class ExplorerFrame(xrcExplorerFrame):
         from structerui.plugin_manager import PluginManager
         pm = PluginManager()      
         pm.load_plugins()      
-        
+
+        def get_callback(plugin_):
+            def callback(evt):
+                _ = evt
+                try:
+                    plugin_.execute(self.project)
+                except Exception, e:
+                    log.error('PluginError: %s', e)
+                    wx.MessageBox('PluginError: %s' % e)
+            return callback
+
         # add all        
         for plugin in pm.iter_plugins():            
             mi = wx.MenuItem(self.menu_plugins, wx.NewId(), plugin.label)
-            def get_callback(plugin_):
-                def callback(evt):
-                    plugin_.execute(self.project)
-                return callback
             self.menu_plugins.Bind(wx.EVT_MENU, get_callback(plugin), mi)
-            self.menu_plugins.AppendItem( mi )
-        
+            self.menu_plugins.AppendItem(mi)
 
     def update_menu_new(self):
         while self.menu_new.GetMenuItemCount():
@@ -283,53 +307,58 @@ class ExplorerFrame(xrcExplorerFrame):
 
     def _bind_tool_create(self, clazz, id_):    
         def func(evt):
+            _ = evt
             self._list.node_tool.do_create_object(self._list.fs_parent, clazz)
-        self.tool_bar.Bind(wx.EVT_TOOL, func, id = id_)
-        self.tool_bar.Bind(wx.EVT_UPDATE_UI, self._on_updateui_evt_create, id = id_)
+        self.tool_bar.Bind(wx.EVT_TOOL, func, id=id_)
+        self.tool_bar.Bind(wx.EVT_UPDATE_UI, self._on_updateui_evt_create, id=id_)
     
     def _on_updateui_evt_create(self, evt):        
-        #self.on_update_ui(evt, "create")            
-        evt.Enable(bool(self.project and self._list.fs_parent and self._list.node_tool.can_create_object([self._list.fs_parent])))
+        # self.on_update_ui(evt, "create")
+        evt.Enable(bool(self.project and self._list.fs_parent and
+                        self._list.node_tool.can_create_object([self._list.fs_parent])))
     
     def set_status_msg(self, msg):
         self.status_bar.SetStatusText(msg)
     
     def set_path(self, fs_node):
-        '''Set current path to show
+        """Set current path to show
         
         Args:
             fs_node: Folder, or a filter
-        '''
+        """
         if self.list.node_tool.is_container(fs_node):
-            fs_folder = fs_node
+            fs_parent = fs_node
             fs_file = None
         else:
-            fs_folder = fs_node.parent
+            fs_parent = fs_node.parent
             fs_file = fs_node
         
-        self._tree.set_path(fs_folder)
-        self._list.set_parent(fs_folder)
+        self._tree.set_path(fs_parent)
+        self._list.set_parent(fs_parent)
         
         if file:
             self._list.single_select_node(fs_file)
             self._list.SetFocus()
+
+        self.address_box.SetValue(self.get_node_tool().get_node_path(fs_parent))
     
     def show_editor(self, objects):
-        '''create and show a new editor
+        """create and show a new editor
         
         Args:
             objects: an Object, or a list of Objects.
                 If it's an object, a Struct editor will be used
                 If it's a list of object, even with only 1 object, a StructList editor will be used 
-        '''
+        """
         org = objects
         if type(objects) is not list:
             objects = [org]
             
         # order by id, by default
         if objects and objects[0].struct.has_attr('id'):
-            objects.sort(key=lambda x:x.id)
+            objects.sort(key=lambda x: x.id)
 
+        read_only = False
         while 1:
             # Is there any editor frames already editing (some of) objects
             editors = self._find_editors(objects, True)            
@@ -338,15 +367,15 @@ class ExplorerFrame(xrcExplorerFrame):
             # some of the objects are alread open
             if editors:
                 # if only 1 objects is requested, just show that editor
-                if len(objects)==1:
+                if len(objects) == 1:
                     editors[0].Raise()
                     return
                 
                 # prompt use to choose: close, read only or cancel
-                import wx.lib.agw.genericmessagedialog as GMD
-                dlg = GMD.GenericMessageDialog(self, "%s objects(s) are already opened, you may close those editors, or open as read only mode."%len(editors),
-                                           "Oh~",
-                                           wx.YES_NO|wx.CANCEL|wx.ICON_QUESTION)
+                import wx.lib.agw.genericmessagedialog as gmd
+                msg = "%s objects(s) are already opened, you may close those editors, or open as read only mode." %\
+                      len(editors),
+                dlg = gmd.GenericMessageDialog(self, msg, "Oh~", wx.YES_NO | wx.CANCEL | wx.ICON_QUESTION)
                 dlg.SetYesNoCancelLabels('Close', '&Read Only', '&Cancel')            
                 ret = dlg.ShowModal()            
                 if ret == wx.ID_YES:
@@ -365,21 +394,19 @@ class ExplorerFrame(xrcExplorerFrame):
         ctx = FrameEditorContext(self.project, org, read_only)
         f = EditorFrame(self, ctx)        
         
-        self.add_editor( f )
-        
-            
+        self.add_editor(f)
         f.Show()
         f.Raise()
         
     def _find_editors(self, objects, editable_only):
-        '''
+        """
         Args:
             objects: list of Objects
             editable_only: Bool. only return editors which are editable
             
         Returns:
             list of EditorFrames
-        '''
+        """
         
         # Is there any editor frames already editing (some of) objects
         editors = []
@@ -391,15 +418,16 @@ class ExplorerFrame(xrcExplorerFrame):
         return editors
     
     def add_editor(self, editor):
-        self._editor_frames.append( editor )
+        self._editor_frames.append(editor)
         
         def on_menu(evt):
+            _ = evt
             editor.Raise()
         
         self._editor_to_menuid[editor] = id_ = wx.NewId()                    
         mi = wx.MenuItem(self.menu_windows, id_, editor.GetTitle())        
         self.menu_windows.Bind(wx.EVT_MENU, on_menu, mi)
-        self.menu_windows.AppendItem( mi )
+        self.menu_windows.AppendItem(mi)
         
     def remove_editor(self, editor):
         self._editor_frames.remove(editor)        
@@ -407,28 +435,28 @@ class ExplorerFrame(xrcExplorerFrame):
         id_ = self._editor_to_menuid.pop(editor)
         self.menu_windows.Delete(id_)        
         
-    def _get_editor_by_object(self, object):
-        '''Gets the EditorFrame which is editor object, if it exists
+    def _get_editor_by_object(self, object_):
+        """Gets the EditorFrame which is editor object, if it exists
         
         Args:
             object: instance of Object
-        '''
+        """
         
         for ef in self._editor_frames:
-            if ef.editor_context.contains_object(object) and not ef.editor_context.read_only:
+            if ef.editor_context.contains_object(object_) and not ef.editor_context.read_only:
                 return ef
     
     def _open(self):        
-        ''' open or create a project '''
+        """ open or create a project """
         # read recent projects
         app_data_path = get_app_data_path()
         recent_file = os.path.join(app_data_path, 'recent_projects')
+        # noinspection PyBroadException
         try:
             recent_projects = open(recent_file).read().split('\n')
         except:
             recent_projects = []
-                
-        SAMPLE_DIR = 'samples'
+
         sample_projects = [os.path.join(SAMPLE_DIR, f) for f in os.listdir(SAMPLE_DIR)]
 
         # prompt 
@@ -441,8 +469,8 @@ class ExplorerFrame(xrcExplorerFrame):
             # prompt and create if not exists
             if not os.path.exists(path):
                 dlg = wx.MessageDialog(self, 'Folder not exists, create now?',
-                               'Warning',                               
-                               wx.YES_NO | wx.ICON_QUESTION)
+                                       'Warning',
+                                       wx.YES_NO | wx.ICON_QUESTION)
                                 
                 if dlg.ShowModal() == wx.ID_NO:
                     return
@@ -465,16 +493,18 @@ class ExplorerFrame(xrcExplorerFrame):
 #             else:
             
             # save recent files
-            try:   
+            # noinspection PyBroadException
+            try:
                 recent_projects.remove(path)
-            except: pass            
+            except:
+                pass
             recent_projects.insert(0, path)
             open(recent_file, 'w').write('\n'.join(recent_projects))
                 
         dlg.Destroy()
         
     def _setting(self): 
-        ''' open a new ExplorerFrame to edit types and settings '''       
+        """ open a new ExplorerFrame to edit types and settings """
         if not self.close_all_editors():
             return
                 
@@ -482,8 +512,8 @@ class ExplorerFrame(xrcExplorerFrame):
         
         p = self.project.get_editor_project()
         frame = ExplorerFrame(self, p)        
-        frame.SetTitle( "%s - Setting" % self.GetTitle())
-        #frame.SetModal(True)
+        frame.SetTitle("%s - Setting" % self.GetTitle())
+        # frame.SetModal(True)
         frame.Show() 
     
     def _can_export(self):
@@ -496,26 +526,26 @@ class ExplorerFrame(xrcExplorerFrame):
 
         wildcard = 'Zip archive (*.zip)|*.zip'
         dlg = wx.FileDialog(self, message="Choose export location",
-                            #defaultDir=self.project.path,
-                            #defaultFile="",
-                            wildcard=wildcard ,
-                            style=wx.SAVE|wx.FD_OVERWRITE_PROMPT
-                           )
+                            # defaultDir=self.project.path,
+                            # defaultFile="",
+                            wildcard=wildcard,
+                            style=wx.SAVE | wx.FD_OVERWRITE_PROMPT)
         if wx.ID_CANCEL == dlg.ShowModal():
             dlg.Destroy()
             return False
 
         path = dlg.GetPath()
         dlg.Destroy()
-            
+
+        zf = None
         try:
             from zipfile import ZipFile
             zf = ZipFile(path, 'w')
 
-            from structer.exporter import JsCodeExporter
+            from structer.exporter import DefaultObjectExporter
             # from structer.exporter.type_exporter import JsTypeExporter
 
-            for exporter_class in (JsCodeExporter, ):
+            for exporter_class in (DefaultObjectExporter, ):
                 e = exporter_class(self.project)
                 e.export()
                 for name, data in e.get_files().iteritems():
@@ -531,7 +561,7 @@ class ExplorerFrame(xrcExplorerFrame):
         return True
     
     def reload_project(self):
-        ''' completely reload project '''
+        """ completely reload project """
         if not self.close_all_editors():
             return
         
@@ -567,13 +597,14 @@ class ExplorerFrame(xrcExplorerFrame):
             return ctrl.node_tool
     
     def on_menu(self, evt, action_name):
+        _ = evt
         nt = self.get_node_tool()
         ctrl = self.get_focused_ctrl()
         
         if ctrl and nt:
             try:
                 mth = getattr(nt, 'do_%s' % action_name)                    
-                mth( ctrl.get_selected_nodes() )            
+                mth(ctrl.get_selected_nodes())
             except Exception, e:
                 log.alert(e, 'Failed to %s', action_name)
     
@@ -584,15 +615,16 @@ class ExplorerFrame(xrcExplorerFrame):
         ctrl = self.get_focused_ctrl()
         
         if ctrl and nt:
+            # noinspection PyBroadException
             try:
                 mth = getattr(nt, 'can_%s' % action_name)                    
-                enable = mth( ctrl.get_selected_nodes() )
+                enable = mth(ctrl.get_selected_nodes())
             except AttributeError:
                 pass
-            except Exception, e:
-                #todo: if need print, print only time
+            except Exception:
+                # todo: if need print, print only time
                 pass
-        evt.Enable( enable )
+        evt.Enable(enable)
         
     def _repair(self):
         # Replace with event handler code
@@ -602,7 +634,8 @@ class ExplorerFrame(xrcExplorerFrame):
         from repair_dialog_xrc import xrcRepairDialog, get_resources
         import wx.py
         dlg = xrcRepairDialog(self)        
-        shell = wx.py.shell.Shell(dlg.repair_panel, -1, introText='Try to start with\n>>> project.object_manager.iter_all_objects()\n')
+        shell = wx.py.shell.Shell(dlg.repair_panel, -1,
+                                  introText='Try to start with\n>>> project.object_manager.iter_all_objects()\n')
         get_resources().AttachUnknownControl("shell_ctrl", shell)
         shell.interp.locals['project'] = self.project
         
@@ -613,3 +646,24 @@ class ExplorerFrame(xrcExplorerFrame):
         nodes = self.tree.get_selected_nodes()
         if nodes:
             self.tree.node_tool.do_search(nodes[0])        
+
+    def can_go_up(self):
+        return bool(self.list.fs_parent and self.list.fs_parent.parent)
+
+    def can_go_back(self):
+        return self.list.can_go_back()
+
+    def can_go_forward(self):
+        return self.list.can_go_forward()
+
+    def go_up(self):
+        fs_node = self._list.fs_parent
+        if fs_node.parent:
+            self.set_path(fs_node.parent)
+            self._list.single_select_node(fs_node)
+
+    def go_back(self):
+        return self.list.history_prev()
+
+    def go_forward(self):
+        return self.list.history_next()

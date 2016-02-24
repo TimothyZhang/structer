@@ -16,18 +16,15 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
 import wx
 
 from structer.log import *
-    
+
+
 def alert(*args, **kwargs):        
     record = error(*args, **kwargs)
     
     msg = record.format()
     if record.exception:
         msg += '\n%s' % record.exception
-    wx.MessageBox( msg )
-
-
-    
+    wx.MessageBox(msg)

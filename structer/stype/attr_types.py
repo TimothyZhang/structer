@@ -144,7 +144,6 @@ class AttrVerifyLogger(object):
             obj = project.object_manager.get_object(self._uuid)
             if obj:
                 from structer import fs_util
-
                 fs_path = fs_util.get_object_path(project, obj)
 
         for e in self._errors:
@@ -394,7 +393,7 @@ class ATFolder(AttrType):
 
 
 # class ATI18N(AttrType):
-# '''value: {language_code: text}'''
+# """value: {language_code: text}"""
 #     def __init__(self, minlen=0, maxlen=0x7FFFFFFF):
 #         assert 0 <= minlen <= maxlen
 #         self._minlen = minlen
@@ -550,7 +549,7 @@ class ATList(AttrType):
 
 
 # class ATDict(AttrType):
-#     '''value: dict'''
+#     """value: dict"""
 #     def __init__(self, element_type, unique=False, minlen=0, maxlen=0x7FFFFFFF, unique_attrs=[]):
 #         self.element_type = element_type
 #         self._unique = unique            # whether value is unique
@@ -585,7 +584,7 @@ class ATList(AttrType):
 
 
 class ATRef(AttrType):
-    '''value: uuid or None'''
+    """value: uuid or None"""
 
     def __init__(self, class_name, nullable=False, **kwargs):
         AttrType.__init__(self, '%s*' % class_name, **kwargs)
@@ -769,7 +768,8 @@ class ATUnion(AttrType):
         return val[val['key']]
 
     def _verify(self, val, project, recurse=True, vlog=None):
-        if not isinstance(val, dict) or 'key' not in val or val['key'] not in val or not isinstance(val[val['key']], dict):
+        if not isinstance(val, dict) or 'key' not in val or val['key'] not in val or not isinstance(val[val['key']],
+                                                                                                    dict):
             vlog.error("invalid data structure for %s: %s", self.name, val)
             return
 
@@ -841,7 +841,7 @@ class ATUnion(AttrType):
 
 
 class ATStruct(AttrType):
-    '''value: {attrname: attrvalue}'''
+    """value: {attrname: attrvalue}"""
 
     def __init__(self, struct, str_template=None, **kwargs):
         """
@@ -852,30 +852,30 @@ class ATStruct(AttrType):
         """
         AttrType.__init__(self, '%s@' % struct.name, **kwargs)
 
-        self.__strut = struct
+        self.__struct = struct
         self._str_template = string.Template(str_template) if str_template else None
 
     @property
     def str_template(self):
         if self._str_template:
             return self._str_template
-        return self.__strut.str_template
+        return self.__struct.str_template
 
     @property
     def struct(self):
-        return self.__strut
+        return self.__struct
 
     def has_attr(self, name):
-        return self.__strut.has_attr(name)
+        return self.__struct.has_attr(name)
 
     def get_attr(self, name):
-        return self.__strut.get_attr_by_name(name)
+        return self.__struct.get_attr_by_name(name)
 
     def get_attr_value(self, name, val, project):
-        '''Get the attribute value'''
-        #NOTE: DO NOT recurse, it would be slow, and returned data structer might be unexpected
-        #attr = self.get_attr(name)
-        #return attr.get_value(val[name], project)  
+        """Get the attribute value"""
+        # NOTE: DO NOT recurse, it would be slow, and returned data structer might be unexpected
+        # attr = self.get_attr(name)
+        # return attr.get_value(val[name], project)
         r = val.get(name)
         # if r is None:
         #     attr = self.get_attr(name)
@@ -906,8 +906,8 @@ class ATStruct(AttrType):
                     vlog.pop()
 
     def compare(self, v1, v2):
-        '''ATStruct values are dicts. But some of them might contains redundant key/values if any Struct attr was removed.         
-        '''
+        """ATStruct values are dicts. But some of them might contains redundant key/values if any Struct attr was removed.         
+        """
         if type(v1) is not dict:
             return -1
         if type(v2) is not dict:

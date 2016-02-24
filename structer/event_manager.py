@@ -15,24 +15,24 @@
 # You should have received a copy of the GNU General Public License
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
-
-
 # coding=utf-8
 import copy
 
 from structer import log
 
+
 class Event(object):
     def get_keys(self):
-        '''Get all event keys to notify
+        """Get all event keys to notify
         
         Returns:
             a list of keys, each key is a tuple.
-        '''
+        """
         raise NotImplemented
-    
-    def create_sliced_keys(self, full_key):
-        '''Create keys by sub slicing full_key.
+
+    @staticmethod
+    def create_sliced_keys(full_key):
+        """Create keys by sub slicing full_key.
         
         eg: 
             create_sliced_keys( (1,2,3) ) returns [(1,2,3), (1,2), (1,)]
@@ -42,8 +42,8 @@ class Event(object):
         
         Returns:
             a list of tuple, whose elements are subsets of full_key
-        '''
-        return [tuple(full_key[:i]) for i in xrange(len(full_key),0,-1)]
+        """
+        return [tuple(full_key[:i]) for i in xrange(len(full_key), 0, -1)]
     
 #     @classmethod 
 #     def _create_register_key(self, cls, list_):        
@@ -51,7 +51,8 @@ class Event(object):
 #         list_.insert(0, cls.EVT_PREFIX)
 #         list_ = filter(lambda x:x != None, list_)
 #         return tuple(list_)
-        
+
+
 class EventManager(object):
     def __init__(self):
         self._listeners = {}
@@ -77,7 +78,4 @@ class EventManager(object):
     def unregister(self, event_key, call_back):
         call_backs = self._listeners.get(event_key)
         if call_backs:
-            call_backs.discard(call_back)           
-
-
-
+            call_backs.discard(call_back)

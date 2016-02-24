@@ -25,7 +25,7 @@ from undo import UndoManager
 
 
 class EditorContext(object):
-    """Holds all the informations need by an editor.
+    """Holds all the information need by an editor.
     
     Attributes:
         attr_type: instance of AttrType
@@ -160,7 +160,7 @@ class FrameEditorContext(EditorContext):
             return cmp_(self.attr_data, self._objects.raw_data) != 0
     
     def save(self):
-        """Save all datas
+        """Save all data
 
         Returns:
             True/False
@@ -236,4 +236,4 @@ class FrameEditorContext(EditorContext):
         if self.is_batch():
             return 'Batch Edit %s' % self.clazz.name
         else:
-            return self._objects.name
+            return '%s - %s' % (self._objects.name, self._objects.uuid)

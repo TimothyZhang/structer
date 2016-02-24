@@ -16,23 +16,20 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
 import wx
-import wx.grid as grid
 
-from structer.stype.attr_types import *
-
-from base_grid import GridBase
 from list_grid import ListGrid, ListTable
 from structerui.editor.context import FrameEditorContext
+
 
 class StructListTable(ListTable):
     def __init__(self, ctx):
         ListTable.__init__(self, ctx)
-    
+
     @property
     def atstruct(self):    
         return self.attr_type.element_type
+
     @property
     def struct(self):
         return self.atstruct.struct
@@ -56,14 +53,30 @@ class StructListTable(ListTable):
         attr = self.struct.get_attr_by_index(col)        
         return attr.name    
 
+    def can_sort_by_col(self, col):
+        return type(self.editor_context) is FrameEditorContext
+
+    def sort_by_col(self, col, ascending):
+        assert self.can_sort_by_col(col)
+
+        col_attr = self.struct.get_attr_by_index(col)
+        print 'sort by', col_attr.name, ascending
+
+        def cmp_(row1, row2):
+            v1 = self.atstruct.get_attr_value(col_attr.name, row1, self._ctx.project)
+            v2 = self.atstruct.get_attr_value(col_attr.name, row2, self._ctx.project)
+            return col_attr.type.compare(v1, v2)
+
+        self._ctx.attr_data.sort(cmp_, reverse=not ascending)
+
 
 class StructListGrid(ListGrid):
     def __init__(self, parent, editor_context):
-        ListGrid.__init__(self, parent, editor_context, StructListTable(editor_context))        
-    
+        ListGrid.__init__(self, parent, editor_context, StructListTable(editor_context))
+
     def is_editing_objects(self):
         return type(self.editor_context) is FrameEditorContext
-    
+
     def _cut(self):
         if self.is_editing_objects():
             wx.MessageBox("Operation not supported!")
@@ -73,7 +86,8 @@ class StructListGrid(ListGrid):
         
     def insert(self, pos=-1, rows=1, add_undo=False):
         if self.is_editing_objects() and add_undo:
-            # if wx.NO == wx.MessageBox("%s %s(s) will be created, continue?" % (rows, self.editor_context.clazz.name), style=wx.YES_NO | wx.ICON_WARNING):
+            # if wx.NO == wx.MessageBox("%s %s(s) will be created, continue?" %
+            # (rows, self.editor_context.clazz.name), style=wx.YES_NO | wx.ICON_WARNING):
             #    return
             pass
             
@@ -81,9 +95,11 @@ class StructListGrid(ListGrid):
     
     def insert_copied(self, pos=-1):
         if self.is_editing_objects():
-            attr_type_names, datas = self._get_clipboard()
-            if attr_type_names and datas:
-                if wx.NO == wx.MessageBox("%s %s(s) will be created, continue?" % (len(datas), self.editor_context.clazz.name), style=wx.YES_NO | wx.ICON_WARNING):
+            attr_type_names, data = self._get_clipboard()
+            if attr_type_names and data:
+                if wx.NO == wx.MessageBox("%s %s(s) will be created, continue?" %
+                                          (len(data), self.editor_context.clazz.name),
+                                          style=wx.YES_NO | wx.ICON_WARNING):
                     return  
         
         ListGrid.insert_copied(self, pos)
@@ -97,17 +113,18 @@ class StructListGrid(ListGrid):
                     wx.MessageBox("Invalid selection area", "Error")
                     return
                 
-                top,left,bottom,right = block
+                top, left, bottom, right = block
                 
                 pos = top
                 rows = bottom - top + 1
                 
-            if wx.NO == wx.MessageBox("%s %s will be deleted, and can NOT undo!!!\nContinue?"%(rows, self.editor_context.clazz.name), style=wx.YES_NO|wx.ICON_WARNING):
+            if wx.NO == wx.MessageBox("%s %s will be deleted, and can NOT undo!!!\nContinue?" %
+                                      (rows, self.editor_context.clazz.name), style=wx.YES_NO | wx.ICON_WARNING):
                 return
         
         ListGrid.delete(self, pos, rows)
         
-        #todo: it'd be better to support undo
+        # todo: it'd be better to support undo
         if self.is_editing_objects() and add_undo:
             self.editor_context.undo_manager.clear()        
     

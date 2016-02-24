@@ -16,19 +16,20 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
 import wx
 
 from structerui.explorer import ExplorerFrame
+
 
 class MyApp(wx.App):
     def OnInit(self):    
         print wx.version()
         
-        self.frame = ExplorerFrame(None)
-        self.SetTopWindow(self.frame)
-        self.frame.Show()        
+        frame = ExplorerFrame(None)
+        self.SetTopWindow(frame)
+        frame.Show()
         return True
+
 
 def main():
     app = MyApp(False)

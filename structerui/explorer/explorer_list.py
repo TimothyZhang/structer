@@ -64,10 +64,10 @@ class ExplorerList(wx.ListCtrl, wx.DropTarget):
 
         # | wx.LC_SORT_ASCENDING#| wx.LC_NO_HEADER#| wx.LC_VRULES#| wx.LC_HRULES#| wx.LC_SINGLE_SEL
         wx.ListCtrl.__init__(self, parent, -1, style=style)
+        self._init_list_columns()
         self.set_list_mode(mode)
 
-        self._init_image_list()        
-        self._init_list_columns()
+        self._init_image_list()
         self._init_list_item_attrs()        
         self._bind_list_events()
 

@@ -85,7 +85,7 @@ class Object(object):
         if data is None:  # init with default value
             self.__data = self.clazz.atstruct.get_default(project)
         else:             # load value
-            #assert type(data) is dict
+            # assert type(data) is dict
             self.__data = data
             #self.raw_data = data            
         

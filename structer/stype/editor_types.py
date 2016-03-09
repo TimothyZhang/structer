@@ -85,7 +85,7 @@ s_folder = ATStruct(Struct(u'Folder', [Attr('optional', ATBool(1), u'Is this att
 # u_type represents an AttrType
 # Note: cyclic ref: utype needs slist, slist need utype
 # So we create a dummy u_type first, it'll be completed later
-u_type = Union("TypeDef", [[s, s.struct.name] for s in [s_int, s_bool, s_float, s_str]])
+u_type = Union("TypeDef", [[s, s.struct.name] for s in [s_int, s_bool, s_float, s_str]], show_value_in_label=False)
 atu_type = ATUnion(u_type)
 
 s_list = ATStruct(Struct(u"List", [Attr("element_type", atu_type),
@@ -246,7 +246,8 @@ clazz_enum = _clazz(CLAZZ_NAME_ENUM, [Attr("name", ATStr(1, 255)),
                                                  str_template=u'${name}')), True, 1, unique_attrs=['name'])),
                                       Attr('export_names', ATBool(0),
                                            'export names instead of values(value by default)'),
-                                      Attr('convert_to_int', ATBool(0), u'convert values to integers')
+                                      Attr('convert_to_int', ATBool(0), u'convert values to integers'),
+                                      Attr('show_value_in_label', ATBool(1))
                                       ],
                     verifier=class_enum_verifier)
 clazz_enum.icon = "icons/enum.png"
@@ -279,7 +280,8 @@ clazz_union = _clazz(CLAZZ_NAME_UNION, [Attr("name", ATStr(0, 255)),
                                         # Attr('export_names', ATBool(0),
                                         # u'export names instead of values(value by default)'),
                                         Attr('convert_to_int', ATBool(0), u'convert values to integers'),
-                                        Attr('exporter', ATStr(), u'custom exporter')
+                                        Attr('exporter', ATStr(), u'custom exporter'),
+                                        Attr('show_value_in_label', ATBool(1))
                                         ],
 
                      verifier=class_union_verifier)

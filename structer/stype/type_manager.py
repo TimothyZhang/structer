@@ -255,8 +255,10 @@ class TypeManager(object):
         
         export_names = enum_obj.get_attr_value('export_names')
         convert_to_int = enum_obj.get_attr_value('convert_to_int')
+        show_value_in_label = enum_obj.get_attr_value('show_value_in_label')
                 
-        enum = self._parsed_enums[enum_name] = Enum(enum_name, items, export_names, convert_to_int=convert_to_int)
+        enum = self._parsed_enums[enum_name] = Enum(enum_name, items, export_names, convert_to_int=convert_to_int,
+                                                    show_value_in_label=show_value_in_label)
         return enum     
     
     def _parse_union(self, union_obj, project):
@@ -267,8 +269,10 @@ class TypeManager(object):
         export_names = union_obj.get_attr_value('export_names')
         convert_to_int = union_obj.get_attr_value('convert_to_int')
         union_exporter = union_obj.get_attr_value('exporter')
+        show_value_in_label = union_obj.get_attr_value('show_value_in_label')
         union = self._parsed_unions[union_name] = Union(union_name, None, export_names=export_names,
-                                                        convert_to_int=convert_to_int, exporter=union_exporter)
+                                                        convert_to_int=convert_to_int, exporter=union_exporter,
+                                                        show_value_in_label=show_value_in_label)
 
         # should set_struct after created Union(), to avoid dead recurse
         # [{'name':,'value':,'attrs':}, ...]

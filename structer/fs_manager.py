@@ -485,7 +485,7 @@ class FileSystemManager(object):
         assert node.parent == self._recycle
 
         if parent is None:
-            parent = self.get_node_by_uuid(node.orginal_parent_uuid)
+            parent = self.get_node_by_uuid(node.original_parent_uuid)
             if parent is None:
                 log.warn("parent not exists, restore to /")
                 parent = self._root
@@ -574,8 +574,13 @@ class FSNode(object):
         """
         self.parent_uuid = data.get('parent', '')
         # self.is_recycled = data.get('is_recycled', 0)
-        # typo, but keep it for compatibility
-        self.original_parent_uuid = data.get('orginal_parent_uuid', '')
+
+        self.original_parent_uuid = data.get('original_parent_uuid', '')
+        # there was a typo, keep backward compatibility
+        if not self.original_parent_uuid:
+            # noinspection SpellCheckingInspection
+            self.original_parent_uuid = data.get('orginal_parent_uuid', '')
+
         self.modify_time = data.get('modify_time', time.time())
         self.create_time = data.get('create_time', time.time())
         self.name = data.get('name', '')
@@ -610,7 +615,7 @@ class FSNode(object):
 #         if self.is_recycled:
 #             r['is_recycled'] = True
         if self.original_parent_uuid:
-            r['orginal_parent_uuid'] = self.original_parent_uuid
+            r['original_parent_uuid'] = self.original_parent_uuid
             
         r.update(self._dump())
         return r

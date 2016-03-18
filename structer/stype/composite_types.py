@@ -27,9 +27,10 @@ class Attr(object):
 
 
 class Enum(object):
-    def __init__(self, name, items, export_names=False, convert_to_int=False):
+    def __init__(self, name, items, export_names=False, convert_to_int=False, show_value_in_label=True):
         """ item: [[name(str), value(int), label(str)], ...] or [[name(str), value(int)], ...]"""
         self.name = name
+        self._show_value_in_label = show_value_in_label
         assert len(items) > 0, u'Enum %s has no item' % name
                 
         self.__names = [item[0] for item in items]
@@ -54,7 +55,12 @@ class Enum(object):
 
         self.__name2values[n] = v
         self.__value2names[v] = n
-        label = '%s(%s)' % (l, v)
+
+        if self._show_value_in_label:
+            label = '%s(%s)' % (l, v)
+        else:
+            label = l
+
         self.__name2labels[n] = label
         self.__label2names[label] = n
     
@@ -148,13 +154,16 @@ class Union(object):
     enum = None
     __at_enum = None
     __structs_map = None
+    _show_value_in_label = True
 
-    def __init__(self, name, structs=None, export_names=True, convert_to_int=False, exporter=u''):
+    def __init__(self, name, structs=None, export_names=True, convert_to_int=False, exporter=u'',
+                 show_value_in_label=True):
         """ structs: [[ATStruct, value], ...]"""
-        self.init(name, structs, export_names, convert_to_int, exporter)
+        self.init(name, structs, export_names, convert_to_int, exporter, show_value_in_label)
 
-    def init(self, name, structs, export_names=True, convert_to_int=False, exporter=u''):
+    def init(self, name, structs, export_names=True, convert_to_int=False, exporter=u'', show_value_in_label=True):
         self.name = name
+        self._show_value_in_label = show_value_in_label
         self._export_names = export_names
         self._convert_to_int = convert_to_int
         self.exporter = exporter
@@ -180,7 +189,7 @@ class Union(object):
             
         from attr_types import ATEnum
         self.enum = Enum('%s_keys' % self.name, enum_items, export_names=self.export_names,
-                         convert_to_int=self.convert_to_int)
+                         convert_to_int=self.convert_to_int, show_value_in_label=self._show_value_in_label)
         self.__at_enum = ATEnum(self.enum) 
     
     @property

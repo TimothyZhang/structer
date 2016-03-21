@@ -633,7 +633,7 @@ def __init_resources():
       </object>
       <object class="separator" name="status_bar"/>
       <object class="wxComboBox" name="address_box">
-        <size>300</size>
+        <size>500,32</size>
         <content>
           <item>/</item>
         </content>

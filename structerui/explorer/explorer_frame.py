@@ -595,6 +595,10 @@ class ExplorerFrame(xrcExplorerFrame):
         ctrl = self.get_focused_ctrl()
         if ctrl:
             return ctrl.node_tool
+        if self._list:
+            return self._list.node_tool
+        if self._tree:
+            return self._tree.node_tool
     
     def on_menu(self, evt, action_name):
         _ = evt

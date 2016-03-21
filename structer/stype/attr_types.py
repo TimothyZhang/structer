@@ -806,6 +806,9 @@ class ATUnion(AttrType):
     def get_refs(self, val, project):
         vlog = self.verify(val, project)
         if vlog.has_error():
+            # self.verify(val, project)
+            vlog.log_all(project)
+            # raise Exception(vlog.errors)
             return []
 
         atstruct = self.union.get_atstruct(val['key'])

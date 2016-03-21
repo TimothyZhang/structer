@@ -120,6 +120,7 @@ class Project(object):
         is_new = self.fs_manager.load()            
                 
         if not self.object_manager.load():
+            print 'object manager has error'
             self._has_error = True         
         
         # todo: enable evt_manager here. previously events should be ignored.

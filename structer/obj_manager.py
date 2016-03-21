@@ -55,7 +55,8 @@ class ObjectManager(object):
                 log.error(e, 'Failed to create object: %s', node.uuid)
                 success = False
             else:    
-                self.add_object(obj)
+                # self.add_object(obj)
+                self._obj_map[obj.clazz.name][obj.uuid] = obj
         
         # verify all
         for obj in self.iter_all_objects():
@@ -67,6 +68,10 @@ class ObjectManager(object):
                 import traceback
                 traceback.print_exc()
                 success = False
+
+        # update references
+        for obj in self.iter_all_objects():
+            self.project.ref_manager.update_references(obj, obj.get_refs())
         
         for node in fsm.walk(fsm.recycle, True):
             if not fs_util.is_object(node):

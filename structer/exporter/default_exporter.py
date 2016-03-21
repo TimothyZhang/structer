@@ -57,7 +57,7 @@ class DefaultObjectExporter(BaseExporter):
         # objects for each class
         for clazz in project.type_manager.get_clazzes():
             clazz_all = {}
-            for obj in project.object_manager.get_objects(clazz):
+            for obj in project.object_manager.iter_objects(clazz):
                 clazz_all[obj.id] = obj.export()
 
             data = json.dumps(clazz_all, sort_keys=True)

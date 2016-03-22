@@ -196,7 +196,7 @@ class ListGrid(GridBase):
 
         tbl = self.GetTable()
         attr_type = tbl.get_attr_type(top, left)
-        return UnionListListMapper.check_element_type(attr_type)
+        return UnionListListMapper.check_ull_type(attr_type)
 
     def show_ull_editor(self):
         if not self.check_ull_editor():

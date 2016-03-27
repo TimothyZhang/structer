@@ -44,6 +44,8 @@ MY_GRID_DATA_TYPE_LIST_ENUM_UNIQUE = "MY_GRID_DATA_TYPE_LIST_ENUM_UNIQUE"
 MY_GRID_DATA_TYPE_REF = 'MY_GRID_DATA_TYPE_REF'
 MY_GRID_DATA_TYPE_FILE = 'MY_GRID_DATA_TYPE_FILE'
 MY_GRID_DATA_TYPE_FOLDER = 'MY_GRID_DATA_TYPE_FOLDER'
+MY_GRID_DATA_TYPE_TIME = 'MY_GRID_DATA_TYPE_TIME'
+MY_GRID_DATA_TYPE_DURATION = 'MY_GRID_DATA_TYPE_DURATION'
 
 # Cell Attributes
 GRID_CELL_ATTR_DEFAULT = grid.GridCellAttr()
@@ -123,6 +125,10 @@ class TableBase(grid.PyGridTableBase):
             return MY_GRID_DATA_TYPE_FILE
         if att is ATFolder:
             return MY_GRID_DATA_TYPE_FOLDER
+        if att is ATTime:
+            return MY_GRID_DATA_TYPE_TIME
+        if att is ATDuration:
+            return MY_GRID_DATA_TYPE_DURATION
         
         # if type(attr) is ATInt:
         #    return grid.GRID_VALUE_NUMBER
@@ -289,6 +295,8 @@ class GridBase(grid.Grid):
         self.RegisterDataType(MY_GRID_DATA_TYPE_FILE,   grid.GridCellStringRenderer(), GridCellDialogEditor(FileDialog))
         self.RegisterDataType(MY_GRID_DATA_TYPE_FOLDER, grid.GridCellStringRenderer(),
                               GridCellDialogEditor(FolderDialog))
+        self.RegisterDataType(MY_GRID_DATA_TYPE_TIME, str_renderer(), GridCellTimeEditor())
+        self.RegisterDataType(MY_GRID_DATA_TYPE_DURATION, str_renderer(), GridCellDurationEditor())
         
         self.auto_size()
     

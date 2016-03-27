@@ -98,6 +98,28 @@ def is_sub_sequence(a, b):
     return i >= len(a)
 
 
+def seconds_to_dhms(seconds):
+    """
+    Converts seconds to a tuple of (days, hours, minutes, seconds)
+    :param float seconds:
+    :rtype: (int, int, int, float)
+    """
+    seconds_int = int(seconds)
+    tmp = seconds - seconds_int
+    minutes, seconds_int = divmod(seconds_int, 60)
+    hours, minutes = divmod(minutes, 60)
+    days, hours = divmod(hours, 60)
+    return days, hours, minutes, seconds_int + tmp
+
+
+def dhms_to_str(days, hours, minutes, seconds):
+    d = ''
+    if days:
+        d = '%s days ' % days
+
+    return '%s%02d:%02d:%.3f' % (d, hours, minutes, seconds)
+
+
 if __name__ == '__main__':
     print get_relative_path('/a/b/c', '/a')
     print get_relative_path('/a', '/a/b/c')

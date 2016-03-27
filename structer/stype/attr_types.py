@@ -23,9 +23,10 @@ import string
 import re
 import os
 
-from structer import log
-from structer.util import get_absolute_path
+import time
 
+from structer import log
+from structer.util import get_absolute_path, dhms_to_str, seconds_to_dhms
 
 """
 verifier: is a piece of python code which contains the body of a function.
@@ -57,9 +58,9 @@ verifier: is a piece of python code which contains the body of a function.
 
 def make_verifier(src):
     """Make a verifier function by source code
-    
-    Returns:
-        a function object
+
+    :param str src:
+    :rtype: function
     """
     src = src.replace('\t', ' ' * 4)
     # indent
@@ -289,6 +290,34 @@ class ATFloat(AttrType):
         if (self.min is not None and self.min > val) or (self.max is not None and self.max < val):
             vlog.error('%s value out of range(%s,%s) : %s', self.name, self.min, self.max, val)
             return
+
+
+class ATTime(AttrType):
+    def __init__(self, min_=None, max_=None, **kwargs):
+        AttrType.__init__(self, **kwargs)
+        self.min, self.max = min, max
+        self._default = time.time()
+
+    def str(self, val, project):
+        return time.strftime('%Y-%m-%d %H:%M:%S %a(UTC)', time.gmtime(val))
+
+    def _verify(self, val, project, recurse=True, vlog=None):
+        if not self.min <= val <= self.max:
+            vlog.error('time out of range.')
+
+
+class ATDuration(AttrType):
+    def __init__(self, min=None, max=None, **kwargs):
+        AttrType.__init__(self, **kwargs)
+        self.min, self.max = min, max
+        self._default = 0
+
+    def str(self, val, project):
+        return dhms_to_str(*seconds_to_dhms(val))
+
+    def _verify(self, val, project, recurse=True, vlog=None):
+        if not self.min <= val <= self.max:
+            vlog.error('duration out of range.')
 
 
 class ATStr(AttrType):

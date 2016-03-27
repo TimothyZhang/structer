@@ -162,7 +162,9 @@
 "value":
 "3"}],
 "name":
-"SkillEffect"}},
+"SkillEffect",
+"show_value_in_label":
+0}},
 "filetype":
 "object",
 "modify_time":

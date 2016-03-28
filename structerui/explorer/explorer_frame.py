@@ -16,6 +16,7 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import traceback
 
 import wx
 import wx.lib.agw.aui as aui 
@@ -430,7 +431,10 @@ class ExplorerFrame(xrcExplorerFrame):
         self.menu_windows.AppendItem(mi)
         
     def remove_editor(self, editor):
-        self._editor_frames.remove(editor)        
+        try:
+            self._editor_frames.remove(editor)
+        except:
+            traceback.print_exc()
         
         id_ = self._editor_to_menuid.pop(editor)
         self.menu_windows.Delete(id_)        

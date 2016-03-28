@@ -17,6 +17,8 @@
 
 import os
 
+import time
+
 
 def normpath(p):     
     p = p.replace('/', os.path.sep)
@@ -108,20 +110,55 @@ def seconds_to_dhms(seconds):
     tmp = seconds - seconds_int
     minutes, seconds_int = divmod(seconds_int, 60)
     hours, minutes = divmod(minutes, 60)
-    days, hours = divmod(hours, 60)
+    days, hours = divmod(hours, 24)
     return days, hours, minutes, seconds_int + tmp
+
+
+def dhms_to_seconds(d, h, m, s):
+    h += d * 24
+    m += h * 60
+    s += m * 60
+    return s
 
 
 def dhms_to_str(days, hours, minutes, seconds):
     d = ''
     if days:
-        d = '%s days ' % days
+        d = '%sd ' % days
 
-    return '%s%02d:%02d:%.3f' % (d, hours, minutes, seconds)
+    s = '%s%02d:%02d:%.3f' % (d, hours, minutes, seconds)
+    s = s.rstrip('0').rstrip('.')
+    if s[-2] == ':':
+        s += '0'
+    return s
+
+
+def str_to_dhms(s):
+    tmp = s.split(' ')
+
+    days = 0
+    if len(tmp) > 1:
+        assert tmp[0][-1] == 'd'
+        days = int(tmp[0][:-1])
+
+    h, m, s = tmp[-1].split(':')
+    return days, int(h), int(m), float(s)
+
+
+def utc_str_to_timestamp(s):
+    # val = ' '.join(val.split(' ')[:2])
+    tz = - time.timezone / 3600
+    return time.mktime(time.strptime(s, '%Y-%m-%d %H:%M:%S')) + 3600 * tz
+
+
+def utc_timestamp_to_str(timestamp):
+    return time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(timestamp))
 
 
 if __name__ == '__main__':
-    print get_relative_path('/a/b/c', '/a')
-    print get_relative_path('/a', '/a/b/c')
-    print get_relative_path('/a/', '/a/b/c')
-    print get_relative_path('/a/d', '/a/b/c')
+    # print get_relative_path('/a/b/c', '/a')
+    # print get_relative_path('/a', '/a/b/c')
+    # print get_relative_path('/a/', '/a/b/c')
+    # print get_relative_path('/a/d', '/a/b/c')
+    print dhms_to_str(*seconds_to_dhms(129))
+

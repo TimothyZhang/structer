@@ -18,7 +18,7 @@ import time
 
 # from structerui import hotkey
 from str_editor import GridCellStrEditor
-from structer.util import seconds_to_dhms
+from structer.util import seconds_to_dhms, str_to_dhms, dhms_to_seconds
 
 
 class GridCellDurationEditor(GridCellStrEditor):
@@ -37,11 +37,12 @@ class GridCellDurationEditor(GridCellStrEditor):
         self._grid = grid
         self._attr_type = self._grid.GetTable().get_attr_type(row, col)
 
-        todo: 已经是字符串了! time也是!
+        # it a string
         val = grid.GetTable().GetValue(row, col)
+        # dhms = str_to_dhms(val)
 
         # convert to 1234 10:10:10
-        self._ctrl.SetValue('%d/%02d:%02d:%02d' % seconds_to_dhms(val))
+        self._ctrl.SetValue(val)
         self._ctrl.SetSelection(-1, -1)
         self._ctrl.SetFocus()
 
@@ -56,17 +57,7 @@ class GridCellDurationEditor(GridCellStrEditor):
             pass
 
         try:
-            tmp = val.split('/')
-
-            days = 0
-            if len(tmp) > 1:
-                days = int(tmp[0])
-
-            h, m, s = tmp[1].split(':')
-            h = days * 24 + int(h)
-            m = h * 60 + int(m)
-            s = m * 60 + float(s)
-            return s
+            return dhms_to_seconds(*str_to_dhms(val))
         except Exception, e:
             if vlog:
                 vlog.error('invalid duration: %s (%s)', val, e)

@@ -16,6 +16,7 @@
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
 import time
 
+from structer.util import utc_str_to_timestamp
 from structerui import hotkey
 from str_editor import GridCellStrEditor
 
@@ -39,7 +40,7 @@ class GridCellTimeEditor(GridCellStrEditor):
         val = grid.GetTable().GetValue(row, col)
 
         # convert to 2014/10/10 10:10:10
-        self._ctrl.SetValue(time.strftime('%Y-%m-%d %H:%M:%s', time.gmtime(val)))
+        self._ctrl.SetValue(val)
         self._ctrl.SetSelection(-1, -1)
         self._ctrl.SetFocus()
 
@@ -54,7 +55,7 @@ class GridCellTimeEditor(GridCellStrEditor):
             pass
 
         try:
-            return time.strptime(val, '%Y-%m-%d %H:%M:%s')
+            return utc_str_to_timestamp(val)
         except Exception, e:
             if vlog:
                 vlog.error('invalid time: %s (%s)', val, e)

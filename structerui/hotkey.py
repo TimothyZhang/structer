@@ -91,6 +91,7 @@ SHOW_EXPLORER = '`'
 COPY = 'Ctrl+C'
 COPY_TEXT = 'Ctrl+Alt+C'
 PASTE = 'Ctrl+V'
+PASTE_TEXT = 'Ctrl+Alt+V'
 UNDO = 'Ctrl+Z'
 REDO = 'Ctrl+Y'
 

@@ -544,6 +544,7 @@ class GridBase(grid.Grid):
                 GridAction(hotkey.REDO, self.redo, "Redo", "icons/redo.png"),
                 GridAction(hotkey.RESET, self.reset_to_default, "Reset", "icons/reset.png", self.is_editable),
                 GridAction(hotkey.COPY_TEXT, self._copy_as_plain_text, "Copy as plain text", "icons/copy_text.png"),
+                # GridAction(hotkey.PASTE_TEXT, self._paste_plain_text, "Paste plain text", "icons/paste_text.png"),
                 ]
 
     def undo(self):
@@ -634,23 +635,45 @@ class GridBase(grid.Grid):
 
         attr_type_names = ['Str'] * len(data[0])
         
-        # guess types
-        for i in xrange(len(data[0])):
-            is_int = True
-            for row in data:
-                # noinspection PyBroadException
-                try:
-                    int(row[i])
-                except:
-                    is_int = False
-                    break
-
-            if is_int:
-                attr_type_names[i] = 'Int'
-                for row in data:
-                    row[i] = int(row[i])
+        # # guess types
+        # for i in xrange(len(data[0])):
+        #     is_int = True
+        #     for row in data:
+        #         # noinspection PyBroadException
+        #         try:
+        #             int(row[i])
+        #         except:
+        #             is_int = False
+        #             break
+        #
+        #     if is_int:
+        #         attr_type_names[i] = 'Int'
+        #         for row in data:
+        #             row[i] = int(row[i])
 
         return attr_type_names, data
+
+    # noinspection PyMethodMayBeStatic
+    def check_paste(self, attr_type, attr_type_name, values):
+        if attr_type.name == attr_type_name:
+            return True
+
+        new_values = []
+        for val in values:
+            # noinspection PyBroadException
+            try:
+                new_values.append(attr_type.convert(val))
+            except InconvertibleError, e:
+                wx.MessageBox("type not match or convertible, expected: %s was: %s" % (attr_type.name, attr_type_name),
+                              "Error")
+                return False, None
+            except Exception, e:
+                wx.MessageBox('Error while converting "%s"(%s) to %s: %s' % (val, attr_type_name, attr_type, e),
+                              "Error")
+                # return
+                return False, None
+
+        return True, new_values
 
     def _copy_as_plain_text(self):
         block = self._get_selection_block()
@@ -662,6 +685,9 @@ class GridBase(grid.Grid):
         text_data = [[attr_types[i].str(cell, self._ctx.project) for i, cell in enumerate(row)] for row in data]
         text = '\n'.join(['\t'.join(row) for row in text_data])
         self._set_plain_text_clipboard(text)
+
+    def _paste_plain_text(self):
+        pass
 
     # noinspection PyMethodMayBeStatic
     def _set_plain_text_clipboard(self, text):

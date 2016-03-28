@@ -199,13 +199,15 @@ class StructGrid(GridBase):
         
         # check each AttrType
         tbl = self.GetTable()
+        tmp_data = zip(*data)
         for i in xrange(len(attr_type_names)):
-            got = tbl.get_attr_type(row+i, 2).name
-            need = attr_type_names[i]
-            if need != got:
-                wx.MessageBox("type not match: %s %s %s" % (i, need, got), "Error")
+            attr_type = tbl.get_attr_type(row+i, 2)
+            can_paste, new_values = self.check_paste(attr_type, attr_type_names[i], tmp_data[i])
+            if not can_paste:
+                # wx.MessageBox("type not match, expected: %s was: %s" % (attr_type.name, attr_type_names[i]), "Error")
                 return
-        
-        data = zip(*data)
+            tmp_data[i] = new_values
+
+        data = zip(*tmp_data)
         block = (row, 2, row+len(data)-1, 2)
         self.batch_mutate(block, data, True)

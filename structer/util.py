@@ -126,10 +126,12 @@ def dhms_to_str(days, hours, minutes, seconds):
     if days:
         d = '%sd ' % days
 
-    s = '%s%02d:%02d:%.3f' % (d, hours, minutes, seconds)
-    s = s.rstrip('0').rstrip('.')
-    if s[-2] == ':':
-        s += '0'
+    seconds_int = int(seconds)
+    seconds_fraction = seconds - seconds_int
+    s = '%s%02d:%02d:%02d' % (d, hours, minutes, seconds_int)
+    if seconds_fraction != 0:
+        s += '%.3f' % seconds_fraction
+        s = s.rstrip('0').rstrip('.')
     return s
 
 

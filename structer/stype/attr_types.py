@@ -358,7 +358,7 @@ class ATDuration(AttrType):
 
     def convert(self, val):
         if isinstance(val, (unicode, str)):
-            return str_to_dhms(dhms_to_seconds(val))
+            return dhms_to_seconds(*str_to_dhms(val))
         return AttrType.convert(self, val)
 
 

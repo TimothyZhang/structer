@@ -59,7 +59,12 @@
 "name":
 "cd",
 "type":
-{"Int":
+{"Duration":
+{"max":
+9223372036854775807,
+"min":
+0},
+"Int":
 {"default":
 0,
 "exporter":
@@ -71,7 +76,7 @@
 "verifier":
 ""},
 "key":
-"Int"}},
+"Duration"}},
 {"description":
 "",
 "name":

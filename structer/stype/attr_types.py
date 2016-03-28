@@ -23,9 +23,11 @@ import string
 import re
 import os
 
-from structer import log
-from structer.util import get_absolute_path
+import time
 
+from structer import log
+from structer.util import get_absolute_path, dhms_to_str, seconds_to_dhms, utc_timestamp_to_str, utc_str_to_timestamp, \
+    dhms_to_seconds, str_to_dhms
 
 """
 verifier: is a piece of python code which contains the body of a function.
@@ -57,9 +59,9 @@ verifier: is a piece of python code which contains the body of a function.
 
 def make_verifier(src):
     """Make a verifier function by source code
-    
-    Returns:
-        a function object
+
+    :param str src:
+    :rtype: function
     """
     src = src.replace('\t', ' ' * 4)
     # indent
@@ -150,6 +152,12 @@ class AttrVerifyLogger(object):
             log.error(u'%s %s %s %s', project.name, fs_path, e.path, e.str())
 
 
+class InconvertibleError(Exception):
+    def __init__(self, to_type, from_val):
+        msg = "Could not convert %s to %s" % (from_val, to_type)
+        Exception.__init__(self, msg)
+
+
 class AttrType(object):
     _default = None
     _name = None
@@ -230,6 +238,10 @@ class AttrType(object):
     def __unicode__(self):
         return self.name
 
+    # noinspection PyMethodMayBeStatic
+    def convert(self, val):
+        raise InconvertibleError(self, val)
+
 
 class ATInt(AttrType):
     def __init__(self, min=-0x80000000, max=0x7FFFFFFF, default=None, **kwargs):
@@ -256,6 +268,11 @@ class ATInt(AttrType):
             vlog.error('%s value out of range(%s,%s) : %s', self.name, self.min, self.max, val)
             return
 
+    def convert(self, val):
+        if isinstance(val, (unicode, str)):
+            return int(val)
+        return AttrType.convert(self, val)
+
 
 class ATBool(ATInt):
     def __init__(self, default=0, **kwargs):
@@ -263,6 +280,14 @@ class ATBool(ATInt):
 
     def str(self, val, project):
         return 'YES' if val else 'NO'
+
+    def convert(self, val):
+        if isinstance(val, (unicode, str)):
+            if val.lower() in ('yes', 'true', '1'):
+                return 1
+            if val.lower() in ('no', 'false', '0'):
+                return 0
+        return AttrType.convert(self, val)
 
 
 class ATFloat(AttrType):
@@ -289,6 +314,52 @@ class ATFloat(AttrType):
         if (self.min is not None and self.min > val) or (self.max is not None and self.max < val):
             vlog.error('%s value out of range(%s,%s) : %s', self.name, self.min, self.max, val)
             return
+
+    def convert(self, val):
+        if isinstance(val, (unicode, str)):
+            return float(val)
+        return AttrType.convert(self, val)
+
+
+class ATTime(AttrType):
+    def __init__(self, min=None, max=None, **kwargs):
+        AttrType.__init__(self, **kwargs)
+        self.min, self.max = min, max
+        # self._default = time.time()
+
+    def get_default(self, project):
+        return time.time()
+
+    def str(self, val, project):
+        return utc_timestamp_to_str(val)
+
+    def _verify(self, val, project, recurse=True, vlog=None):
+        if not self.min <= val <= self.max:
+            vlog.error('time out of range.')
+
+    def convert(self, val):
+        if isinstance(val, (unicode, str)):
+            return utc_str_to_timestamp(val)
+        return AttrType.convert(self, val)
+
+
+class ATDuration(AttrType):
+    def __init__(self, min=None, max=None, **kwargs):
+        AttrType.__init__(self, **kwargs)
+        self.min, self.max = min, max
+        self._default = 0
+
+    def str(self, val, project):
+        return dhms_to_str(*seconds_to_dhms(val))
+
+    def _verify(self, val, project, recurse=True, vlog=None):
+        if not self.min <= val <= self.max:
+            vlog.error('duration out of range.')
+
+    def convert(self, val):
+        if isinstance(val, (unicode, str)):
+            return dhms_to_seconds(*str_to_dhms(val))
+        return AttrType.convert(self, val)
 
 
 class ATStr(AttrType):

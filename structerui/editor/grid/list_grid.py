@@ -425,12 +425,16 @@ class ListGrid(GridBase):
             return
         
         # check attr types
+        tmp_data = zip(*data)
         for i, c in enumerate(xrange(left, right+1)):
-            at_name = tbl.get_attr_type(top, c).name
-            if at_name != attr_type_names[i]:
-                wx.MessageBox("type not match, expected: %s was: %s" % (at_name, attr_type_names[i]), "Error")
+            attr_type = tbl.get_attr_type(top, c)
+            can_paste, new_values = self.check_paste(attr_type, attr_type_names[i], tmp_data[i])
+            if not can_paste:
+                # wx.MessageBox("type not match, expected: %s was: %s" % (attr_type.name, attr_type_names[i]), "Error")
                 return
-        
+            tmp_data[i] = new_values
+
+        data = zip(*tmp_data)
         block = (top, left, bottom, right)
         self.batch_mutate(block, data, add_undo=add_undo)
                 

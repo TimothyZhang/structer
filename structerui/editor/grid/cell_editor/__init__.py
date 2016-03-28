@@ -22,3 +22,5 @@ from list_enum_unique_editor import GridCellUniqueEnumListEditor
 # from ref_editor import GridCellRefEditor
 from number_editor import GridCellIntEditor, GridCellFloatEditor
 from str_editor import GridCellStrEditor
+from duration_editor import GridCellDurationEditor
+from time_editor import GridCellTimeEditor

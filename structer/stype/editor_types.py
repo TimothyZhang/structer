@@ -54,6 +54,25 @@ s_int = ATStruct(Struct(u"Int", [Attr("min", ATInt(min=INT_MIN, max=INT_MAX, def
                  verifier=s_int_verifier,
                  )
 
+s_time = ATStruct(
+    Struct(u"Time",
+           [
+               Attr("min", ATInt(min=INT_MIN, max=INT_MAX, default=0)),
+               Attr("max", ATInt(min=INT_MIN, max=INT_MAX, default=INT_MAX)),
+           ]
+    )
+)
+
+s_duration = ATStruct(
+    Struct(u"Duration",
+           [
+               Attr("min", ATInt(min=INT_MIN, max=INT_MAX, default=0)),
+               Attr("max", ATInt(min=INT_MIN, max=INT_MAX, default=INT_MAX)),
+           ]
+
+    )
+)
+
 s_bool = ATStruct(Struct(u"Bool", [Attr("default", ATBool()),
                                    Attr("verifier", ATStr(multiline=True)),
                                    Attr("exporter", ATStr(multiline=True))]),
@@ -85,7 +104,8 @@ s_folder = ATStruct(Struct(u'Folder', [Attr('optional', ATBool(1), u'Is this att
 # u_type represents an AttrType
 # Note: cyclic ref: utype needs slist, slist need utype
 # So we create a dummy u_type first, it'll be completed later
-u_type = Union("TypeDef", [[s, s.struct.name] for s in [s_int, s_bool, s_float, s_str]], show_value_in_label=False)
+u_type = Union("TypeDef", [[s, s.struct.name] for s in [s_int, s_bool, s_float, s_str, s_time, s_duration]],
+               show_value_in_label=False)
 atu_type = ATUnion(u_type)
 
 s_list = ATStruct(Struct(u"List", [Attr("element_type", atu_type),
@@ -152,7 +172,7 @@ s_enum = ATStruct(Struct(u"Enum", [Attr("enum", ATRef(CLAZZ_NAME_ENUM)),
 
 
 # u_type was not completed
-u_type.set_structs([[s, s.struct.name] for s in [s_int, s_bool, s_float, s_str, s_file, s_folder,
+u_type.set_structs([[s, s.struct.name] for s in [s_int, s_bool, s_float, s_str, s_time, s_duration, s_file, s_folder,
                                                  s_list, s_ref, s_struct, s_union, s_enum, s_predefined_type]])
 # atu_type.update_union()
 # u_int_or_str = Union("IntOrStr", [Struct("Int", [Attr("value", ATInt())]),

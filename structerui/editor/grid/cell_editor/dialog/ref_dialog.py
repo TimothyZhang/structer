@@ -155,7 +155,7 @@ class RefDialog(xrcRefDialog):
         #     next_ = self.text_ctrl
         next_ = self.text_ctrl
         
-        wx.CallLater(0.0001, next_.SetFocus)
+        wx.CallLater(0.001, next_.SetFocus)
 
     def OnTextCtrlText(self, evt):
         self._search(self.text_ctrl.GetValue())

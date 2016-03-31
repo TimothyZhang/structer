@@ -94,6 +94,7 @@ PASTE = 'Ctrl+V'
 PASTE_TEXT = 'Ctrl+Alt+V'
 UNDO = 'Ctrl+Z'
 REDO = 'Ctrl+Y'
+SELECT_ALL = 'Ctrl+A'
 
 # list
 LIST_INSERT_HEAD = 'Ctrl+,'

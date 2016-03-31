@@ -544,6 +544,7 @@ class GridBase(grid.Grid):
                 GridAction(hotkey.REDO, self.redo, "Redo", "icons/redo.png"),
                 GridAction(hotkey.RESET, self.reset_to_default, "Reset", "icons/reset.png", self.is_editable),
                 GridAction(hotkey.COPY_TEXT, self._copy_as_plain_text, "Copy as plain text", "icons/copy_text.png"),
+                GridAction(hotkey.SELECT_ALL, self._select_all, "Select all", "icons/select_all.png"),
                 # GridAction(hotkey.PASTE_TEXT, self._paste_plain_text, "Paste plain text", "icons/paste_text.png"),
                 ]
 
@@ -674,6 +675,18 @@ class GridBase(grid.Grid):
                 return False, None
 
         return True, new_values
+
+    def _select_all(self):
+        tbl = self.GetTable()
+        for c in xrange(tbl.GetNumberCols()):
+            can_select = True
+            for r in xrange(tbl.GetNumberRows()):
+                if self.IsReadOnly(r, c):
+                    can_select = False
+                    break
+
+            if can_select:
+                self.SelectCol(c, True)
 
     def _copy_as_plain_text(self):
         block = self._get_selection_block()

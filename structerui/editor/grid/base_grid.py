@@ -657,7 +657,7 @@ class GridBase(grid.Grid):
     # noinspection PyMethodMayBeStatic
     def check_paste(self, attr_type, attr_type_name, values):
         if attr_type.name == attr_type_name:
-            return True
+            return True, values
 
         new_values = []
         for val in values:

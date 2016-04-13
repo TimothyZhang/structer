@@ -45,7 +45,7 @@ class RefManager(object):
         """Gets all objects referenced to "reference"
         
         Args:
-            referent: uuid
+            reference: uuid
             
         Returns:
             set of uuids, which referenced to "refernece"
@@ -73,7 +73,7 @@ class RefManager(object):
         
         # add new references, if any
         if refs:
-            ref_uuids = [ref.uuid for ref in refs]
+            ref_uuids = {ref.uuid for ref in refs}
             for ref_uuid in ref_uuids:
                 if ref_uuid in self.__refby:
                     self.__refby[ref_uuid].add(uuid)

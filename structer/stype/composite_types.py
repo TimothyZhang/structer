@@ -39,6 +39,7 @@ class Enum(object):
         self.__value2names = {}
         self.__name2labels = {}
         self.__label2names = {}
+        self.__name2comments = {}
 
         for item in items:
             self.add_item(item)
@@ -47,14 +48,19 @@ class Enum(object):
         self._convert_to_int = convert_to_int
         
     def add_item(self, item):
+        # item: name, value[, label[, comment]]
+        comment = ''
         if len(item) == 2:
             n, v = item
             l = n
-        else:
+        elif len(item) == 3:
             n, v, l = item
+        else:
+            n, v, l, comment = item
 
         self.__name2values[n] = v
         self.__value2names[v] = n
+        self.__name2comments[n] = comment
 
         if self._show_value_in_label:
             label = '%s(%s)' % (l, v)
@@ -105,6 +111,9 @@ class Enum(object):
     
     def name_of_label(self, label):
         return self.__label2names.get(label, None)
+
+    def comment_of(self, name):
+        return self.__name2comments.get(name, '')
     
     def get_name_by_index(self, index):
         return self.__names[index]
@@ -178,14 +187,17 @@ class Union(object):
     def export_names(self):
         return self._export_names   
     
-    def set_structs(self, structs):
+    def set_structs(self, structs, comments=None):
         self.__structs_map = {}
+
+        if comments is None:
+            comments = [''] * len(structs)
         
         enum_items = [] 
-        for atstruct, value in structs:
+        for i, (atstruct, value) in enumerate(structs):
             assert atstruct.struct.name not in self.__structs_map
             self.__structs_map[atstruct.struct.name] = atstruct
-            enum_items.append([atstruct.struct.name, value, atstruct.struct.label])
+            enum_items.append([atstruct.struct.name, value, atstruct.struct.label, comments[i]])
             
         from attr_types import ATEnum
         self.enum = Enum('%s_keys' % self.name, enum_items, export_names=self.export_names,

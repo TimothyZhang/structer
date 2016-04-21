@@ -204,10 +204,10 @@ class StructGrid(GridBase):
             attr_type = tbl.get_attr_type(row+i, 2)
             can_paste, new_values = self.check_paste(attr_type, attr_type_names[i], tmp_data[i])
             if not can_paste:
-                # wx.MessageBox("type not match, expected: %s was: %s" % (attr_type.name, attr_type_names[i]), "Error")
+                wx.MessageBox("type not match, expected: %s was: %s" % (attr_type.name, attr_type_names[i]), "Error")
                 return
             tmp_data[i] = new_values
 
-        data = zip(*tmp_data)
+        data = tmp_data  # zip(*tmp_data)
         block = (row, 2, row+len(data)-1, 2)
         self.batch_mutate(block, data, True)

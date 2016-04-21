@@ -251,7 +251,8 @@ class TypeManager(object):
         # [{'name':, 'value':}, ...]
         items = enum_obj.get_attr_value('items')
         # [[name,value], ...]
-        items = [[item['name'], item['value'], item.get('label', item['name'])] for item in items]
+        items = [[item['name'], item['value'], item.get('label', item['name']), item.get('comment', '')]
+                 for item in items]
         
         export_names = enum_obj.get_attr_value('export_names')
         convert_to_int = enum_obj.get_attr_value('convert_to_int')
@@ -279,14 +280,15 @@ class TypeManager(object):
         items = union_obj.get_attr_value("items")
 
         # [[Struct, value], ...]
-        structs = []
+        structs, comments = [], []
         for item in items:
             attrs = self._parse_struct_attrs(item['attrs'], project)
             str_template = item.get('str_template', u'')
             exporter = item.get('exporter', u'')
             struct = Struct(item['name'], attrs, str_template=str_template, label=item.get('label'), exporter=exporter)
             structs.append([ATStruct(struct, exporter=exporter, str_template=str_template), item['value']])
-        union.set_structs(structs)
+            comments.append(item.get('comment', ''))
+        union.set_structs(structs, comments)
         
         return union
         

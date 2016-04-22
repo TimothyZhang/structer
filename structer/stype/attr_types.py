@@ -875,12 +875,14 @@ class ATUnion(AttrType):
         return 0
 
     def get_refs(self, val, project):
-        vlog = self.verify(val, project)
-        if vlog.has_error():
-            # self.verify(val, project)
-            vlog.log_all(project)
-            # raise Exception(vlog.errors)
-            return []
+        # should NOT verify. While loading project, this might been called before referenced object is loaded
+        # and then verify would fail.
+        # vlog = self.verify(val, project)
+        # if vlog.has_error():
+        #     # self.verify(val, project)
+        #     vlog.log_all(project)
+        #     # raise Exception(vlog.errors)
+        #     return []
 
         atstruct = self.union.get_atstruct(val['key'])
         return atstruct.get_refs(val[val['key']], project)

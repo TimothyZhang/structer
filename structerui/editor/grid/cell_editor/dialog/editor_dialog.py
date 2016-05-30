@@ -23,7 +23,7 @@ from structerui import hotkey
 
 class EditorDialog(wx.Dialog):
     def __init__(self, parent, editor_context):                
-        wx.Dialog.__init__(self, parent, style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)        
+        wx.Dialog.__init__(self, parent, style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.WANTS_CHARS)
         
         self.SetMinSize((640, 480))        
         self.editor_context = editor_context

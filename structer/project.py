@@ -166,7 +166,9 @@ class Project(object):
         return self._default_language
     
     def translate(self, text):
-        """Translates text with user defined translation dictionary in Setting""" 
+        """Translates text with user defined translation dictionary in Setting
+        :param str text:
+        """
         return self._translations.get(text, text)
 
     def get_object(self, uuid, clazz_or_name=None):
@@ -207,7 +209,9 @@ class Project(object):
         # return self.object_manager.create_object(clazz, file_.uuid)
 
     def next_object_id(self, clazz):
-        """return next available id, or None if default value is Okay. """
+        """return next available id, or None if default value is Okay.
+        :param Class clazz:
+        """
         struct = clazz.atstruct.struct
         if not struct.has_attr('id'):
             return

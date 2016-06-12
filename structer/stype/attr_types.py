@@ -839,8 +839,8 @@ class ATUnion(AttrType):
         return val[val['key']]
 
     def _verify(self, val, project, recurse=True, vlog=None):
-        if not isinstance(val, dict) or 'key' not in val or val['key'] not in val or not isinstance(val[val['key']],
-                                                                                                    dict):
+        if not isinstance(val, dict) or 'key' not in val or val['key'] not in val or \
+                not isinstance(val[val['key']], dict):
             vlog.error("invalid data structure for %s: %s", self.name, val)
             return
 
@@ -864,9 +864,9 @@ class ATUnion(AttrType):
             return r
 
         atstruct = self.union.get_atstruct(v1['key'])
-        # if not atstruct:
-        #     # error...
-        #     return cmp(v1[v1['key']], v2[v2['key']])
+        if not atstruct:
+            # error... both data are invalid, so they are identical
+            return 0
 
         for attr in atstruct.struct.iterate():
             r = attr.type.compare(v1[v1['key']].get(attr.name), v2[v2['key']].get(attr.name))
@@ -885,12 +885,16 @@ class ATUnion(AttrType):
         #     return []
 
         atstruct = self.union.get_atstruct(val['key'])
+        if not atstruct:
+            return []
         return atstruct.get_refs(val[val['key']], project)
 
     def str(self, val, project):
         # todo: need verify?
 
         atstruct = self.union.get_atstruct(val['key'])
+        if not atstruct:
+            return 'Error'
         # todo: ...
         return self.atenum.enum.label_of(val['key']) + ": " + atstruct.str(val[val['key']], project)
 

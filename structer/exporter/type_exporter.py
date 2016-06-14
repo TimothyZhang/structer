@@ -5,7 +5,7 @@ import copy
 
 from base import BaseExporter
 from structer.stype.attr_types import (ATInt, ATStr, ATStruct, ATUnion, ATBool, ATEnum, ATFile, ATFloat, ATFolder,
-                                       ATList, ATRef, ATDuration)
+                                       ATList, ATRef, ATDuration, ATDict)
 
 
 """
@@ -61,6 +61,8 @@ def _export_at(at):
         return {'type': 'union', 'name': at.union.name}
     if isinstance(at, ATEnum):
         return {'type': 'enum', 'name': at.enum.name}
+    if isinstance(at, ATDict):
+        return {'type': 'dict', 'key_type': _export_at(at.key_type), 'val_type': _export_at(at.val_type)}
     if isinstance(at, ATList):
         # fixme: ugly hack for kingdom
         if at.element_type.name == 'CostItem&':

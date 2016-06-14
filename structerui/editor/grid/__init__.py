@@ -35,7 +35,7 @@ from list_grid import ListGrid
 from struct_list import StructListGrid
 from union import UnionGrid
 
-from structer.stype.attr_types import ATList, ATStruct, ATUnion
+from structer.stype.attr_types import ATList, ATStruct, ATUnion, ATDict
 
 
 def get_grid_by_context(ctx):

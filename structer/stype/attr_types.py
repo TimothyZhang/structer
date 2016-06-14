@@ -619,39 +619,52 @@ class ATList(AttrType):
         return [self.element_type.fix(element, fixer, project) for element in newval]
 
 
-# class ATDict(AttrType):
-#     """value: dict"""
-#     def __init__(self, element_type, unique=False, minlen=0, maxlen=0x7FFFFFFF, unique_attrs=[]):
-#         self.element_type = element_type
-#         self._unique = unique            # whether value is unique
-#         self._minlen = minlen
-#         self._maxlen = maxlen
-#         self._unique_attrs = unique_attrs
-# 
-#         if unique_attrs and type(element_type)!=ATStruct:
-#             log.error('"unique_attrs" can only be applied to dict of structs')
-#            
-#         self._default = {}
-#         self._name = "{%s}" % self.element_type.name
-#         
-#     def _verify(self, val, project):
-#         if type(val) is not dict:
-#             log.error('invalid type for %s: %s', self.name, type(val))
-#             return
-#         
-#         if not self._minlen <= len(val) <= self._maxlen:
-#             log.error('%s length out of range(%s,%s): %s', self.name, self._minlen, self._maxlen, len(val))
-# 
-#         _verify_list_items(self.element_type, self._unique, self._unique_attrs, val.values(), project)
-#         
-# 
-#     def get_refs(self, val, project):
-#         return sum([self.element_type.get_refs(i, project) for i in val.itervalues()], [])
-#     
-#     def str(self, val, project):
-#         strs = ['%s: %s'%(n, self.element_type.str(v, project)) for n,v in val.itervalues()]
-#         #todo: delimiter
-#         return '\n'.join(strs)
+class ATDict(AttrType):
+    """value: dict"""
+    def __init__(self, key_type, val_type, minlen=0, maxlen=0x7FFFFFFF, **kwargs):
+        AttrType.__init__(self, '{%s: %s}' % (key_type.name, val_type.name), **kwargs)
+        self.key_type = key_type
+        self.val_type = val_type
+        self._minlen = minlen
+        self._maxlen = maxlen
+
+        self._default = {}
+
+    def _verify(self, val, project, recurse=True, vlog=None):
+        if type(val) is not dict:
+            vlog.error('invalid type for %s: %s', self.name, type(val))
+            return
+
+        if not self._minlen <= len(val) <= self._maxlen:
+            vlog.error('%s length out of range(%s,%s): %s', self.name, self._minlen, self._maxlen, len(val))
+
+    def get_default(self, project):
+        return {}
+
+    @property
+    def minlen(self):
+        return self._minlen
+
+    @property
+    def maxlen(self):
+        return self._maxlen
+
+    def get_refs(self, val, project):
+        if not val:
+            return []
+        if not isinstance(val, dict):
+            return []
+        return sum([self.val_type.get_refs(i, project) for i in val.itervalues()], [])
+
+    def str(self, val, project):
+        if val is None:
+            return 'Error'
+        strs = ['%s: %s' % (n, self.val_type.str(v, project)) for n, v in val.iteritems()]
+        # todo: delimiter
+        return '{%s}' % ','.join(strs)
+
+    def _export(self, val, project):
+        return {self.key_type.export(k, project): self.val_type.export(v, project) for k, v in val.iteritems()}
 
 
 class ATRef(AttrType):

@@ -118,7 +118,9 @@ s_list = ATStruct(Struct(u"List", [Attr("element_type", atu_type),
                                    Attr("exporter", ATStr(multiline=True))]),
                   str_template=u"[${element_type}] [${minlen}, ${maxlen}]")
 
-s_dict = ATStruct(Struct(u"Dict", [Attr("type", atu_type),
+# todo: should verify key type
+s_dict = ATStruct(Struct(u"Dict", [Attr("key_type", atu_type, 'primitive type ONLY(int/str/enum)'),
+                                   Attr("val_type", atu_type),
                                    Attr("minlen", ATInt(default=0)),
                                    Attr("maxlen", ATInt(default=1024)),
                                    Attr("verifier", ATStr(multiline=True)),
@@ -173,7 +175,7 @@ s_enum = ATStruct(Struct(u"Enum", [Attr("enum", ATRef(CLAZZ_NAME_ENUM)),
 
 # u_type was not completed
 u_type.set_structs([[s, s.struct.name] for s in [s_int, s_bool, s_float, s_str, s_time, s_duration, s_file, s_folder,
-                                                 s_list, s_ref, s_struct, s_union, s_enum, s_predefined_type]])
+                                                 s_list, s_dict, s_ref, s_struct, s_union, s_enum, s_predefined_type]])
 # atu_type.update_union()
 # u_int_or_str = Union("IntOrStr", [Struct("Int", [Attr("value", ATInt())]),
 #                                  Struct("Str", [Attr("value", ATStr())])])

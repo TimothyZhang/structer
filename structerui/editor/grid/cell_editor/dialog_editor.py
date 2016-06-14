@@ -20,6 +20,9 @@ import wx
 
 from dialog import EditorDialog
 from base_editor import GridCellBaseEditor
+from structer.stype.attr_types import ATDict, ATStruct, ATList
+from structer.stype.composite_types import Attr
+from structer.stype.composite_types import Struct
 
 
 def print_(s):
@@ -46,6 +49,7 @@ class GridCellDialogEditor(GridCellBaseEditor):
         self._ctrl = None
         self._dlg_ctx = None
         self._top_level_window = None
+        self._original_dict_type = None
 
     # noinspection PyMethodOverriding
     def Create(self, parent, id_, evt_handler):
@@ -105,6 +109,35 @@ class GridCellDialogEditor(GridCellBaseEditor):
 #         #print_("MyCellEditor: PaintBackground\n")
 #         pass
 
+    def _get_editing_type_and_value(self, row, col, grid):
+        tbl = grid.GetTable()
+        at = tbl.get_attr_type(row, col)
+        val = tbl.get_attr_value(row, col)
+
+        if not isinstance(at, ATDict):
+            return at, val
+
+        # todo: can not undo, because we lost item order
+        self._original_dict_type = atdict = at
+        atstruct = ATStruct(Struct(atdict.name,
+                                   [Attr('key', atdict.key_type), Attr('value', atdict.val_type)]))
+        at2 = ATList(atstruct, unique_attrs=('key',), minlen=atdict.minlen, maxlen=atdict.maxlen)
+        val2 = []
+        for k, v in val.iteritems():
+            val2.append({'key': k, 'value': v})
+        return at2, val2
+
+    # noinspection PyMethodMayBeStatic
+    def _get_result_value(self, val):
+        if self._original_dict_type:
+            assert isinstance(val, list)
+            r = {}
+            for tmp in val:
+                r[tmp['key']] = tmp['value']
+
+            return r
+        return val
+
     # noinspection PyMethodOverriding
     def BeginEdit(self, row, col, grid):
         """
@@ -118,9 +151,7 @@ class GridCellDialogEditor(GridCellBaseEditor):
         self._col = col
         
         tbl = grid.GetTable()
-        at = tbl.get_attr_type(row, col)
-        val = tbl.get_attr_value(row, col)
-        
+        at, val = self._get_editing_type_and_value(row, col, grid)
         # create context for new dialog
         # This a a little tricky!
         # val will not been copied, since val is always a container
@@ -214,7 +245,7 @@ class GridCellDialogEditor(GridCellBaseEditor):
         """
         End editing the cell.  This function must check if the current
         value of the editing control is valid and different from the
-        original value (available as oldval in its string form.)  If
+        original value (available as old_val in its string form.)  If
         it has not changed then simply return None, otherwise return
         the value in its string form.
         *Must Override*
@@ -225,7 +256,7 @@ class GridCellDialogEditor(GridCellBaseEditor):
         # For EditorDialog, val and old_val is not only equal but the same object! Since val is a list or dict
         # and we used it directly. But it might be different for other dialogs.
         if self._dlg_ctx.is_modified():                        
-            return self._dlg_ctx.attr_data
+            return self._get_result_value(self._dlg_ctx.attr_data)
         else:
             return None
 
@@ -238,7 +269,7 @@ class GridCellDialogEditor(GridCellBaseEditor):
         *Must Override*
         """        
         # print 'ApplyEdit'
-        grid.GetTable().SetValue(row, col, self._dlg_ctx.attr_data)
+        grid.GetTable().SetValue(row, col, self._get_result_value(self._dlg_ctx.attr_data))
         self.Reset()
 
     # noinspection PyMethodOverriding

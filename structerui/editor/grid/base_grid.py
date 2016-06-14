@@ -38,6 +38,7 @@ CLIPBOARD_DATA_FORMAT = "__structer_grid_cells_f9014n203823dk1j2hdlacxcb__"
 
 MY_GRID_DATA_TYPE_ENUM = "MY_GRID_DATA_TYPE_ENUM"
 MY_GRID_DATA_TYPE_LIST = "MY_GRID_DATA_TYPE_LIST"
+MY_GRID_DATA_TYPE_DICT = "MY_GRID_DATA_TYPE_DICT"
 MY_GRID_DATA_TYPE_UNION = "MY_GRID_DATA_TYPE_UNION"
 MY_GRID_DATA_TYPE_STRUCT = "MY_GRID_DATA_TYPE_STRUCT"
 MY_GRID_DATA_TYPE_LIST_ENUM_UNIQUE = "MY_GRID_DATA_TYPE_LIST_ENUM_UNIQUE"
@@ -117,6 +118,8 @@ class TableBase(grid.PyGridTableBase):
             if type(attr_type.element_type) is ATEnum and attr_type.unique:
                 return MY_GRID_DATA_TYPE_LIST_ENUM_UNIQUE
             return MY_GRID_DATA_TYPE_LIST
+        if att is ATDict:
+            return MY_GRID_DATA_TYPE_DICT
         if att is ATUnion:
             return MY_GRID_DATA_TYPE_UNION
         if att is ATStruct:
@@ -285,7 +288,8 @@ class GridBase(grid.Grid):
         self.RegisterDataType(grid.GRID_VALUE_FLOAT,    grid.GridCellFloatRenderer(),  GridCellFloatEditor())
         self.RegisterDataType(grid.GRID_VALUE_STRING,   str_renderer(), GridCellStrEditor())
         
-        self.RegisterDataType(MY_GRID_DATA_TYPE_LIST,   str_renderer(), GridCellDialogEditor())                
+        self.RegisterDataType(MY_GRID_DATA_TYPE_LIST,   str_renderer(), GridCellDialogEditor())
+        self.RegisterDataType(MY_GRID_DATA_TYPE_DICT,   str_renderer(), GridCellDialogEditor())
         self.RegisterDataType(MY_GRID_DATA_TYPE_UNION,  str_renderer(), GridCellDialogEditor())
         self.RegisterDataType(MY_GRID_DATA_TYPE_STRUCT, str_renderer(), GridCellDialogEditor())
         self.RegisterDataType(MY_GRID_DATA_TYPE_ENUM,   grid.GridCellStringRenderer(), GridCellEnumEditor())

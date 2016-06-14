@@ -18,7 +18,8 @@
 
 import copy
 # from structer.stype.clazz import Object
-from structer.stype.attr_types import ATList
+from structer.stype.attr_types import ATList, ATDict, ATStruct
+from structer.stype.composite_types import Struct, Attr
 from structerui import log
 
 from undo import UndoManager
@@ -33,12 +34,15 @@ class EditorContext(object):
     """
     def __init__(self, project, attr_type, attr_data, undo_manager, read_only=False):
         self._project = project
+        self._undo_manager = undo_manager
+        self._read_only = read_only
+
         self._attr_type = attr_type
         self._old_data = copy.deepcopy(attr_data)
         self._attr_data = attr_data
-        
-        self._undo_manager = undo_manager
-        self._read_only = read_only
+
+        self._original_attr_type = None
+        self._original_attr_data = None
 
         # if value is None, do not edit
         self.freeze_none = False
@@ -70,7 +74,7 @@ class EditorContext(object):
     def is_modified(self):
         return self._attr_type.compare(self._old_data, self._attr_data) != 0
         # return self._undo_manager.is_modified()
-    
+
     def get_title(self):
         return self._attr_type.name
     

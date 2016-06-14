@@ -859,6 +859,13 @@ class ATUnion(AttrType):
             atstruct.verify(val[val['key']], project, recurse, vlog)
 
     def compare(self, v1, v2):
+        if v1 is None and v2 is None:
+            return 0
+        if v1 is None:
+            return -1
+        if v2 is None:
+            return 1
+
         r = cmp(v1['key'], v2['key'])
         if r != 0:
             return r

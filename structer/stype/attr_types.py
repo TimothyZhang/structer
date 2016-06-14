@@ -883,7 +883,8 @@ class ATUnion(AttrType):
         #     vlog.log_all(project)
         #     # raise Exception(vlog.errors)
         #     return []
-
+        if not val:
+            return []
         atstruct = self.union.get_atstruct(val['key'])
         if not atstruct:
             return []

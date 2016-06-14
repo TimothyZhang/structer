@@ -119,7 +119,7 @@ s_list = ATStruct(Struct(u"List", [Attr("element_type", atu_type),
                   str_template=u"[${element_type}] [${minlen}, ${maxlen}]")
 
 # todo: should verify key type
-s_dict = ATStruct(Struct(u"Dict", [Attr("key_type", atu_type, 'primitive type ONLY(int/str/enum)'),
+s_dict = ATStruct(Struct(u"Dict", [Attr("key_type", atu_type, 'primitive type ONLY(int/str/enum/ref)'),
                                    Attr("val_type", atu_type),
                                    Attr("minlen", ATInt(default=0)),
                                    Attr("maxlen", ATInt(default=1024)),

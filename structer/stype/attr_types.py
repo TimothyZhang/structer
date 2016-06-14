@@ -628,18 +628,28 @@ class ATDict(AttrType):
         self._minlen = minlen
         self._maxlen = maxlen
 
-        self._default = {}
+        # use list to preserve order (for undo manager)
+        self._default = []
 
     def _verify(self, val, project, recurse=True, vlog=None):
-        if type(val) is not dict:
+        if type(val) is not list:
             vlog.error('invalid type for %s: %s', self.name, type(val))
             return
 
         if not self._minlen <= len(val) <= self._maxlen:
             vlog.error('%s length out of range(%s,%s): %s', self.name, self._minlen, self._maxlen, len(val))
 
-    def get_default(self, project):
-        return {}
+        if recurse:
+            for k, v in val:
+                vlog.push(str(k))
+                try:
+                    self.key_type.verify(k, project, recurse, vlog)
+                    self.val_type.verify(v, project, recurse, vlog)
+                finally:
+                    vlog.pop()
+
+    # def get_default(self, project):
+    #     return []
 
     @property
     def minlen(self):
@@ -652,19 +662,19 @@ class ATDict(AttrType):
     def get_refs(self, val, project):
         if not val:
             return []
-        if not isinstance(val, dict):
+        if not isinstance(val, list):
             return []
-        return sum([self.val_type.get_refs(i, project) for i in val.itervalues()], [])
+
+        return sum([self.val_type.get_refs(k, project) + self.val_type.get_refs(v, project) for k, v in val], [])
 
     def str(self, val, project):
         if val is None:
             return 'Error'
-        strs = ['%s: %s' % (n, self.val_type.str(v, project)) for n, v in val.iteritems()]
-        # todo: delimiter
+        strs = ['%s: %s' % (k, self.val_type.str(v, project)) for k, v in val]
         return '{%s}' % ','.join(strs)
 
     def _export(self, val, project):
-        return {self.key_type.export(k, project): self.val_type.export(v, project) for k, v in val.iteritems()}
+        return {self.key_type.export(k, project): self.val_type.export(v, project) for k, v in val}
 
 
 class ATRef(AttrType):

@@ -123,7 +123,7 @@ class GridCellDialogEditor(GridCellBaseEditor):
                                    [Attr('key', atdict.key_type), Attr('value', atdict.val_type)]))
         at2 = ATList(atstruct, unique_attrs=('key',), minlen=atdict.minlen, maxlen=atdict.maxlen)
         val2 = []
-        for k, v in val.iteritems():
+        for k, v in val:
             val2.append({'key': k, 'value': v})
         return at2, val2
 
@@ -131,9 +131,9 @@ class GridCellDialogEditor(GridCellBaseEditor):
     def _get_result_value(self, val):
         if self._original_dict_type:
             assert isinstance(val, list)
-            r = {}
+            r = []
             for tmp in val:
-                r[tmp['key']] = tmp['value']
+                r.append([tmp['key'], tmp['value']])
 
             return r
         return val

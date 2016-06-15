@@ -670,7 +670,7 @@ class ATDict(AttrType):
     def str(self, val, project):
         if val is None:
             return 'Error'
-        strs = ['%s: %s' % (self.key_type.str(k), self.val_type.str(v, project)) for k, v in val]
+        strs = ['%s: %s' % (self.key_type.str(k, project), self.val_type.str(v, project)) for k, v in val]
         return '{%s}' % ','.join(strs)
 
     def _export(self, val, project):

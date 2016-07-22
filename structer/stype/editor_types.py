@@ -222,6 +222,7 @@ clazz_clazz = _clazz(CLAZZ_NAME_CLAZZ, [Attr("name", atstr_identifier, "Name of 
                                         Attr("min_number", ATInt(default=0), "min number of objects"),
                                         Attr("icon", ATFile(['.png'], True),
                                              "Icon for this class to be shown in editor"),
+                                        Attr("verifier", ATStr(multiline=True)),
                                         Attr("exporter", ATStr(multiline=True)),
                                         ])
 clazz_clazz.icon = "icons/class.png"
@@ -279,6 +280,7 @@ clazz_struct = _clazz(CLAZZ_NAME_STRUCT, [Attr("name", atstr_identifier, "Name o
                                           Attr("attrs", ATList(ATStruct(s_attr), unique_attrs=['name'])),
                                           Attr("str_template", ATStr(),
                                                'eg: "ID: ${id}, Name: $name, Price: $$${price}'),
+                                          Attr("verifier", ATStr(multiline=True)),
                                           Attr("exporter", ATStr(multiline=True))])
 clazz_struct.icon = "icons/struct.png"
 
@@ -297,6 +299,7 @@ clazz_union = _clazz(CLAZZ_NAME_UNION, [Attr("name", ATStr(0, 255)),
                                                 Attr("attrs", ATList(ATStruct(s_attr))),
                                                 Attr("str_template", ATStr(),
                                                      u'eg: "ID: ${id}, Name: $name, Price: $$${price}'),
+                                                Attr("verifier", ATStr(multiline=True)),
                                                 Attr("exporter", ATStr(multiline=True)),
                                                 Attr("comment", ATStr(multiline=True))], str_template=u'${name}')),
                                             minlen=1, unique_attrs=['name'])

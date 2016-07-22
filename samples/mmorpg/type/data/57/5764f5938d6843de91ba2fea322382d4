@@ -75,7 +75,9 @@
 "str_template":
 "${element} ${min} - ${max}",
 "value":
-"0"},
+"0",
+"verifier":
+""},
 {"attrs":
 [{"description":
 "",
@@ -106,7 +108,9 @@
 "str_template":
 "${seconds} seconds",
 "value":
-"1"},
+"1",
+"verifier":
+""},
 {"attrs":
 [{"description":
 "",
@@ -137,7 +141,9 @@
 "str_template":
 "${percent}% hp of target",
 "value":
-"2"},
+"2",
+"verifier":
+""},
 {"attrs":
 [{"description":
 "",
@@ -168,11 +174,15 @@
 "str_template":
 "for ${seconds} seconds",
 "value":
-"3"}],
+"3",
+"verifier":
+""}],
 "name":
 "SkillEffect",
 "show_value_in_label":
-0}},
+0,
+"verifier":
+""}},
 "filetype":
 "object",
 "modify_time":

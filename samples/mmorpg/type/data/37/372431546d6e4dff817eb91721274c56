@@ -76,7 +76,9 @@
 "name":
 "I18N",
 "str_template":
-"${en}"}},
+"${en}",
+"verifier":
+""}},
 "filetype":
 "object",
 "modify_time":

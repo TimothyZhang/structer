@@ -84,6 +84,7 @@ class TypeManager(object):
             name = data['name']
             attrs = self._parse_struct_attrs(data['attrs'], project)
             exporter = data.get('exporter', u'')
+            verifier = data.get('verifier', u'')
 #                 # Add reserved attrs: tags & export
 #                 attrs.insert(0, Attr('tags',   ATList(ATStr(1), unique=True), 'TAGS') )
 #                 attrs.insert(0, Attr('export', ATBool(0), 'export?') )
@@ -97,7 +98,7 @@ class TypeManager(object):
 #                             break
 
             str_template = clazz_obj.get_attr_value('str_template')
-            struct = Struct(name, attrs, str_template=str_template, exporter=exporter)
+            struct = Struct(name, attrs, str_template=str_template, exporter=exporter, verifier=verifier)
             clazz = Clazz(ATStruct(struct))
 
             # extra settings
@@ -220,7 +221,8 @@ class TypeManager(object):
         attrs = self._parse_struct_attrs(struct_def_data['attrs'], project)
         str_template = struct_def_data['str_template']
         exporter = struct_def_data['exporter']
-        struct = Struct(struct_name, attrs, str_template=str_template, exporter=exporter)
+        verifier = struct_def_data.get_attr_value('exporter', u'')
+        struct = Struct(struct_name, attrs, str_template=str_template, exporter=exporter, verifier=verifier)
         
         if cache:
             self._parsed_structs[struct_name] = struct
@@ -285,7 +287,9 @@ class TypeManager(object):
             attrs = self._parse_struct_attrs(item['attrs'], project)
             str_template = item.get('str_template', u'')
             exporter = item.get('exporter', u'')
-            struct = Struct(item['name'], attrs, str_template=str_template, label=item.get('label'), exporter=exporter)
+            verifier = item.get('verifier', u'')
+            struct = Struct(item['name'], attrs, str_template=str_template, label=item.get('label'), exporter=exporter,
+                            verifier=verifier)
             structs.append([ATStruct(struct, exporter=exporter, str_template=str_template), item['value']])
             comments.append(item.get('comment', ''))
         union.set_structs(structs, comments)

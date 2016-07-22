@@ -150,7 +150,11 @@ class FileSystemManager(object):
                 fp = os.path.join(dp, fn)
 
                 # read data
-                data = json.load(open(fp, 'rb'))
+                try:
+                    data = json.load(open(fp, 'rb'))
+                except:
+                    print 'failed to open file:', fp
+                    raise
 
                 # get type
                 node_type = data['type']

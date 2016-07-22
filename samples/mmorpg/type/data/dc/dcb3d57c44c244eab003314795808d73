@@ -114,7 +114,9 @@
 "str_template":
 "${name}",
 "unique_attrs":
-[]}},
+[],
+"verifier":
+""}},
 "filetype":
 "object",
 "modify_time":

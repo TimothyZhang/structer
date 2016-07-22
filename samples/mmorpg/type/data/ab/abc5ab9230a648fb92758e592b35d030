@@ -191,7 +191,9 @@
 "${name}",
 "unique_attrs":
 ["id",
-"name"]}},
+"name"],
+"verifier":
+""}},
 "filetype":
 "object",
 "modify_time":

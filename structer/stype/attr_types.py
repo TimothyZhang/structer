@@ -107,13 +107,13 @@ class Ref(object):
 
 
 class AttrVerifyError(object):
-    def __init__(self, path, msg, *args):
+    def __init__(self, path, msg, exception=None):
         self.path = path
         self.msg = msg
-        self.args = args
+        self.exception = exception
 
     def str(self):
-        return self.msg % tuple(self.args)
+        return self.msg
 
 
 class AttrVerifyLogger(object):
@@ -131,7 +131,9 @@ class AttrVerifyLogger(object):
         self._path = self._path.rsplit('/', 1)[0]
 
     def error(self, msg, *args):
-        self._errors.append(AttrVerifyError(self._path, msg, *args))
+        if args:
+            msg = msg % args
+        self._errors.append(AttrVerifyError(self._path, msg))
 
     def has_error(self):
         return len(self._errors) > 0

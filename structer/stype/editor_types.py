@@ -331,7 +331,8 @@ clazz_setting = _clazz(CLAZZ_NAME_SETTING, [
     Attr('auto_create_clazz_folder', ATBool(0), 'Automatically creates a folder for each Clazz under root.'),
     Attr('export_file_path', ATEnum(e_file_path, 'RelativePath'), 'How to export file paths'),
     Attr('export_relative_root', ATFolder(True), 'Relative root. Only valid if "RelativePath" was selected.'),
-    Attr('export_files', ATBool(), 'Export referenced files or not?')
+    Attr('export_files', ATBool(), 'Export referenced files or not?'),
+    Attr("verifier", ATStr(multiline=True, syntax='python')),
 ])
 clazz_setting.icon = "icons/setting.png"
 # 1 and only 1 setting object

@@ -22,7 +22,7 @@ import traceback
 
 import const
 from stype import editor_types
-from stype.type_manager import TypeManager
+from stype.type_manager import TypeManager, AttrVerifyLogger
 from stype.attr_types import ATInt
 
 from fs_manager import FileSystemManager
@@ -69,11 +69,12 @@ class Project(object):
         # self._langauges = ('en', )
         self._default_language = 'en'
         self._translations = {}
-        
+        self._verifier = None
+        self._loading_errors = AttrVerifyLogger()
+
         self.tags = set()
         
         self._next_ids = {}  # {clazz_name: next_id}
-        self._has_error = False
         self._loaded = False
         self._editor_project = None
 
@@ -89,7 +90,6 @@ class Project(object):
         """
         assert not self._loaded
         self._loaded = True
-        self._has_error = False
         
         if self.is_type_editor:
             self.type_manager.load_editor_types()
@@ -101,10 +101,9 @@ class Project(object):
             # noinspection PyBroadException
             try:
                 self.type_manager.load_types(p)
-            except:
-                # todo log this error!
+            except Exception, e:
+                self._loading_errors.error('Failed to load types: %s', e)
                 traceback.print_exc()
-                self._has_error = True
                                         
             # load setting
             setting_objs = p.object_manager.get_objects(editor_types.CLAZZ_NAME_SETTING)        
@@ -114,15 +113,16 @@ class Project(object):
                 self.tags = set(setting_obj.get_attr_value('tags', []))
                 self.tags.add('export')
                 self._auto_create_clazz_folder = setting_obj.get_attr_value('auto_create_clazz_folder')
+                verifier = setting_obj.get_attr_value('verifier')
+                if verifier:
+                    self._verifier = make_verifier(verifier)
             elif len(setting_objs) > 1:
                 log.error('too many Setting objects: %s', len(setting_objs))
+                self._loading_errors.error('too many Setting objects: %s', len(setting_objs))
             
-        is_new = self.fs_manager.load()            
+        is_new = self.fs_manager.load()
+        self.object_manager.load(self._loading_errors)
 
-        if not self.object_manager.load():
-            print 'object manager has error'
-            self._has_error = True         
-        
         # todo: enable evt_manager here. previously events should be ignored.
                 
         # Creates root folder for each Clazz, if it's a new project
@@ -130,18 +130,19 @@ class Project(object):
             for clazz in self.type_manager.get_clazzes():
                 if not self.fs_manager.root.get_sub_folder_by_name(clazz.name):                    
                     self.fs_manager.create_folder(self.fs_manager.root, clazz.name)
-                
+
         return is_new
-        
+
+    # todo: rename to check_errors
     def has_error(self, print_=False):
         """todo: this method is slow!"""
-        if self._has_error:
-            print 'project error'
+        if self._loading_errors.has_error():
+            if print_:
+                self._loading_errors.log_all(self)
             return True
         
         if not self.is_type_editor:
             if self.get_editor_project().has_error(print_):
-                print 'editor project error'
                 return True
         
         for obj in self.object_manager.iter_all_objects():
@@ -154,7 +155,15 @@ class Project(object):
                 if print_:  # this is ugly!                    
                     vlog.log_all(self)
                 return True
-        
+
+        if self._verifier:
+            vlog = AttrVerifyLogger()
+            self._verifier(self, vlog.error)
+            if vlog.has_error():
+                if print_:
+                    vlog.log_all(self)
+                return True
+
         return False
     
     def get_editor_project(self):
@@ -302,6 +311,23 @@ class Project(object):
             return val
         
         self.fix_all(fixer)
+
+
+def make_verifier(src):
+    """Make a verifier function by source code
+
+    :param str src:
+    :rtype: function
+    """
+    src = src.replace('\t', ' ' * 4)
+    # indent
+    src = '\n'.join([' ' * 4 + l for l in src.split('\n')])
+    src = 'def _verifier(p,error):\n' + src
+
+    l = {}
+    exec (src, {}, l)
+    return l['_verifier']
+
                 
 if __name__ == '__main__':
     # p = Project("c:\\test", False)

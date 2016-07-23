@@ -38,9 +38,7 @@ class ObjectManager(object):
         self.project.event_manager.register(FSEvent.get_key_of(FSEvent.RECYCLE), self._on_fs_recycle)
         self.project.event_manager.register(FSEvent.get_key_of(FSEvent.RESTORE), self._on_fs_restore)
         
-    def load(self):
-        success = True
-                
+    def load(self, vlog):
         for clazz in self.project.type_manager.get_clazzes():
             self._obj_map[clazz.name] = {}
         
@@ -53,7 +51,7 @@ class ObjectManager(object):
                 obj = self._create_object(node, False)                                                
             except Exception, e:
                 log.error(e, 'Failed to create object: %s', node.uuid)
-                success = False
+                vlog.error('Failed to create object: %s(%s)', node.uuid, e)
             else:    
                 # self.add_object(obj)
                 self._obj_map[obj.clazz.name][obj.uuid] = obj
@@ -63,11 +61,10 @@ class ObjectManager(object):
             # noinspection PyBroadException
             try:
                 obj.verify()
-            except:
-                # todo: log error?
+            except Exception, e:
                 import traceback
                 traceback.print_exc()
-                success = False
+                vlog.error('Failed to verify object: %s(%s)', obj.uuid, e)
 
         # update references
         for obj in self.iter_all_objects():
@@ -83,9 +80,7 @@ class ObjectManager(object):
                 log.warn('Failed to create recycled object: %s(%s)', node.uuid, e)
             else:            
                 self._recycled_objects[obj.uuid] = obj                
-        
-        return success
-    
+
     def _on_fs_create(self, evt):
         fs_node = evt.fs_node
         

@@ -365,18 +365,36 @@ class ATDuration(AttrType):
 class ATStr(AttrType):
     """value: unicode"""
 
-    def __init__(self, minlen=0, maxlen=0x7FFFFFFF, default=u"", multiline=False, regex='', **kwargs):
+    def __init__(self, minlen=0, maxlen=0x7FFFFFFF, default=u"", multiline=False, regex='', syntax=None, **kwargs):
+        """
+        :param int minlen:
+        :param int maxlen:
+        :param unicode default:
+        :param bool multiline:
+        :param str regex:
+        :param str|None syntax: 'python'
+        :param dict kwargs:
+        """
         AttrType.__init__(self, **kwargs)
 
         assert 0 <= minlen <= maxlen
         self.minlen = minlen
         self.maxlen = maxlen
         self._default = default
-
+        self._syntax = syntax
+        self._multiline = multiline
         self._regex = regex
         self._pattern = None
         if regex:
             self._pattern = re.compile(regex)
+
+    @property
+    def multiline(self):
+        return self._multiline
+
+    @property
+    def syntax(self):
+        return self._syntax
 
     def _verify(self, val, project, recurse=True, vlog=None):
         if type(val) is not unicode:

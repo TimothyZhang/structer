@@ -19,7 +19,7 @@
 """
 Simple types are edited in grid cells, while complicated types are edited in an individual grid in a new dialog 
 
-Hierachy:
+Hierarchy:
 
 base_grid
     list_grid                # editor for general ATList(except ATList of ATStruct)
@@ -35,7 +35,7 @@ from list_grid import ListGrid
 from struct_list import StructListGrid
 from union import UnionGrid
 
-from structer.stype.attr_types import ATList, ATStruct, ATUnion, ATDict
+from structer.stype.attr_types import ATList, ATStruct, ATUnion
 
 
 def get_grid_by_context(ctx):

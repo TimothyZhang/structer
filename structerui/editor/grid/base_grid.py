@@ -31,6 +31,8 @@ from structerui import util
 from structerui import hotkey
 from cell_editor import * 
 from cell_editor.dialog import RefEditorDialog, EditorDialog, FileDialog, FolderDialog
+from structerui.editor.grid.cell_editor.dict_editor import DictEditor
+from structerui.explorer.filter_editor import FilterEditorDialog
 
 COL_MAX_SIZE = 250
 COL_MIN_ACCEPTABLE_SIZE = 100
@@ -38,6 +40,8 @@ CLIPBOARD_DATA_FORMAT = "__structer_grid_cells_f9014n203823dk1j2hdlacxcb__"
 
 MY_GRID_DATA_TYPE_ENUM = "MY_GRID_DATA_TYPE_ENUM"
 MY_GRID_DATA_TYPE_LIST = "MY_GRID_DATA_TYPE_LIST"
+MY_GRID_DATA_TYPE_MULTILINE_STR = "MY_GRID_DATA_TYPE_MULTILINE_STR"
+MY_GRID_DATA_TYPE_PYTHON_CODE = "MY_GRID_DATA_TYPE_PYTHON_CODE"
 MY_GRID_DATA_TYPE_DICT = "MY_GRID_DATA_TYPE_DICT"
 MY_GRID_DATA_TYPE_UNION = "MY_GRID_DATA_TYPE_UNION"
 MY_GRID_DATA_TYPE_STRUCT = "MY_GRID_DATA_TYPE_STRUCT"
@@ -100,12 +104,14 @@ class TableBase(grid.PyGridTableBase):
 
     # noinspection PyMethodMayBeStatic
     def get_cell_typename_by_attrtype(self, attr_type):
-        att = type(attr_type)
+        att = type(attr_type)   # todo should use isinstance
         if att is ATInt:
             return grid.GRID_VALUE_NUMBER + ":%s,%s" % (attr_type.min, attr_type.max)
         if att is ATFloat:
             return grid.GRID_VALUE_FLOAT
         if att is ATStr:
+            if attr_type.multiline or attr_type.syntax == 'python':
+                return MY_GRID_DATA_TYPE_PYTHON_CODE
             return grid.GRID_VALUE_STRING        
         if att is ATRef:
             return MY_GRID_DATA_TYPE_REF
@@ -287,9 +293,11 @@ class GridBase(grid.Grid):
         self.RegisterDataType(grid.GRID_VALUE_NUMBER,   grid.GridCellNumberRenderer(), GridCellIntEditor())
         self.RegisterDataType(grid.GRID_VALUE_FLOAT,    grid.GridCellFloatRenderer(),  GridCellFloatEditor())
         self.RegisterDataType(grid.GRID_VALUE_STRING,   str_renderer(), GridCellStrEditor())
-        
+
+        self.RegisterDataType(MY_GRID_DATA_TYPE_MULTILINE_STR,   str_renderer(), GridCellDialogEditor(FilterEditorDialog))
+        self.RegisterDataType(MY_GRID_DATA_TYPE_PYTHON_CODE,   str_renderer(), GridCellDialogEditor(FilterEditorDialog))
         self.RegisterDataType(MY_GRID_DATA_TYPE_LIST,   str_renderer(), GridCellDialogEditor())
-        self.RegisterDataType(MY_GRID_DATA_TYPE_DICT,   str_renderer(), GridCellDialogEditor())
+        self.RegisterDataType(MY_GRID_DATA_TYPE_DICT,   str_renderer(), DictEditor())
         self.RegisterDataType(MY_GRID_DATA_TYPE_UNION,  str_renderer(), GridCellDialogEditor())
         self.RegisterDataType(MY_GRID_DATA_TYPE_STRUCT, str_renderer(), GridCellDialogEditor())
         self.RegisterDataType(MY_GRID_DATA_TYPE_ENUM,   grid.GridCellStringRenderer(), GridCellEnumEditor())

@@ -49,7 +49,6 @@ class GridCellDialogEditor(GridCellBaseEditor):
         self._ctrl = None
         self._dlg_ctx = None
         self._top_level_window = None
-        self._original_dict_type = None
 
     # noinspection PyMethodOverriding
     def Create(self, parent, id_, evt_handler):
@@ -113,29 +112,10 @@ class GridCellDialogEditor(GridCellBaseEditor):
         tbl = grid.GetTable()
         at = tbl.get_attr_type(row, col)
         val = tbl.get_attr_value(row, col)
+        return at, val
 
-        if not isinstance(at, ATDict):
-            return at, val
-
-        # todo: can not undo, because we lost item order
-        self._original_dict_type = atdict = at
-        atstruct = ATStruct(Struct(atdict.name,
-                                   [Attr('key', atdict.key_type), Attr('value', atdict.val_type)]))
-        at2 = ATList(atstruct, unique_attrs=('key',), minlen=atdict.minlen, maxlen=atdict.maxlen)
-        val2 = []
-        for k, v in val:
-            val2.append({'key': k, 'value': v})
-        return at2, val2
-
-    # noinspection PyMethodMayBeStatic
     def _get_result_value(self, val):
-        if self._original_dict_type:
-            assert isinstance(val, list)
-            r = []
-            for tmp in val:
-                r.append([tmp['key'], tmp['value']])
-
-            return r
+        _ = self
         return val
 
     # noinspection PyMethodOverriding
@@ -167,7 +147,7 @@ class GridCellDialogEditor(GridCellBaseEditor):
         
         # ShowModal() will block the entire app, while ShowWindowModal() is only availabe on osx
         # so we should not use ShowModal() on EditorDialog
-        if type(dlg) is EditorDialog:                         
+        if isinstance(dlg, EditorDialog):
             dlg.Bind(wx.EVT_CLOSE, self.OnDialogClose)
             
             # disable current TopLevelWindow(Frame or Dialog)
@@ -184,12 +164,12 @@ class GridCellDialogEditor(GridCellBaseEditor):
             ctx.undo_manager.add(OpenDialogAction(row, col))
 
             dlg.Show()
-
         else:
             # wx.FileDialog can ONLY work with ShowModal(), and also EVT_CLOSE is not working on it.
             # So we have not choice but blocking the entire application with ShowModal(), and then
             # fetch it's value manually
             if wx.ID_OK == dlg.ShowModal():
+                # todo: should define get_attr_data() as interface method
                 ctx.attr_data = dlg.get_attr_data()               
             dlg.Destroy()
 
@@ -217,7 +197,7 @@ class GridCellDialogEditor(GridCellBaseEditor):
 
     # noinspection PyMethodMayBeStatic
     def _set_dialog_position(self, dlg, parent_rect_on_screen):
-        """Sets postions of new dialog
+        """Sets positions of new dialog
         
         Args:
             parent_rect_on_screen: the rect of cell been editing, in screen coordinates.

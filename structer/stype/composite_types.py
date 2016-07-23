@@ -129,7 +129,7 @@ class Struct(object):
         self._str_template = string.Template(str_template) if str_template else None
         self.exporter = exporter
         self.verifier = verifier
-        
+
         self.__attrs = attrs        
         self.__attr_map = {}
         for attr in attrs:

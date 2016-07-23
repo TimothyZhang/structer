@@ -25,13 +25,16 @@ from filter_editor_xrc import xrcFilterEditorDialog, get_resources
 
 
 class FilterEditorDialog(xrcFilterEditorDialog):
-    def __init__(self, parent):
+    def __init__(self, parent, editor_context):
         xrcFilterEditorDialog.__init__(self, parent)
+        self.editor_context = editor_context
         
         self.text_ctrl = PythonSTC(self)
         get_resources().AttachUnknownControl("text_ctrl", self.text_ctrl)
         
         self.Bind(wx.EVT_CHAR_HOOK, self._on_char_hook)
+
+        self.set_value(self.editor_context.attr_data)
         
     def _on_char_hook(self, evt):
         key = evt.GetKeyCode()
@@ -47,6 +50,10 @@ class FilterEditorDialog(xrcFilterEditorDialog):
     
     def set_value(self, text):
         return self.text_ctrl.SetText(text)
+
+    def get_attr_data(self):
+        return self.get_value()
+
 
 if wx.Platform == '__WXMSW__':
     faces = {'times': 'Times New Roman',

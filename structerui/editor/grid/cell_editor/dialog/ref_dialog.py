@@ -21,6 +21,7 @@ import wx.grid as grid
 
 from structerui import hotkey
 from ref_dialog_xrc import xrcRefDialog
+from structerui.util import is_mac
 
 
 class RefSearchResultTable(grid.PyGridTableBase):
@@ -154,8 +155,12 @@ class RefDialog(xrcRefDialog):
         # else:
         #     next_ = self.text_ctrl
         next_ = self.text_ctrl
-        
-        wx.CallLater(0.001, next_.SetFocus)
+
+        if is_mac():
+            next_.SetFocus()
+        else:
+            # todo: test again!
+            wx.CallLater(0.001, next_.SetFocus)
 
     def OnTextCtrlText(self, evt):
         self._search(self.text_ctrl.GetValue())

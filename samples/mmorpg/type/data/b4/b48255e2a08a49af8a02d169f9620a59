@@ -249,7 +249,7 @@
 ["id",
 "name"],
 "verifier":
-""}},
+"if len(v['skills'])>2:\n    error('HeroClass should have no more that 2 skills: %s' % v['id'])"}},
 "filetype":
 "object",
 "modify_time":

@@ -48,8 +48,8 @@ if not v['min']<=v['default']<=v['max']:
 s_int = ATStruct(Struct(u"Int", [Attr("min", ATInt(min=INT_MIN, max=INT_MAX, default=-0x80000000)),
                                  Attr("max", ATInt(min=INT_MIN, max=INT_MAX, default=0x7FFFFFFF)),
                                  Attr("default", ATInt(default=0)),
-                                 Attr("verifier", ATStr(multiline=True)),
-                                 Attr("exporter", ATStr(multiline=True))],
+                                 Attr("verifier", ATStr(multiline=True, syntax='python')),
+                                 Attr("exporter", ATStr(multiline=True, syntax='python'))],
                         str_template=u"Int ${default}, [${min}, ${max}]"),
                  verifier=s_int_verifier,
                  )
@@ -74,15 +74,15 @@ s_duration = ATStruct(
 )
 
 s_bool = ATStruct(Struct(u"Bool", [Attr("default", ATBool()),
-                                   Attr("verifier", ATStr(multiline=True)),
-                                   Attr("exporter", ATStr(multiline=True))]),
+                                   Attr("verifier", ATStr(multiline=True, syntax='python')),
+                                   Attr("exporter", ATStr(multiline=True, syntax='python'))]),
                   str_template=u"Bool ${default}")
 
 s_float = ATStruct(Struct(u"Float", [Attr("min", ATFloat(default=-9999999999999.9)),
                                      Attr("max", ATFloat(default=9999999999999.9)),
                                      Attr("default", ATFloat(default=0.0)),
-                                     Attr("verifier", ATStr(multiline=True)),
-                                     Attr("exporter", ATStr(multiline=True))]),
+                                     Attr("verifier", ATStr(multiline=True, syntax='python')),
+                                     Attr("exporter", ATStr(multiline=True, syntax='python'))]),
                    str_template=u"Float ${default}, [${min}, ${max}]")
 
 s_str = ATStruct(Struct(u"Str", [Attr("minlen", ATInt(default=0)),
@@ -90,8 +90,8 @@ s_str = ATStruct(Struct(u"Str", [Attr("minlen", ATInt(default=0)),
                                  Attr("default", ATStr()),
                                  Attr("multiline", ATBool()),
                                  Attr("regex", ATStr(), "Python regular expression with which the value must match."),
-                                 Attr("verifier", ATStr(multiline=True)),
-                                 Attr("exporter", ATStr(multiline=True))]),
+                                 Attr("verifier", ATStr(multiline=True, syntax='python')),
+                                 Attr("exporter", ATStr(multiline=True, syntax='python'))]),
                  str_template=u"Str [${minlen}, ${maxlen}]")
 
 s_file = ATStruct(Struct(u'File', [
@@ -114,8 +114,8 @@ s_list = ATStruct(Struct(u"List", [Attr("element_type", atu_type),
                                    Attr("delimiter", ATStr(default=u"; "), 'delimiter of items. usually ";" or "\n"'),
                                    Attr("unique_attrs", ATList(ATStr(1, 255), True),
                                         '[ONLY if element type is Struct]names of attributes must be unique'),
-                                   Attr("verifier", ATStr(multiline=True)),
-                                   Attr("exporter", ATStr(multiline=True))]),
+                                   Attr("verifier", ATStr(multiline=True, syntax='python')),
+                                   Attr("exporter", ATStr(multiline=True, syntax='python'))]),
                   str_template=u"[${element_type}] [${minlen}, ${maxlen}]")
 
 # todo: should verify key type
@@ -123,19 +123,19 @@ s_dict = ATStruct(Struct(u"Dict", [Attr("key_type", atu_type, 'primitive type ON
                                    Attr("val_type", atu_type),
                                    Attr("minlen", ATInt(default=0)),
                                    Attr("maxlen", ATInt(default=1024)),
-                                   Attr("verifier", ATStr(multiline=True)),
-                                   Attr("exporter", ATStr(multiline=True))]))
+                                   Attr("verifier", ATStr(multiline=True, syntax='python')),
+                                   Attr("exporter", ATStr(multiline=True, syntax='python'))]))
 
 s_ref = ATStruct(Struct(u"Ref", [Attr("class_name", ATRef(CLAZZ_NAME_CLAZZ)),
                                  Attr("nullable", ATBool(1)),
-                                 Attr("verifier", ATStr(multiline=True)),
-                                 Attr("exporter", ATStr(multiline=True))]),
+                                 Attr("verifier", ATStr(multiline=True, syntax='python')),
+                                 Attr("exporter", ATStr(multiline=True, syntax='python'))]),
                  str_template=u"${class_name}")
 
 s_struct = ATStruct(Struct(u"Struct", [Attr("struct", ATRef(CLAZZ_NAME_STRUCT)),
                                        Attr("str_template", ATStr(), u'This will override str_template of the Struct'),
-                                       Attr("verifier", ATStr(multiline=True)),
-                                       Attr("exporter", ATStr(multiline=True))]),
+                                       Attr("verifier", ATStr(multiline=True, syntax='python')),
+                                       Attr("exporter", ATStr(multiline=True, syntax='python'))]),
                     str_template="${struct}")
 
 s_union_verifier = """for name in v['filter']:
@@ -144,8 +144,8 @@ s_union_verifier = """for name in v['filter']:
 """
 s_union = ATStruct(Struct(u"Union", [Attr("union", ATRef(CLAZZ_NAME_UNION)),
                                      Attr("filter", ATList(ATStr(1, 255), unique=True)),
-                                     Attr("verifier", ATStr(multiline=True)),
-                                     Attr("exporter", ATStr(multiline=True))]),
+                                     Attr("verifier", ATStr(multiline=True, syntax='python')),
+                                     Attr("exporter", ATStr(multiline=True, syntax='python'))]),
                    verifier=s_union_verifier,
                    str_template=u"${union}")
 
@@ -168,7 +168,7 @@ if v[u'default'] and v[u'default'] not in names:
 s_enum = ATStruct(Struct(u"Enum", [Attr("enum", ATRef(CLAZZ_NAME_ENUM)),
                                    Attr("default", ATStr(0, 255, u"")),
                                    Attr("filter", ATList(ATStr(1, 255), unique=True)),
-                                   Attr("verifier", ATStr(multiline=True))],
+                                   Attr("verifier", ATStr(multiline=True, syntax='python'))],
                          str_template=u'${enum}'),
                   verifier=s_enum_verifier)
 
@@ -189,8 +189,8 @@ s_attr = Struct("AttrDef", [attr_attr_name,
                 str_template=u'${name}')
 
 
-def _clazz(*args, **kwargs):
-    return Clazz(ATStruct(Struct(*args, **kwargs)))
+def _clazz(name, attrs, **kwargs):
+    return Clazz(ATStruct(Struct(name, attrs), **kwargs))
 
 ################################################################################
 # Class
@@ -222,8 +222,8 @@ clazz_clazz = _clazz(CLAZZ_NAME_CLAZZ, [Attr("name", atstr_identifier, "Name of 
                                         Attr("min_number", ATInt(default=0), "min number of objects"),
                                         Attr("icon", ATFile(['.png'], True),
                                              "Icon for this class to be shown in editor"),
-                                        Attr("verifier", ATStr(multiline=True)),
-                                        Attr("exporter", ATStr(multiline=True)),
+                                        Attr("verifier", ATStr(multiline=True, syntax='python')),
+                                        Attr("exporter", ATStr(multiline=True, syntax='python')),
                                         ])
 clazz_clazz.icon = "icons/class.png"
 # todo: verify unique_attrs
@@ -280,8 +280,8 @@ clazz_struct = _clazz(CLAZZ_NAME_STRUCT, [Attr("name", atstr_identifier, "Name o
                                           Attr("attrs", ATList(ATStruct(s_attr), unique_attrs=['name'])),
                                           Attr("str_template", ATStr(),
                                                'eg: "ID: ${id}, Name: $name, Price: $$${price}'),
-                                          Attr("verifier", ATStr(multiline=True)),
-                                          Attr("exporter", ATStr(multiline=True))])
+                                          Attr("verifier", ATStr(multiline=True, syntax='python')),
+                                          Attr("exporter", ATStr(multiline=True, syntax='python'))])
 clazz_struct.icon = "icons/struct.png"
 
 ################################################################################
@@ -299,8 +299,8 @@ clazz_union = _clazz(CLAZZ_NAME_UNION, [Attr("name", ATStr(0, 255)),
                                                 Attr("attrs", ATList(ATStruct(s_attr))),
                                                 Attr("str_template", ATStr(),
                                                      u'eg: "ID: ${id}, Name: $name, Price: $$${price}'),
-                                                Attr("verifier", ATStr(multiline=True)),
-                                                Attr("exporter", ATStr(multiline=True)),
+                                                Attr("verifier", ATStr(multiline=True, syntax='python')),
+                                                Attr("exporter", ATStr(multiline=True, syntax='python')),
                                                 Attr("comment", ATStr(multiline=True))], str_template=u'${name}')),
                                             minlen=1, unique_attrs=['name'])
                                             ),

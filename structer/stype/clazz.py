@@ -63,7 +63,7 @@ class Clazz(object):
         # unique attrs
         val = [obj.raw_data for obj in objects]
         verify_list_unique_attrs(self.atstruct, self.unique_attrs, val, project, vlog)        
-        return vlog        
+        return vlog
 
 
 class Object(object):

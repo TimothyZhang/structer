@@ -33,7 +33,7 @@ The UI hierarchy of EditorPanel is:
 
 context: stores data to be edit
 frame:   edit an object, of a list of objects
-dialog:  recusively edit complicated attributes
+dialog:  recursively edit complicated attributes
 panel:   editor any kind of complicated attributes. can be put into frame or dialog
 grid:    view and edit each attribute, by different editors/renderers
 """

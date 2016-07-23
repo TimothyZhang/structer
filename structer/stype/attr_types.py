@@ -181,6 +181,14 @@ class AttrType(object):
         u"""Get type name."""
         return self._name
 
+    @property
+    def verifier(self):
+        return self._verifier
+
+    @property
+    def exporter(self):
+        return self._exporter
+
     def get_refs(self, val, project):
         u"""Gets all objects reference by me
 
@@ -195,9 +203,9 @@ class AttrType(object):
 
         self._verify(val, project, recurse, vlog)
 
-        if self._verifier:
+        if self.verifier:
             try:
-                self._verifier(self, val, project, vlog.error)
+                self.verifier(self, val, project, vlog.error)
             except Exception, e:
                 log.error(e, 'error in verifier of %s', self.name)
                 vlog.error('verifier error: %s %s', e.__class__.__name__, str(e))
@@ -214,8 +222,8 @@ class AttrType(object):
     def export(self, val, project):
         d = self._export(val, project)
 
-        if self._exporter:
-            d = self._exporter(val, d, self, project)
+        if self.exporter:
+            d = self.exporter(val, d, self, project)
 
         return d
 
@@ -983,6 +991,12 @@ class ATStruct(AttrType):
 
         self.__struct = struct
         self._str_template = string.Template(str_template) if str_template else None
+
+        if not self._verifier and self.struct.verifier:
+            self._verifier = make_verifier(self.struct.verifier)
+
+        if not self._exporter and self.struct.exporter:
+            self._exporter = make_exporter(self.struct.exporter)
 
     @property
     def str_template(self):

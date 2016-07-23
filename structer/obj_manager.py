@@ -90,7 +90,7 @@ class ObjectManager(object):
         fs_node = evt.fs_node
         
         if fs_util.is_object(fs_node):
-            obj = self._create_object(fs_node)
+            obj = self._create_object(fs_node, verify=True)
             self.add_object(obj)
     
     def _on_fs_modify(self, evt):

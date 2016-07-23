@@ -168,13 +168,13 @@ class Object(object):
         self.__error_count = len(vlog.errors)
         return vlog
     
-    def check_data(self):
-        prev = self.__error_count
-        self._check_data()
-        
-        if prev != self.__error_count:
-            # todo: post an change event
-            pass               
+    # def check_data(self):
+    #     prev = self.__error_count
+    #     self._check_data()
+    #
+    #     if prev != self.__error_count:
+    #         # todo: post an change event
+    #         pass
     
     def has_attr(self, name):
         return self.atstruct.has_attr(name)

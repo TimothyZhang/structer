@@ -76,7 +76,7 @@ class Project(object):
         self._has_error = False
         self._loaded = False
         self._editor_project = None
-    
+
     @property
     def name(self):
         p = os.path.split(self.path)
@@ -118,7 +118,7 @@ class Project(object):
                 log.error('too many Setting objects: %s', len(setting_objs))
             
         is_new = self.fs_manager.load()            
-                
+
         if not self.object_manager.load():
             print 'object manager has error'
             self._has_error = True         
@@ -205,6 +205,7 @@ class Project(object):
                 if obj.get_attr_value('id') == default:
                     obj.set_attr_value('id', next_id)
                     self.save_object(obj)
+
         return obj
         # return self.object_manager.create_object(clazz, file_.uuid)
 
@@ -232,7 +233,7 @@ class Project(object):
         return next_id            
     
     def save_object(self, obj):
-        self.fs_manager.save_file(obj.uuid, fs_util.generate_file_data_by_object(obj))        
+        self.fs_manager.save_file(obj.uuid, fs_util.generate_file_data_by_object(obj))
     
     def delete_object(self, obj):
         self.fs_manager.delete(obj.uuid)

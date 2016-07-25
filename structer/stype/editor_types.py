@@ -69,7 +69,6 @@ s_duration = ATStruct(
                Attr("min", ATInt(min=INT_MIN, max=INT_MAX, default=0)),
                Attr("max", ATInt(min=INT_MIN, max=INT_MAX, default=INT_MAX)),
            ]
-
     )
 )
 
@@ -304,8 +303,8 @@ clazz_union = _clazz(CLAZZ_NAME_UNION, [Attr("name", ATStr(0, 255)),
                                                 Attr("comment", ATStr(multiline=True))], str_template=u'${name}')),
                                             minlen=1, unique_attrs=['name'])
                                             ),
-                                        # Attr('export_names', ATBool(0),
-                                        # u'export names instead of values(value by default)'),
+                                        Attr('export_names', ATBool(0),
+                                             u'export names instead of values(value by default)'),
                                         Attr('convert_to_int', ATBool(0), u'convert values to integers'),
                                         Attr('exporter', ATStr(), u'custom exporter'),
                                         Attr('show_value_in_label', ATBool(1))

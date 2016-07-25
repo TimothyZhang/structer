@@ -221,7 +221,7 @@ class TypeManager(object):
         attrs = self._parse_struct_attrs(struct_def_data['attrs'], project)
         str_template = struct_def_data['str_template']
         exporter = struct_def_data['exporter']
-        verifier = struct_def_data.get_attr_value('exporter', u'')
+        verifier = struct_def_data.get_attr_value('verifier', u'')
         struct = Struct(struct_name, attrs, str_template=str_template, exporter=exporter, verifier=verifier)
         
         if cache:

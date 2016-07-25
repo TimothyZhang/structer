@@ -332,9 +332,11 @@ class ATFloat(AttrType):
 
 
 class ATTime(AttrType):
-    def __init__(self, min=None, max=None, **kwargs):
+    def __init__(self, min=None, max=None, default=None, **kwargs):
         AttrType.__init__(self, **kwargs)
         self.min, self.max = min, max
+        if default is not None:
+            self._default = default
         # self._default = time.time()
 
     def get_default(self, project):
@@ -354,10 +356,10 @@ class ATTime(AttrType):
 
 
 class ATDuration(AttrType):
-    def __init__(self, min=None, max=None, **kwargs):
+    def __init__(self, min=None, max=None, default=None, **kwargs):
         AttrType.__init__(self, **kwargs)
         self.min, self.max = min, max
-        self._default = 0
+        self._default = 0 if default is None else default
 
     def str(self, val, project):
         return dhms_to_str(*seconds_to_dhms(val))

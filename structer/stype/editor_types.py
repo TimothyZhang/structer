@@ -57,8 +57,12 @@ s_int = ATStruct(Struct(u"Int", [Attr("min", ATInt(min=INT_MIN, max=INT_MAX, def
 s_time = ATStruct(
     Struct(u"Time",
            [
-               Attr("min", ATInt(min=INT_MIN, max=INT_MAX, default=0)),
-               Attr("max", ATInt(min=INT_MIN, max=INT_MAX, default=INT_MAX)),
+               Attr("min", ATTime(min=utc_str_to_timestamp('2000-01-01 00:00:00'),
+                                  max=utc_str_to_timestamp('3000-01-01 00:00:00'),
+                                  default=utc_str_to_timestamp('2000-01-01 00:00:00'))),
+               Attr("max", ATTime(min=utc_str_to_timestamp('2000-01-01 00:00:00'),
+                                  max=utc_str_to_timestamp('3000-01-01 00:00:00'),
+                                  default=utc_str_to_timestamp('3000-01-01 00:00:00'))),
            ]
     )
 )
@@ -66,8 +70,8 @@ s_time = ATStruct(
 s_duration = ATStruct(
     Struct(u"Duration",
            [
-               Attr("min", ATInt(min=INT_MIN, max=INT_MAX, default=0)),
-               Attr("max", ATInt(min=INT_MIN, max=INT_MAX, default=INT_MAX)),
+               Attr("min", ATDuration(min=0, max=3600 * 24 * 99999, default=0)),
+               Attr("max", ATDuration(min=0, max=3600 * 24 * 99999, default=3600 * 24 * 99999)),
            ]
     )
 )

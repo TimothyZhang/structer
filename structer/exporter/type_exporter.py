@@ -5,7 +5,7 @@ import copy
 
 from base import BaseExporter
 from structer.stype.attr_types import (ATInt, ATStr, ATStruct, ATUnion, ATBool, ATEnum, ATFile, ATFloat, ATFolder,
-                                       ATList, ATRef, ATDuration, ATDict)
+                                       ATList, ATRef, ATDuration, ATDict, ATTime)
 
 
 """
@@ -70,7 +70,7 @@ def _export_at(at):
         if at.element_type.name == 'YieldItemWithRate@':
             return {'type': 'Yield'}
         return {'type': 'list', 'element_type': _export_at(at.element_type)}
-    if isinstance(at, ATDuration):
+    if isinstance(at, (ATDuration, ATTime)):
         return {'type': 'int'}
 
     raise Exception('unsupported type: %s %s' % (at.__class__.__name__, at.name))

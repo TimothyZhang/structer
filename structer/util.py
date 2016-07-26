@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Structer.  If not, see <http://www.gnu.org/licenses/>.
-
+import calendar
 import os
 
 import time
@@ -149,8 +149,9 @@ def str_to_dhms(s):
 
 def utc_str_to_timestamp(s):
     # val = ' '.join(val.split(' ')[:2])
-    tz = - time.timezone / 3600
-    return time.mktime(time.strptime(s, '%Y-%m-%d %H:%M:%S')) + 3600 * tz
+    # tz = - time.timezone / 3600
+    # return time.mktime(time.strptime(s, '%Y-%m-%d %H:%M:%S')) + 3600 * tz
+    return calendar.timegm(time.strptime(s, '%Y-%m-%d %H:%M:%S'))
 
 
 def utc_timestamp_to_str(timestamp):
@@ -163,4 +164,6 @@ if __name__ == '__main__':
     # print get_relative_path('/a/', '/a/b/c')
     # print get_relative_path('/a/d', '/a/b/c')
     print dhms_to_str(*seconds_to_dhms(129))
+    print utc_timestamp_to_str(0)
+    print utc_str_to_timestamp('1970-01-01 00:00:00')
 

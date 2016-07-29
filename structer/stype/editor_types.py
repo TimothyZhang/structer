@@ -110,6 +110,7 @@ s_folder = ATStruct(Struct(u'Folder', [Attr('optional', ATBool(1), u'Is this att
 u_type = Union("TypeDef", [[s, s.struct.name] for s in [s_int, s_bool, s_float, s_str, s_time, s_duration]],
                show_value_in_label=False)
 atu_type = ATUnion(u_type)
+atu_key_type = ATUnion(u_type, filter=(u'Bool', u'Int', u'Str', u'Enum', u'Ref'))
 
 s_list = ATStruct(Struct(u"List", [Attr("element_type", atu_type),
                                    Attr("minlen", ATInt(default=0)),
@@ -122,7 +123,7 @@ s_list = ATStruct(Struct(u"List", [Attr("element_type", atu_type),
                   str_template=u"[${element_type}] [${minlen}, ${maxlen}]")
 
 # todo: should verify key type
-s_dict = ATStruct(Struct(u"Dict", [Attr("key_type", atu_type, 'primitive type ONLY(int/str/enum/ref)'),
+s_dict = ATStruct(Struct(u"Dict", [Attr("key_type", atu_key_type, 'primitive type ONLY(bool/int/str/enum/ref)'),
                                    Attr("val_type", atu_type),
                                    Attr("minlen", ATInt(default=0)),
                                    Attr("maxlen", ATInt(default=1024)),

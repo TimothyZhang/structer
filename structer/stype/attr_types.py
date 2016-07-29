@@ -858,13 +858,14 @@ class ATUnion(AttrType):
         AttrType.__init__(self, '%s&' % union.name, **kwargs)
         self.union = union
 
-        # BE CAREFULL! editor_types.u_type was created with an empty union!!!
+        # BE CAREFUL! editor_types.u_type was created with an empty union!!!
         # It's NOT used, since get_default() was overridden
         # self._default = ['', {}]  # it's an invalid value
 
-        if filter:
-            for name in filter:
-                assert union.get_atstruct(name) is not None
+        # todo AGAIN, editor_types will modify Union after ATUnion()!
+        # if filter:
+        #     for name in filter:
+        #         assert union.get_atstruct(name) is not None
 
         self._filter = filter
         # self.update_union()

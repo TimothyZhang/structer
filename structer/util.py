@@ -191,7 +191,12 @@ def str_to_timestamp(s, timezone_offset=0):
     :param int timezone_offset: seconds
     :rtype: int
     """
-    timestamp = calendar.timegm(time.strptime(s, '%Y-%m-%d %H:%M:%S'))
+    try:
+        tt = time.strptime(s, '%Y-%m-%d %H:%M:%S')
+    except ValueError:
+        tt = time.strptime(s, '%Y-%m-%d')
+
+    timestamp = calendar.timegm(tt)
     return timestamp - timezone_offset
 
 

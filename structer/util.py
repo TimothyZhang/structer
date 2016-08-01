@@ -171,7 +171,15 @@ def str_to_dhms(s):
         assert tmp[0][-1] == 'd'
         days = int(tmp[0][:-1])
 
-    h, m, s = tmp[-1].split(':')
+    hms = tmp[-1].split(':')
+    if len(hms) == 2:
+        m, s = hms
+        h = 0
+    elif len(hms) == 3:
+        h, m, s = hms
+    else:
+        raise Exception('Invalid duration string: %s' % s)
+
     if negative:
         return -days, -int(h), -int(m), -float(s)
     return days, int(h), int(m), float(s)

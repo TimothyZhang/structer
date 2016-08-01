@@ -27,7 +27,7 @@ import time
 
 from structer import log
 from structer.util import get_absolute_path, dhms_to_str, seconds_to_dhms, utc_timestamp_to_str, utc_str_to_timestamp, \
-    dhms_to_seconds, str_to_dhms
+    dhms_to_seconds, str_to_dhms, timestamp_to_str, str_to_timestamp
 
 """
 verifier: is a piece of python code which contains the body of a function.
@@ -332,9 +332,11 @@ class ATFloat(AttrType):
 
 
 class ATTime(AttrType):
-    def __init__(self, min=None, max=None, default=None, **kwargs):
-        AttrType.__init__(self, **kwargs)
+    def __init__(self, min=None, max=None, default=None, timezone=0, **kwargs):
+        timezone_str = dhms_to_str(*seconds_to_dhms(timezone))
+        AttrType.__init__(self, 'ATTime(%s)' % timezone_str, **kwargs)
         self.min, self.max = min, max
+        self._timezone = timezone
         if default is not None:
             self._default = default
         # self._default = time.time()
@@ -343,7 +345,7 @@ class ATTime(AttrType):
         return time.time()
 
     def str(self, val, project):
-        return utc_timestamp_to_str(val)
+        return timestamp_to_str(val, self._timezone)
 
     def _verify(self, val, project, recurse=True, vlog=None):
         if not self.min <= val <= self.max:
@@ -351,7 +353,7 @@ class ATTime(AttrType):
 
     def convert(self, val):
         if isinstance(val, (unicode, str)):
-            return utc_str_to_timestamp(val)
+            return str_to_timestamp(val, self._timezone)
         return AttrType.convert(self, val)
 
 

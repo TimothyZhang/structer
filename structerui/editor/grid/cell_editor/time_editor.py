@@ -55,7 +55,8 @@ class GridCellTimeEditor(GridCellStrEditor):
             pass
 
         try:
-            return utc_str_to_timestamp(val)
+            # return utc_str_to_timestamp(val)
+            return self._attr_type.convert(val)
         except Exception, e:
             if vlog:
                 vlog.error('invalid time: %s (%s)', val, e)

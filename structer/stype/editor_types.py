@@ -63,6 +63,7 @@ s_time = ATStruct(
                Attr("max", ATTime(min=utc_str_to_timestamp('1970-01-01 00:00:00'),
                                   max=utc_str_to_timestamp('2200-01-01 00:00:00'),
                                   default=utc_str_to_timestamp('2200-01-01 00:00:00'))),
+               Attr("timezone", ATDuration(min=-12*3600, max=14*3600, default=0), u'Timezone offset(seconds)')
            ]
     )
 )

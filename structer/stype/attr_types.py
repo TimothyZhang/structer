@@ -708,6 +708,13 @@ class ATDict(AttrType):
     def _export(self, val, project):
         return {self.key_type.export(k, project): self.val_type.export(v, project) for k, v in val}
 
+    def fix(self, val, fixer, project):
+        newval = fixer(self, val, project)
+        if val is None:
+            return
+
+        return [[self.key_type.fix(k, fixer, project), self.val_type.fix(v, fixer, project)] for k, v in newval]
+
 
 class ATRef(AttrType):
     """value: uuid or None"""

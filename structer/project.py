@@ -23,7 +23,7 @@ import traceback
 import const
 from stype import editor_types
 from stype.type_manager import TypeManager, AttrVerifyLogger
-from stype.attr_types import ATInt
+from stype.attr_types import ATInt, ATDuration
 
 from fs_manager import FileSystemManager
 import fs_util
@@ -249,6 +249,8 @@ class Project(object):
 
     def fix_all(self, fixer):
         for obj in self.object_manager.iter_all_objects():
+            if obj.clazz.name=='Setting':
+                k = 1
             obj.fix(fixer)
             
     def fix_struct_add_attr(self, struct_name=None, attr_name=None):
@@ -310,6 +312,15 @@ class Project(object):
                 val[attr_name] = func(attr_name, val[attr_name], at, project)                
             return val
         
+        self.fix_all(fixer)
+
+    def fix_duration(self):
+        def fixer(at, val, project):
+            if isinstance(at, ATDuration):
+                if isinstance(val, dict):
+                    val = ((val['days'] * 24 + val['hours']) * 60 + val['minutes']) * 60 + val['seconds']
+            return val
+
         self.fix_all(fixer)
 
 

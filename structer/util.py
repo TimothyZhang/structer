@@ -147,8 +147,9 @@ def dhms_to_str(days, hours, minutes, seconds):
     seconds_fraction = seconds - seconds_int
     s = '%s%02d:%02d:%02d' % (d, hours, minutes, seconds_int)
     if seconds_fraction != 0:
-        s += '%.3f' % seconds_fraction
-        s = s.rstrip('0').rstrip('.')
+        assert 0 < seconds_fraction < 1
+        fraction = '%.3f' % seconds_fraction
+        s += fraction[1:].rstrip('0').rstrip('.')
     if negative:
         s = '-' + s
     return s

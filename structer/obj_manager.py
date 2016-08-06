@@ -141,13 +141,13 @@ class ObjectManager(object):
     def remove_object(self, obj):
         self._obj_map[obj.clazz.name].pop(obj.uuid)
 
-        referents = copy.copy(self.project.ref_manager.get_referents(obj.uuid))
+        referers = copy.copy(self.project.ref_manager.get_referers(obj.uuid))
         self.project.ref_manager.update_references(obj, [])
 
-        # all referents got an "invalid refenrence"
-        for uuid_ in referents:
-            referent = self.get_object(uuid_)
-            referent.verify()
+        # all referers got an "invalid refenrence"
+        for uuid_ in referers:
+            referer = self.get_object(uuid_)
+            referer.verify()
         
     def get_recycled_object(self, uuid):
         return self._recycled_objects.get(uuid)

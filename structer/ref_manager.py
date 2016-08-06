@@ -24,48 +24,48 @@ class RefManager(object):
     
     def __init__(self):
        
-        # key referenced values: {uuid: set([uuid, ...])}
+        # {referer_uuid: set([referent_uuid, ...])}
         self.__ref = {}
+        """:type: dict[str, set[str]]"""
         
-        # key referenced by values: {uuid: set([uuid, ...])}
+        # {referent_uuid: set([referer_uuid, ...])}
         self.__refby = {}
+        """:type: dict[str, set[str]]"""
     
-    def get_references(self, referent):
-        """Gets all objects referenced by "referent"
+    def get_referents(self, referer):
+        """Gets all objects referenced by "referer"
+        
+        Args:
+            referer: uuid
+            
+        Returns:
+            set of uuids, which are referenced by "referer".
+        """
+        return self.__ref.get(referer, set())
+    
+    def get_referers(self, referent):
+        """Gets all objects referenced to "referent"
         
         Args:
             referent: uuid
             
         Returns:
-            set of uuids, which are referenced by "referent".
+            set of uuids, which referenced to "referent"
         """
-        return self.__ref.get(referent, set())
+        return self.__refby.get(referent, set())
     
-    def get_referents(self, reference):
-        """Gets all objects referenced to "reference"
-        
-        Args:
-            reference: uuid
-            
-        Returns:
-            set of uuids, which referenced to "refernece"
-        """
-        return self.__refby.get(reference, set())
-    
-    def update_references(self, referent, refs):
+    def update_references(self, referer, refs):
         """Updates references of an object.
         
         Should be called whenever an object changes: create, modify, or delete.        
-        Any existing references of referent will be break, and then new references will be inserted.
+        Any existing references of referer will be break, and then new references will be inserted.
         
-        :param referent: the object changed
-        :type referent: Object
-        :param refs: referenced by referent
-        :type refs: list[structer.stype.attr_types.Ref]
+        :param Object referer: the object changed
+        :param list[structer.stype.attr_types.Ref] refs: referenced by referer
         """
         
         # break old references, if exists
-        uuid = referent.uuid
+        uuid = referer.uuid
         if uuid in self.__ref:
             for ref_uuid in self.__ref[uuid]:
                 self.__refby[ref_uuid].remove(uuid)

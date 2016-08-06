@@ -70,10 +70,10 @@ def test_object(project, sql, obj):
         return test_object_with_keyword(obj, kw)
 
     def ref(uuid):
-        return obj.uuid in project.ref_manager.get_referents(uuid)
+        return obj.uuid in project.ref_manager.get_referers(uuid)
 
     def refby(uuid):
-        return obj.uuid in project.ref_manager.get_references(uuid)
+        return obj.uuid in project.ref_manager.get_referents(uuid)
 
     locals_ = {
         'now': time.time,

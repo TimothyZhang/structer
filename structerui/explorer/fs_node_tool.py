@@ -351,7 +351,7 @@ class FSNodeTool(object):
         if self._add_menu_edits(menu, nodes):
             menu.AppendSeparator()
 
-        # show references/referents
+        # show references/referers
         if self._add_menu_ref(menu, nodes):
             menu.AppendSeparator()
 
@@ -441,7 +441,7 @@ class FSNodeTool(object):
 
     def _add_menu_ref(self, menu, nodes):
         """
-        Try to add menu: references and referents
+        Try to add menu: referents and referers
         :type menu: wx.Menu
         :type nodes: list[FsNode]
         :return: number of menu items added
@@ -451,11 +451,11 @@ class FSNodeTool(object):
         if not all(map(fs_util.is_object, nodes)):
             return 0
 
-        item = menu.Append(wx.NewId(), u'References(I referenced...)')
-        self._bind_menu(menu, self.show_references, item.GetId(), nodes)
-
-        item = menu.Append(wx.NewId(), u'Referents(I am referenced by...)')
+        item = menu.Append(wx.NewId(), u'Referents(I referenced...)')
         self._bind_menu(menu, self.show_referents, item.GetId(), nodes)
+
+        item = menu.Append(wx.NewId(), u'Referers(I am referenced by...)')
+        self._bind_menu(menu, self.show_referers, item.GetId(), nodes)
         return 2
     
     def _add_menu_tags(self, menu, nodes):
@@ -883,8 +883,8 @@ class FSNodeTool(object):
         """
         objects = self.get_objects_within_nodes(nodes)
         uuids = set([obj.uuid for obj in objects])
-        referents = set(sum([list(self.project.ref_manager.get_referents(obj.uuid)) for obj in objects], []))
-        if referents.difference(uuids):
+        referers = set(sum([list(self.project.ref_manager.get_referers(obj.uuid)) for obj in objects], []))
+        if referers.difference(uuids):
             return False
         return True
 
@@ -983,13 +983,13 @@ class FSNodeTool(object):
             except Exception, e:
                 log.alert(e, 'Failed to remove tag "%s" from: %s', tag, node)
 
-    def show_references(self, nodes):
+    def show_referents(self, nodes):
         sql = ' or '.join(["refby('%s')" % node.uuid for node in nodes])
         msg = 'Referenced by "%s"' % self.get_name_of_object_nodes(nodes)
         node = SearchResult(self.project, sql, None, msg)
         self.explorer.set_path(node)
 
-    def show_referents(self, nodes):
+    def show_referers(self, nodes):
         sql = ' or '.join(["ref('%s')" % node.uuid for node in nodes])
         msg = 'References to "%s"' % self.get_name_of_object_nodes(nodes)
         node = SearchResult(self.project, sql, None, msg)

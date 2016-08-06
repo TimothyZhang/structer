@@ -75,6 +75,11 @@ class EditorPanel(wx.Panel):
                 return func()
             return f
 
+        def wrap_check(func):
+            def f(evt):
+                evt.Enable(func())
+            return f
+
         for action in self.grid_actions:
             if not action.icon:
                 continue
@@ -88,7 +93,7 @@ class EditorPanel(wx.Panel):
                                        shortHelpString=label)
             toolbar.Bind(wx.EVT_TOOL, wrap(action.callback), id=tool.GetId())
             if action.check_enable:
-                toolbar.Bind(wx.EVT_UPDATE_UI, wrap(action.check_enable), id=tool.GetId())
+                toolbar.Bind(wx.EVT_UPDATE_UI, wrap_check(action.check_enable), id=tool.GetId())
 
         toolbar.Realize()
         return toolbar

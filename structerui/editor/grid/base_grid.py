@@ -534,6 +534,11 @@ class GridBase(grid.Grid):
         self.refresh_block((row, col, row, col))
         evt.Skip()
 
+    def check_goto_ref(self):
+        row, col = self.GetGridCursorRow(), self.GetGridCursorCol()
+        at = self.GetTable().get_attr_type(row, col)
+        return type(at) is ATRef
+
     def goto_ref(self):
         row, col = self.GetGridCursorRow(), self.GetGridCursorCol()
         at = self.GetTable().get_attr_type(row, col)
@@ -549,7 +554,7 @@ class GridBase(grid.Grid):
         :return:
         :rtype: list[GridAction]
         """
-        return [GridAction(hotkey.GOTO_REF, self.goto_ref, "Goto", "icons/goto.png"),
+        return [GridAction(hotkey.GOTO_REF, self.goto_ref, "Goto", "icons/goto.png", self.check_goto_ref),
                 GridAction(hotkey.COPY, self._copy, "Copy", "icons/copy.png"),
                 GridAction(hotkey.PASTE, self._paste, "Paste", "icons/paste.png", self.is_editable),
                 GridAction(hotkey.UNDO, self.undo, "Undo", "icons/undo.png"),
@@ -724,7 +729,7 @@ class GridBase(grid.Grid):
             wx.TheClipboard.Close()
         else:
             wx.MessageBox("Unable to open the clipboard", "Error")
-    
+
     def _copy(self):
         # block = self._get_selection_block()
         # if not block:

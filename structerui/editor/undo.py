@@ -55,10 +55,10 @@ class UndoManager(object):
             elif type(action) is OpenDialogAction and type(last) is CloseDialogAction and \
                     action.row == last.row and action.col == last.col:
                 self._history.pop()
-            elif type(action) is CloseULLDialogAction and type(last) is OpenULLDialogAction:
+            elif type(action) is CloseFlattenDialogAction and type(last) is OpenFlattenDialogAction:
                 self._history.pop()
             # close then open
-            elif type(action) is OpenULLDialogAction and type(last) is CloseULLDialogAction:
+            elif type(action) is OpenFlattenDialogAction and type(last) is CloseFlattenDialogAction:
                 self._history.pop()
             else:
                 self._history.append(action)
@@ -189,7 +189,7 @@ class CloseDialogAction(OpenDialogAction):
         OpenDialogAction.undo(self, grid)
 
 
-class OpenULLDialogAction(Action):
+class OpenFlattenDialogAction(Action):
     def undo(self, grid):
         p = grid
         while p.GetParent() and not p.IsTopLevel():
@@ -198,15 +198,15 @@ class OpenULLDialogAction(Action):
         p.Close()
 
     def redo(self, grid):
-        grid.show_ull_editor()
+        grid.show_flatten_editor()
 
 
-class CloseULLDialogAction(OpenULLDialogAction):
+class CloseFlattenDialogAction(OpenFlattenDialogAction):
     def undo(self, grid):
-        OpenULLDialogAction.redo(self, grid)
+        OpenFlattenDialogAction.redo(self, grid)
 
     def redo(self, grid):
-        OpenULLDialogAction.undo(self, grid)
+        OpenFlattenDialogAction.undo(self, grid)
 
 
 class ListInsertAction(Action):

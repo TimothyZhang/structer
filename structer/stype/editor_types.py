@@ -29,6 +29,7 @@ Defines all the types needed by TypeEditor.
 from attr_types import *
 from composite_types import *
 from clazz import Clazz
+from structer.util import utc_str_to_timestamp
 
 CLAZZ_NAME_CLAZZ = u"Class"
 CLAZZ_NAME_ENUM = u"Enum"

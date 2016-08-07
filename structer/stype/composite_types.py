@@ -152,6 +152,9 @@ class Struct(object):
         return name in self.__attr_map
     
     def iterate(self):
+        """
+        :rtype: Iterator[Attr]
+        """
         return iter(self.__attrs)
     
 

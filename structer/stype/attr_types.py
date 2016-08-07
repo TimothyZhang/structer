@@ -26,8 +26,8 @@ import os
 import time
 
 from structer import log
-from structer.util import get_absolute_path, dhms_to_str, seconds_to_dhms, utc_timestamp_to_str, utc_str_to_timestamp, \
-    dhms_to_seconds, str_to_dhms, timestamp_to_str, str_to_timestamp
+from structer.util import (get_absolute_path, dhms_to_str, seconds_to_dhms, dhms_to_seconds, str_to_dhms,
+                           timestamp_to_str, str_to_timestamp)
 
 """
 verifier: is a piece of python code which contains the body of a function.
@@ -143,6 +143,8 @@ class AttrVerifyLogger(object):
         return self._errors
 
     def log_all(self, project, with_path=True):
+        _ = with_path
+
         fs_path = ''
         if self._uuid:
             obj = project.object_manager.get_object(self._uuid)
@@ -252,8 +254,15 @@ class AttrType(object):
     def convert(self, val):
         raise InconvertibleError(self, val)
 
+    def is_primitive(self):
+        """
+        :rtype: bool
+        """
+        raise NotImplementedError()
+
 
 class ATInt(AttrType):
+    # noinspection PyShadowingBuiltins
     def __init__(self, min=-0x80000000, max=0x7FFFFFFF, default=None, **kwargs):
         AttrType.__init__(self, **kwargs)
 
@@ -283,6 +292,9 @@ class ATInt(AttrType):
             return int(val)
         return AttrType.convert(self, val)
 
+    def is_primitive(self):
+        return True
+
 
 class ATBool(ATInt):
     def __init__(self, default=0, **kwargs):
@@ -299,8 +311,12 @@ class ATBool(ATInt):
                 return 0
         return AttrType.convert(self, val)
 
+    def is_primitive(self):
+        return True
+
 
 class ATFloat(AttrType):
+    # noinspection PyShadowingBuiltins
     def __init__(self, min=None, max=None, default=None, **kwargs):
         AttrType.__init__(self, **kwargs)
 
@@ -330,8 +346,12 @@ class ATFloat(AttrType):
             return float(val)
         return AttrType.convert(self, val)
 
+    def is_primitive(self):
+        return True
+
 
 class ATTime(AttrType):
+    # noinspection PyShadowingBuiltins
     def __init__(self, min=None, max=None, default=None, timezone=0, **kwargs):
         timezone_str = dhms_to_str(*seconds_to_dhms(timezone))
         AttrType.__init__(self, 'ATTime(%s)' % timezone_str, **kwargs)
@@ -356,8 +376,12 @@ class ATTime(AttrType):
             return str_to_timestamp(val, self._timezone)
         return AttrType.convert(self, val)
 
+    def is_primitive(self):
+        return True
+
 
 class ATDuration(AttrType):
+    # noinspection PyShadowingBuiltins
     def __init__(self, min=None, max=None, default=None, **kwargs):
         AttrType.__init__(self, **kwargs)
         self.min, self.max = min, max
@@ -374,6 +398,9 @@ class ATDuration(AttrType):
         if isinstance(val, (unicode, str)):
             return dhms_to_seconds(*str_to_dhms(val))
         return AttrType.convert(self, val)
+
+    def is_primitive(self):
+        return True
 
 
 class ATStr(AttrType):
@@ -422,6 +449,9 @@ class ATStr(AttrType):
             if not self._pattern.match(val):
                 vlog.error('regex not match: %s', self._regex)
 
+    def is_primitive(self):
+        return True
+
 
 class ATFile(AttrType):
     """value: str
@@ -467,6 +497,9 @@ class ATFile(AttrType):
         if os.path.isdir(path):
             vlog.error('not a file: %s', path)
 
+    def is_primitive(self):
+        return True
+
 
 class ATFolder(AttrType):
     def __init__(self, optional, **kwargs):
@@ -493,6 +526,9 @@ class ATFolder(AttrType):
         if not os.path.isdir(path):
             vlog.error('Not a folder: %s', path)
             return
+
+    def is_primitive(self):
+        return True
 
 
 # class ATI18N(AttrType):
@@ -650,6 +686,9 @@ class ATList(AttrType):
             return
         return [self.element_type.fix(element, fixer, project) for element in newval]
 
+    def is_primitive(self):
+        return False
+
 
 class ATDict(AttrType):
     """value: dict"""
@@ -714,6 +753,9 @@ class ATDict(AttrType):
             return
 
         return [[self.key_type.fix(k, fixer, project), self.val_type.fix(v, fixer, project)] for k, v in newval]
+
+    def is_primitive(self):
+        return False
 
 
 class ATRef(AttrType):
@@ -786,10 +828,14 @@ class ATRef(AttrType):
 
         return None
 
+    def is_primitive(self):
+        return True
+
 
 class ATEnum(AttrType):
     """value: enum itemname(str)"""
 
+    # noinspection PyShadowingBuiltins
     def __init__(self, enum, default=None, filter=(), **kwargs):
         """
         Args:
@@ -851,12 +897,16 @@ class ATEnum(AttrType):
 
         return self.enum.value_of(val)
 
+    def is_primitive(self):
+        return True
+
 
 class ATUnion(AttrType):
     """ value: [itemname(str), {...}]"""
 
     atenum = None
 
+    # noinspection PyShadowingBuiltins
     def __init__(self, union, filter=(), **kwargs):
         """
         :param Union union:
@@ -899,6 +949,7 @@ class ATUnion(AttrType):
         return atstruct
 
     def get_value(self, val):
+        _ = self
         return val[val['key']]
 
     def _verify(self, val, project, recurse=True, vlog=None):
@@ -990,6 +1041,9 @@ class ATUnion(AttrType):
 
         return newval
 
+    def is_primitive(self):
+        return False
+
 
 class ATStruct(AttrType):
     """value: {attrname: attrvalue}"""
@@ -1028,8 +1082,11 @@ class ATStruct(AttrType):
     def get_attr(self, name):
         return self.__struct.get_attr_by_name(name)
 
+    # noinspection PyMethodMayBeStatic
     def get_attr_value(self, name, val, project):
         """Get the attribute value"""
+        _ = project
+
         # NOTE: DO NOT recurse, it would be slow, and returned data structer might be unexpected
         # attr = self.get_attr(name)
         # return attr.get_value(val[name], project)
@@ -1108,6 +1165,9 @@ class ATStruct(AttrType):
             newval[attr.name] = attr.type.fix(v, fixer, project)
         return newval
 
+    def is_primitive(self):
+        return False
+
 
 class _StructTemplateMap(object):
     """ For faster speed
@@ -1131,4 +1191,3 @@ class _StructTemplateMap(object):
 
         self._cache[key] = v
         return v
-

@@ -25,8 +25,9 @@ from structer.stype.attr_types import ATList
 from structerui import hotkey
 from base_grid import GridBase, TableBase, GridAction
 from cell_editor.dialog.editor_dialog import EditorDialog
+from structerui.editor.flatten_mapper import FlattenMapper
 from structerui.editor.ull_mapper import UnionListListMapper
-from structerui.editor.undo import OpenULLDialogAction, CloseULLDialogAction
+from structerui.editor.undo import OpenFlattenDialogAction, CloseFlattenDialogAction
 
 
 # noinspection PyMethodOverriding
@@ -169,8 +170,8 @@ class ListGrid(GridBase):
                    GridAction(hotkey.LIST_INSERT_COPIED, self.insert_copied, "Insert Rows", "icons/insert_rows.png"),
                    GridAction(hotkey.LIST_APPEND_COPIED_TAIL, self.append_copied, "Append Rows",
                               "icons/append_rows.png"),
-                   GridAction(hotkey.LIST_ULL_EDITOR, self.show_ull_editor, "Super ULL Editor", "icons/ull_editor.png",
-                              self.check_ull_editor)
+                   GridAction(hotkey.FLATTEN_EDITOR, self.show_flatten_editor, "Flatten Editor",
+                              "icons/flatten_editor.png", self.check_flatten_editor)
                    ]
 
         return GridBase.get_actions(self) + actions
@@ -180,52 +181,51 @@ class ListGrid(GridBase):
         to = evt.GetBeforeRow()         # Before which row to insert
         self.GetTable().move_row(frm, to)
 
-    def check_ull_editor(self):
+    def check_flatten_editor(self):
         block = self._get_selection_block()
         if not block:
             return False
 
         top, left, bottom, right = block
-        # should select only 1 column
-        if left < right:
-            return False
 
         # should select at least 2 rows
         if top == bottom:
             return False
 
-        tbl = self.GetTable()
-        attr_type = tbl.get_attr_type(top, left)
-        return UnionListListMapper.check_ull_type(attr_type)
+        return True
+        # tbl = self.GetTable()
+        # attr_type = tbl.get_attr_type(top, left)
+        # return UnionListListMapper.check_ull_type(attr_type)
 
-    def show_ull_editor(self):
-        if not self.check_ull_editor():
-            wx.MessageBox("Invalid type for ull_editor")
+    def show_flatten_editor(self):
+        if not self.check_flatten_editor():
+            wx.MessageBox("Invalid type for flatten editor")
+            return
+
+        block = self._get_selection_block()
+        if not block:
             return
 
         top, left, bottom, right = self._get_selection_block()
         tbl = self.GetTable()
-        ul_type = tbl.get_attr_type(top, left)
-        ull_type = ATList(ul_type)
-        ull_data = [tbl.get_value(r, left) for r in xrange(top, bottom+1)]
 
-        ull_mapper = UnionListListMapper.create(self.editor_context.project, ull_type, ull_data)
-        if not ull_mapper:
-            wx.MessageBox("Failed to create ull_editor")
-            return
+        column_names = [tbl.GetColLabelValue(c) for c in xrange(left, right+1)]
+        attr_types = [tbl.get_attr_type(top, c) for c in xrange(left, right + 1)]
+        data = [[tbl.get_value(r, c) for c in xrange(left, right + 1)] for r in xrange(top, bottom + 1)]
 
-        ctx = self.editor_context.create_sub_context(ull_mapper.get_sl_type(), ull_mapper.get_sl_data())
+        flatten_mapper = FlattenMapper(self.editor_context.project, column_names, attr_types, data)
+        ctx = self.editor_context.create_sub_context(flatten_mapper.get_mapped_type(), flatten_mapper.get_mapped_data())
         # ctx.freeze_none = True
 
         def on_close(evt):
             _ = evt
-            ctx.undo_manager.add(CloseULLDialogAction())
+            ctx.undo_manager.add(CloseFlattenDialogAction())
             evt.Skip()
         
-        ull_data = None
+        new_data = None
         while 1:
             ull_dlg = EditorDialog(self, ctx)
-            ctx.undo_manager.add(OpenULLDialogAction())
+            ctx.undo_manager.add(OpenFlattenDialogAction())
             ull_dlg.Bind(wx.EVT_CLOSE, on_close)
             ull_dlg.ShowModal()
             # ctx.undo_manager.add(CloseULLDialogAction())
@@ -233,11 +233,12 @@ class ListGrid(GridBase):
             if not ctx.is_modified():
                 return
 
-            ull_data = ull_mapper.convert_sl_data_to_ull_data(ctx.attr_data)
+            new_data = flatten_mapper.convert_data(ctx.attr_data)
             # todo: should let use known where the problem is
-            if ull_data is None:
+            if new_data is None:
                 wx.MessageBox("INCOMPLETE!")
 
+                # todo: ?? need more explanation
                 # hack undo manager
                 continue
             break
@@ -247,7 +248,8 @@ class ListGrid(GridBase):
         # to keep UndoManager work properly.
         # self.editor_context.attr_data[:] = ull_data
         for i, r in enumerate(xrange(top, bottom+1)):
-            tbl.SetValue(r, left, ull_data[i])
+            for j, c in enumerate(xrange(left, right+1)):
+                tbl.SetValue(r, c, new_data[i][j])
 
         # close current dialog
         p = self

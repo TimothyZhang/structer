@@ -47,22 +47,52 @@ class FlattenMapper(object):
         for i, at in enumerate(self._attr_types):
             col_name = self._column_names[i]
 
-            if at.is_primitive():
-                mapped_attrs.append(Attr(col_name, at))
-                for j, row in enumerate(self._data):
-                    mapped_data[j][col_name] = row[i]
-            elif isinstance(at, ATStruct):
+            if isinstance(at, ATStruct):
                 for attr in at.struct.iterate():
                     attr_name = '%s-%s' % (col_name, attr.name)
                     mapped_attrs.append(Attr(attr_name, attr.type))
                     for j, row in enumerate(self._data):
                         mapped_data[j][attr_name] = row[i][attr.name]
-            elif isinstance(at, ATList):
+                continue
+            if isinstance(at, ATList):
+                if at.element_type.is_primitive():
+                    max_len = max(len(row[i]) for row in self._data)
+                    for k in xrange(max_len):
+                        attr_name = '%s-%s' % (col_name, k)
+                        mapped_attrs.append(Attr(attr_name, at.element_type))
+                        for j, row in enumerate(self._data):
+                            mapped_data[j][attr_name] = row[i][k] if k < len(row[i]) else None
+                    continue
+
+                if isinstance(at.element_type, ATUnion):
+                    lengths = [len(row[i]) for row in self._data]
+                    if len(set(lengths)) == 1 and lengths[0] > 0:  # the same length
+                        unions_keys = []
+                        for j, row in enumerate(self._data):
+                            union_keys = tuple(union_data['key'] for k, union_data in enumerate(row[i]))
+                            unions_keys.append(union_keys)
+                        if len(set(unions_keys)) == 1:  # the same union item type
+                            for j, row in enumerate(self._data):
+                                for k, union_data in enumerate(row[i]):
+                                    union_key = union_data['key']
+                                    atstruct = at.element_type.union.get_atstruct(union_key)
+                                    for attr in atstruct.struct.iterate():
+                                        attr_name = '%s-%s-%s' % (col_name, union_key, attr.name)
+                                        if j == 0:
+                                            mapped_attrs.append(Attr(attr_name, attr.type))
+                                        mapped_data[j][attr_name] = union_data[union_key][attr.name]
+                            continue
+
+            if isinstance(at, ATDict):
                 pass
-            elif isinstance(at, ATDict):
+            if isinstance(at, ATUnion):
+                # only if all unions are with the same type
                 pass
-            elif isinstance(at, ATUnion):
-                pass
+
+            # default
+            mapped_attrs.append(Attr(col_name, at))
+            for j, row in enumerate(self._data):
+                mapped_data[j][col_name] = row[i]
 
         struct = Struct('flatten_editor', mapped_attrs)
         atstruct = ATStruct(struct)
@@ -78,24 +108,60 @@ class FlattenMapper(object):
 
     def convert_data(self, mapped_data):
         assert len(mapped_data) == len(self._data)
-        data = [[None for _j in self._column_names] for _i in self._data]
+        data = [[None for _i in self._column_names] for _j in self._data]
 
         for i, at in enumerate(self._attr_types):
             col_name = self._column_names[i]
 
-            if at.is_primitive():
-                for j, row in enumerate(self._data):
-                    data[j][i] = mapped_data[j][col_name]
-            elif isinstance(at, ATStruct):
+            if isinstance(at, ATStruct):
                 for j, row in enumerate(self._data):
                     data[j][i] = tmp = {}
                     for attr in at.struct.iterate():
                         attr_name = '%s-%s' % (col_name, attr.name)
                         tmp[attr.name] = mapped_data[j][attr_name]
-            elif isinstance(at, ATList):
+                continue
+            if isinstance(at, ATList):
+                if at.element_type.is_primitive():
+                    max_len = max(len(row[i]) for row in self._data)
+                    for j, row in enumerate(self._data):
+                        data[j][i] = tmp = []
+                        stopped = False
+                        for k in xrange(max_len):
+                            attr_name = '%s-%s' % (col_name, k)
+                            if mapped_data[j][attr_name] is not None:
+                                assert not stopped
+                                tmp.append(mapped_data[j][attr_name])
+                            else:
+                                stopped = True
+                    continue
+
+                if isinstance(at.element_type, ATUnion):
+                    lengths = [len(row[i]) for row in self._data]
+                    if len(set(lengths)) == 1 and lengths[0] > 0:  # the same length
+                        unions_keys = []
+                        for j, row in enumerate(self._data):
+                            union_keys = tuple(union_data['key'] for k, union_data in enumerate(row[i]))
+                            unions_keys.append(union_keys)
+                        if len(set(unions_keys)) == 1:  # the same union item type
+                            for j, row in enumerate(self._data):
+                                data[j][i] = tmp = []
+                                for k, union_data in enumerate(row[i]):
+                                    union_key = union_data['key']
+                                    atstruct = at.element_type.union.get_atstruct(union_key)
+                                    union_data = {}
+                                    for attr in atstruct.struct.iterate():
+                                        attr_name = '%s-%s-%s' % (col_name, union_key, attr.name)
+                                        union_data[attr.name] = mapped_data[j][attr_name]
+                                    tmp.append({'key': union_key, union_key: union_data})
+
+                            continue
+
+            if isinstance(at, ATDict):
                 pass
-            elif isinstance(at, ATDict):
+            if isinstance(at, ATUnion):
                 pass
-            elif isinstance(at, ATUnion):
-                pass
+            # default
+            for j, row in enumerate(self._data):
+                data[j][i] = mapped_data[j][col_name]
+
         return data

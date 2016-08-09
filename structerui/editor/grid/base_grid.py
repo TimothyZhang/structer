@@ -65,6 +65,9 @@ GRID_CELL_ATTR_ERROR.SetBackgroundColour((0xFF, 0, 0))
 GRID_CELL_ATTR_ERROR_READONLY = GRID_CELL_ATTR_ERROR.Clone()
 GRID_CELL_ATTR_ERROR_READONLY.SetReadOnly()
 
+GRID_CELL_ATTR_FOUND = grid.GridCellAttr()
+GRID_CELL_ATTR_FOUND.SetBackgroundColour((0x8f, 0x8f, 0xFF))
+
 # warning
 # GRID_CELL_ATTR_WARNING = grid.GridCellAttr()
 # GRID_CELL_ATTR_WARNING.SetBackgroundColour( (0xDD, 0xDD, 0x44) )
@@ -194,6 +197,11 @@ class TableBase(grid.PyGridTableBase):
     
     def GetAttr(self, row, col, kind):
         """kind: Any, Cell, Row, Col"""
+        found = self.GetView().get_found_cell()
+        if found is not None:
+            if found == (row, col):
+                return self._get_cell_attr("found")
+
         at = self.get_attr_type(row, col)
         if not at:
             print 'at is None', row, col, kind
@@ -252,7 +260,10 @@ class TableBase(grid.PyGridTableBase):
 class GridBase(grid.Grid):
     def __init__(self, parent, table):
         self._tip_window = None
-        
+        self._find_data = wx.FindReplaceData()
+        self._find_data.SetFlags(1)
+        self._found_cell = None
+
         grid.Grid.__init__(self, parent, -1)
         self._ctx = table.editor_context                
         self.SetTable(table)
@@ -311,6 +322,9 @@ class GridBase(grid.Grid):
         self.RegisterDataType(MY_GRID_DATA_TYPE_DURATION, str_renderer(), GridCellDurationEditor())
         
         self.auto_size()
+
+    def get_found_cell(self):
+        return self._found_cell
     
     def auto_size(self):
         # auto size by current cell values
@@ -530,7 +544,8 @@ class GridBase(grid.Grid):
         if (row, col) == (cursor_row, cursor_col):
             self.hide_tip()
             self.show_tip(row, col)
-        
+
+        self.RefreshAttr(self.GetGridCursorRow(), self.GetGridCursorCol())
         self.refresh_block((row, col, row, col))
         evt.Skip()
 
@@ -561,6 +576,7 @@ class GridBase(grid.Grid):
                 GridAction(hotkey.REDO, self.redo, "Redo", "icons/redo.png"),
                 GridAction(hotkey.RESET, self.reset_to_default, "Reset", "icons/reset.png", self.is_editable),
                 GridAction(hotkey.COPY_TEXT, self._copy_as_plain_text, "Copy as plain text", "icons/copy_text.png"),
+                GridAction(hotkey.FIND, self._find, "Find text", "icons/find.png"),
                 GridAction(hotkey.SELECT_ALL, self._select_all, "Select all", "icons/select_all.png"),
                 # GridAction(hotkey.PASTE_TEXT, self._paste_plain_text, "Paste plain text", "icons/paste_text.png"),
                 ]
@@ -719,6 +735,76 @@ class GridBase(grid.Grid):
     def _paste_plain_text(self):
         pass
 
+    def _find(self):
+        dlg = wx.FindReplaceDialog(self, self._find_data, "Find")
+        dlg.Bind(wx.EVT_FIND, self._on_find)
+        dlg.Bind(wx.EVT_FIND_NEXT, self._on_find)
+        # dlg.Bind(wx.EVT_FIND_REPLACE, self._on_find)
+        # dlg.Bind(wx.EVT_FIND_REPLACE_ALL, self._on_find)
+        dlg.Bind(wx.EVT_FIND_CLOSE, self._on_find_close)
+        dlg.Show(True)
+
+    def _on_find_close(self, evt):
+        evt.GetDialog().Destroy()
+        self._clear_found_cell()
+
+    def _clear_found_cell(self):
+        if self._found_cell:
+            row, col = self._found_cell
+            self._found_cell = None
+            self.RefreshAttr(row, col)
+            self.refresh_block((row, col, row, col))
+
+    def _next_cell(self, row, col, flag):
+        if flag == 1:
+            col += 1
+            if col >= self.GetNumberCols():
+                col = 0
+                row += 1
+                if row >= self.GetNumberRows():
+                    row = 0
+        else:
+            col -= 1
+            if col < 0:
+                col = self.GetNumberCols() - 1
+                row -= 1
+                if row < 0:
+                    row = self.GetNumberRows() - 1
+        return row, col
+
+    def _on_find(self, evt):
+        # et = evt.GetEventType()
+        # print '_on_find:', et
+        # if et != wx.wxEVT_COMMAND_FIND_NEXT:
+        #     return
+
+        keyword = evt.GetFindString().lower()
+        flag = evt.GetFlags()  # up: 0, down: 1
+        if self._found_cell:
+            row, col = self._found_cell
+            start = row, col = self._next_cell(row, col, flag)
+        else:
+            start = row, col = self.GetGridCursorRow(), self.GetGridCursorCol()
+        print 'start:', start
+        tbl = self.GetTable()
+        while 1:
+            at = tbl.get_attr_type(row, col)
+            val = tbl.get_attr_value(row, col)
+            cell_str = at.str(val, self._ctx.project)
+            if keyword in cell_str.lower():
+                print 'found:', keyword, self.GetCellValue(row, col), row, col
+                self._clear_found_cell()
+                self._found_cell = row, col
+                # self.MakeCellVisible(row, col)
+                self.GoToCell(row, col)
+                self.SetGridCursor(row, col)
+                self.RefreshAttr(row, col)
+                self.refresh_block((row, col, row, col))
+                return
+            row, col = self._next_cell(row, col, flag)
+            if (row, col) == start:
+                break
+
     # noinspection PyMethodMayBeStatic
     def _set_plain_text_clipboard(self, text):
         do = wx.TextDataObject()
@@ -796,6 +882,7 @@ class GridBase(grid.Grid):
             self._ctx.undo_manager.add(BatchMutateAction(top, left, old, new))
         
         # refresh area
+        self.RefreshAttr(self.GetGridCursorRow(), self.GetGridCursorCol())
         self.refresh_block((top, left, bottom, right))
 
     def set_selection_block(self, block):
@@ -890,9 +977,10 @@ class GridBase(grid.Grid):
         
         evt.Skip()
         
-    def refresh_block(self, block):                
-        self.RefreshAttr(self.GetGridCursorRow(), self.GetGridCursorCol())
-        
+    # def refresh_block(self, block):
+    #     self.RefreshAttr(self.GetGridCursorRow(), self.GetGridCursorCol())
+
+    def refresh_block(self, block):
         top, left, bottom, right = block
         tl = self.CellToRect(top, left)        
         br = self.CellToRect(bottom, right)

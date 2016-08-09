@@ -199,8 +199,9 @@ class ListGrid(GridBase):
 
     def show_flatten_editor(self):
         if not self.check_flatten_editor():
-            wx.MessageBox("Invalid type for flatten editor")
-            return
+            # wx.MessageBox("Invalid type for flatten editor")
+            # return
+            raise Exception("Invalid type for flatten editor")
 
         block = self._get_selection_block()
         if not block:
@@ -216,16 +217,17 @@ class ListGrid(GridBase):
         flatten_mapper = FlattenMapper(self.editor_context.project, column_names, attr_types, data)
         ctx = self.editor_context.create_sub_context(flatten_mapper.get_mapped_type(), flatten_mapper.get_mapped_data())
         # ctx.freeze_none = True
+        cursor = (self.GetGridCursorRow(), self.GetGridCursorCol())
 
         def on_close(evt):
             _ = evt
-            ctx.undo_manager.add(CloseFlattenDialogAction())
+            ctx.undo_manager.add(CloseFlattenDialogAction(block, cursor))
             evt.Skip()
         
         new_data = None
         while 1:
             ull_dlg = EditorDialog(self, ctx)
-            ctx.undo_manager.add(OpenFlattenDialogAction())
+            ctx.undo_manager.add(OpenFlattenDialogAction(block, cursor))
             ull_dlg.Bind(wx.EVT_CLOSE, on_close)
             ull_dlg.ShowModal()
             # ctx.undo_manager.add(CloseULLDialogAction())
@@ -249,7 +251,9 @@ class ListGrid(GridBase):
         # self.editor_context.attr_data[:] = ull_data
         for i, r in enumerate(xrange(top, bottom+1)):
             for j, c in enumerate(xrange(left, right+1)):
-                tbl.SetValue(r, c, new_data[i][j])
+                # use set_value instead of SetValue(), so no MutateAction will be added to UndoManager
+                # tbl.SetValue(r, c, new_data[i][j])
+                tbl.set_value(r, c, new_data[i][j])
 
         # close current dialog
         p = self

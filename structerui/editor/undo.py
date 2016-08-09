@@ -190,6 +190,10 @@ class CloseDialogAction(OpenDialogAction):
 
 
 class OpenFlattenDialogAction(Action):
+    def __init__(self, block, focus):
+        self._block = block
+        self._focus = focus
+
     def undo(self, grid):
         p = grid
         while p.GetParent() and not p.IsTopLevel():
@@ -198,6 +202,9 @@ class OpenFlattenDialogAction(Action):
         p.Close()
 
     def redo(self, grid):
+        grid.set_selection_block(self._block)
+        row, col = self._focus
+        grid.SetGridCursor(row, col)
         grid.show_flatten_editor()
 
 

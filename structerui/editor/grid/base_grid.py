@@ -797,7 +797,11 @@ class GridBase(grid.Grid):
         
         # refresh area
         self.refresh_block((top, left, bottom, right))
-    
+
+    def set_selection_block(self, block):
+        top, left, bottom, right = block
+        self.SelectBlock(top, left, bottom, right)
+
     def _get_selection_block(self):
         """Returns continuous selection block, or None"""
         max_row = self.GetNumberRows() - 1
